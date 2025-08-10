@@ -1,0 +1,67 @@
+/* venta_inventario_app/frontend/src/styles/Sidebar.css */
+
+.sidebar-nav {
+  width: 250px; /* Ancho normal del sidebar */
+  background-color: #34495e; /* Color de fondo del sidebar */
+  color: white;
+  padding-top: 2rem;
+  min-height: calc(100vh - 82px); /* Altura: 100vh - altura del header */
+  position: sticky;
+  top: 0;
+  box-shadow: 2px 0 5px rgba(0,0,0,0.1);
+  flex-shrink: 0;
+  transition: width 0.3s ease; /* Transición para el colapso */
+  overflow-x: hidden; /* Oculta el contenido que se desborda al colapsar */
+}
+
+.sidebar-nav.collapsed {
+  width: 70px; /* Ancho cuando está colapsado */
+}
+
+.sidebar-menu {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.sidebar-menu li {
+  margin-bottom: 0.5rem;
+}
+
+.sidebar-link {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  padding: 1rem;
+  color: white;
+  text-decoration: none;
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+.sidebar-link:hover {
+  background-color: #4b6587;
+}
+
+.sidebar-link.active {
+  background-color: #007bff;
+  font-weight: bold;
+}
+
+.sidebar-icon {
+  font-size: 1.2rem;
+  min-width: 40px; /* Ancho fijo para los iconos */
+  text-align: center;
+}
+
+.sidebar-text {
+  opacity: 1;
+  transition: opacity 0.3s ease, display 0.3s ease; /* Transición para el texto */
+  white-space: nowrap; /* Evita que el texto se rompa en varias líneas */
+}
+
+.sidebar-nav.collapsed .sidebar-text {
+  opacity: 0;
+  width: 0; /* Colapsa el ancho del texto */
+  overflow: hidden; /* Oculta el texto */
+  display: none; /* Asegura que no ocupe espacio visual */
+}

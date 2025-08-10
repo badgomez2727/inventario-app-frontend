@@ -1,0 +1,223 @@
+/* venta_inventario_app/frontend/src/index.css */
+
+/* Variables CSS para facilitar el cambio de colores */
+:root {
+  --primary-color: #4CAF50; /* Verde principal */
+  --secondary-color: #2196F3; /* Azul secundario */
+  --accent-color: #FFC107; /* Amarillo para acentos */
+  --text-color: #333;
+  --bg-color: #f4f7f6;
+  --border-color: #ddd;
+  --shadow-color: rgba(0, 0, 0, 0.1);
+  --header-bg: #3f51b5; /* Azul oscuro para encabezado */
+  --header-text: white;
+}
+
+body {
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+    sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  background-color: var(--bg-color);
+  color: var(--text-color);
+  line-height: 1.6;
+}
+
+code {
+  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
+    monospace;
+}
+
+/* Estilos para contenedores de formulario/lista (genéricos, usados en varias páginas) */
+.form-container, .list-container {
+  background-color: #fff;
+  padding: 25px;
+  border-radius: 8px;
+  box-shadow: 0 4px 8px var(--shadow-color);
+  margin-bottom: 20px;
+  text-align: left;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+/* Estilos para formularios (genéricos) */
+form div {
+  margin-bottom: 15px;
+}
+
+form label {
+  display: block;
+  margin-bottom: 5px;
+  font-weight: bold;
+  color: var(--text-color);
+}
+
+form input[type="text"],
+form input[type="email"],
+form input[type="password"],
+form input[type="number"],
+form textarea,
+.form-select { /* Estilo genérico para selects */
+  width: calc(100% - 20px); /* 100% menos padding */
+  padding: 10px;
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  box-sizing: border-box;
+  font-size: 1em;
+  /* Estilos específicos para select (mantener aquí si es un estilo global para todos los selects) */
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+  background-color: white;
+  background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-chevron-down" viewBox="0 0 16 16"><path fill-rule="evenodd" d="M1.646 4.646a.5.5 0 0 1 .708 0L8 10.293l5.646-5.647a.5.5 0 0 1 .708.708l-6 6a.5.5 0 0 1-.708 0l-6-6a.5.5 0 0 1 0-.708z"/></svg>');
+  background-repeat: no-repeat;
+  background-position: right 10px center;
+  background-size: 12px;
+}
+
+form textarea {
+  resize: vertical;
+}
+
+form button[type="submit"] {
+  background-color: var(--primary-color);
+  color: white;
+  padding: 12px 25px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 1.1em;
+  transition: background-color 0.3s ease;
+}
+
+form button[type="submit"]:hover {
+  background-color: #45a049;
+}
+
+/* Estilos para mensajes de éxito/error */
+.success-message {
+  color: green;
+  margin-top: 10px;
+  font-weight: bold;
+}
+
+.error-message {
+  color: red;
+  margin-top: 10px;
+  font-weight: bold;
+}
+
+/* Estilos para tablas (genéricos) */
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 20px;
+}
+
+table th, table td {
+  border: 1px solid var(--border-color);
+  padding: 10px;
+  text-align: left;
+}
+
+table th {
+  background-color: #e0e0e0;
+  font-weight: bold;
+}
+
+table tbody tr:nth-child(even) {
+  background-color: #f9f9f9;
+}
+
+/* Estilos para los div de grid en el formulario de producto (genéricos) */
+.form-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 15px;
+  margin-bottom: 15px;
+}
+
+/* Estilo para links (si los usamos globalmente) */
+a {
+  color: var(--secondary-color);
+  text-decoration: none;
+}
+
+a:hover {
+  text-decoration: underline;
+}
+
+/* Estilos para el contenedor de botones de navegación/autenticación (genéricos) */
+.nav-buttons {
+  margin-bottom: 20px;
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+}
+
+.nav-buttons button {
+  background-color: var(--secondary-color);
+  color: white;
+  padding: 10px 20px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 1em;
+  transition: background-color 0.3s ease;
+}
+
+.nav-buttons button:hover {
+  background-color: #1976D2;
+}
+
+.action-button {
+  padding: 10px 18px; /* Aumentado el padding para hacer los botones más grandes */
+  border: none;
+  border-radius: 8px; /* Bordes más redondeados */
+  cursor: pointer;
+  font-size: 1em; /* Tamaño de fuente ligeramente mayor */
+  font-weight: 600; /* Mayor peso de fuente */
+  transition: background-color 0.3s ease, transform 0.1s ease, box-shadow 0.2s ease; /* Añadida transición para sombra */
+  margin-right: 8px; /* Más espacio entre botones */
+  white-space: nowrap; /* Evita que el texto del botón se rompa */
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* Sombra sutil */
+  display: flex; justify-content: center; align-items: center;
+}
+
+.action-button:last-child {
+  margin-right: 0; /* Elimina el margen del último botón en un grupo */
+}
+
+.action-button:hover {
+  transform: translateY(-2px); /* Efecto más pronunciado al pasar el ratón */
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); /* Sombra más intensa al pasar el ratón */
+}
+
+.edit-button {
+  background-color: #ffc107; /* Amarillo */
+  color: white;
+}
+
+.edit-button:hover {
+  background-color: #e0a800; /* Tono más oscuro al pasar el ratón */
+}
+
+.delete-button {
+  background-color: #dc3545; /* Rojo */
+  color: white;
+}
+
+.delete-button:hover {
+  background-color: #c82333; /* Tono más oscuro al pasar el ratón */
+}
+
+.stock-button {
+  background-color: #2196F3; /* Azul */
+  color: white;
+}
+
+.stock-button:hover {
+  background-color: #0d6efd; /* Tono más oscuro al pasar el ratón */
+}

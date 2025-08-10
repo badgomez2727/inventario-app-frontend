@@ -1,0 +1,81 @@
+/* frontend/src/styles/Dashboard.css */
+
+.dashboard-container {
+  padding: 0; /* El padding ya lo da main-content-private en App.css, así que aquí lo ponemos en 0 */
+  max-width: 100%; /* Permitimos que ocupe todo el ancho del main-content-private */
+  margin: 0; /* Eliminar margen automático */
+}
+
+.dashboard-container h2 {
+  font-size: 2rem;
+  color: #333;
+  margin-bottom: 1.5rem;
+  border-bottom: 2px solid #007bff;
+  padding-bottom: 0.5rem;
+}
+
+.dashboard-cards-grid {
+  display: grid;
+  /* Aumentamos el ancho mínimo de las tarjetas para dar más espacio.
+     Las columnas se ajustarán automáticamente, pero cada tarjeta tendrá al menos 300px. */
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); /* Ajuste aquí */
+  gap: 1.5rem;
+  margin-bottom: 2rem;
+}
+
+.dashboard-card {
+  background-color: #fff;
+  border-radius: 8px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  padding: 1.5rem;
+  text-align: center;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  overflow: hidden; /* Asegura que el contenido dentro de la tarjeta no se desborde visualmente */
+}
+
+.dashboard-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+}
+
+.card-title {
+  font-size: 1rem;
+  color: #666;
+  margin-bottom: 0.5rem;
+}
+
+.card-value {
+  /* Ajustamos el tamaño de la fuente para que sea un poco más flexible */
+  font-size: clamp(1.8rem, 4vw, 2.2rem); /* Rango de tamaño de fuente */
+  font-weight: bold;
+  color: #007bff;
+  white-space: nowrap; /* Mantiene el texto en una sola línea */
+  overflow: hidden; /* Oculta el contenido que se desborda */
+  /* text-overflow: ellipsis; <-- Eliminado para evitar los puntos suspensivos */
+  min-width: 0; /* Necesario para que flexbox/grid permita el encogimiento del contenido */
+}
+
+.dashboard-chart-section {
+  background-color: #fff;
+  border-radius: 8px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  padding: 1.5rem;
+}
+
+.dashboard-chart-section h3 {
+  font-size: 1.5rem;
+  color: #333;
+  margin-bottom: 1rem;
+  text-align: center;
+}
+
+.no-data-message, .loading-message, .error-message {
+  text-align: center;
+  margin-top: 2rem;
+  font-size: 1.2rem;
+  color: #6c757d;
+}
+
+.error-message {
+  color: #dc3545;
+}

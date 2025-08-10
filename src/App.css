@@ -1,0 +1,37 @@
+/* venta_inventario_app/frontend/src/App.css */
+
+.App {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+.main-layout {
+  display: flex;
+  flex-grow: 1;
+  /* Transición para que el cambio de ancho del contenido sea suave al colapsar el sidebar */
+  transition: margin-left 0.3s ease;
+}
+
+/* No necesitas .main-layout.sidebar-collapsed aquí, ya que el sidebar maneja su propio ancho y flex-grow del main-content-private lo empuja */
+
+.main-and-footer-container {
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1; /* Permite que este contenedor ocupe el espacio restante */
+}
+
+.main-content-private {
+  flex-grow: 1; /* Permite que el contenido principal se expanda */
+  padding: 2rem; /* Espaciado interno para el contenido de las páginas */
+  overflow-y: auto; /* Permite scroll si el contenido es muy largo */
+  max-width: 100%; /* Asegura que ocupe todo el ancho disponible de su contenedor */
+  box-sizing: border-box; /* Incluye padding en el ancho total */
+}
+
+.main-content-public {
+  flex-grow: 1;
+  padding: 0; /* La LandingPage maneja su propio padding */
+}
+
+/* Elimina cualquier estilo de .App-header o main que estuviera aquí y ahora está en otros archivos */
