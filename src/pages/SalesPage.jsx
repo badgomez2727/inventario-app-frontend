@@ -1,8 +1,9 @@
 // venta_inventario_app/frontend/src/pages/SalesPage.jsx
 
 import React, { useState, useEffect } from 'react';
-import { getProducts, createSale, getClients } from '../services/apiService';
+import { getProducts, createSale, getClients, getSaleReceiptPdf } from '../services/apiService'; // Importamos getSaleReceiptPdf
 import { formatCOP } from '../utils/formatters';
+import { FaDownload } from 'react-icons/fa'; // Importamos el ícono de descarga
 
 function SalesPage() {
   const [products, setProducts] = useState([]);
@@ -13,6 +14,7 @@ function SalesPage() {
   const [error, setError] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [message, setMessage] = useState('');
+  const [lastSaleId, setLastSaleId] = useState(null); // Nuevo estado para guardar el ID de la última venta
 
   // Efecto para cargar productos y clientes
   useEffect(() => {
@@ -40,12 +42,20 @@ function SalesPage() {
   );
 
   const addToCart = (product) => {
+    // Asegurarse de que el precio de venta sea un número
+    const productPrecioVenta = Number(product.precioVenta); 
+
     const existingItem = cart.find(item => item.id === product.id);
     if (existingItem) {
       if (existingItem.cantidad < product.stockActual) {
         setCart(cart.map(item =>
           item.id === product.id
-            ? { ...item, cantidad: item.cantidad + 1, subtotal: item.subtotal + product.precioVenta }
+            ? { 
+                ...item, 
+                cantidad: item.cantidad + 1, 
+                // Asegurar que el subtotal actual también sea un número antes de sumar
+                subtotal: Number(item.subtotal) + productPrecioVenta 
+              }
             : item
         ));
       } else {
@@ -57,7 +67,7 @@ function SalesPage() {
         {
           ...product,
           cantidad: 1,
-          subtotal: product.precioVenta
+          subtotal: productPrecioVenta // El primer subtotal es simplemente el precio
         }
       ]);
     }
@@ -70,14 +80,18 @@ function SalesPage() {
   const updateQuantity = (productId, newCantidad) => {
     setCart(cart.map(item => {
       if (item.id === productId) {
-        if (newCantidad > item.stockActual) {
+        // Asegurarse de que newCantidad sea un número y el precio de venta también
+        const updatedCantidad = Number(newCantidad);
+        const itemPrecioVenta = Number(item.precioVenta);
+
+        if (updatedCantidad > item.stockActual) {
             setMessage(`No hay más stock disponible de ${item.nombre}`);
             return item;
         }
         return {
           ...item,
-          cantidad: newCantidad,
-          subtotal: newCantidad * item.precioVenta
+          cantidad: updatedCantidad,
+          subtotal: updatedCantidad * itemPrecioVenta // Multiplicación con números
         };
       }
       return item;
@@ -85,6 +99,7 @@ function SalesPage() {
   };
 
   const calculateTotal = () => {
+    // Asegurarse de que el subtotal de cada item sea un número al reducir
     const total = cart.reduce((sum, item) => sum + Number(item.subtotal), 0);
     return total;
   };
@@ -99,22 +114,51 @@ function SalesPage() {
         productId: item.id,
         cantidad: item.cantidad,
       })),
-      // Añadimos el cliente solo si uno ha sido seleccionado
-      clientId: selectedClient || null,
+      clientId: selectedClient ? Number(selectedClient) : null, // Asegurarse de que clientId sea un número o null
       total: calculateTotal(),
     };
 
     try {
-      await createSale(saleData);
+      setLastSaleId(null); // Limpiamos el ID de la venta anterior
+      const response = await createSale(saleData); // Guardamos la respuesta del backend
       setMessage('Venta registrada con éxito.');
       setCart([]);
       setSearchTerm('');
       setSelectedClient(''); // Limpiamos el cliente seleccionado
+      
+      // Si el backend devuelve el ID de la venta, lo guardamos para la descarga del PDF
+      if (response && response.sale && response.sale.id) {
+        setLastSaleId(response.sale.id);
+        setMessage(prev => prev + ' Puedes descargar el recibo ahora.');
+      }
+
       const updatedProducts = await getProducts();
       setProducts(updatedProducts);
     } catch (err) {
       console.error('Error al crear la venta:', err);
       setMessage(err.message || 'Error al registrar la venta.');
+      setLastSaleId(null); // Asegurarse de limpiar el ID si falla
+    }
+  };
+
+  // Nueva función para descargar el recibo (similar a SalesHistoryPage)
+  const handleDownloadReceipt = async (saleId) => {
+    setMessage(''); // Limpiar mensajes anteriores
+    try {
+      const pdfBlob = await getSaleReceiptPdf(saleId);
+      const url = window.URL.createObjectURL(pdfBlob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `recibo_venta_${saleId}.pdf`;
+      a.target = '_blank'; // Abrir en una nueva pestaña
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      window.URL.revokeObjectURL(url);
+      setMessage(`Recibo para la venta ${saleId} descargado con éxito.`);
+    } catch (err) {
+      console.error('Error al descargar el recibo:', err);
+      setMessage(err.message || `Error al descargar el recibo para la venta ${saleId}.`);
     }
   };
 
@@ -198,7 +242,8 @@ function SalesPage() {
                            min="1"
                            max={item.stockActual}
                            value={item.cantidad}
-                           onChange={(e) => updateQuantity(item.id, parseInt(e.target.value))}
+                           // Asegurar que el valor del input sea un número entero
+                           onChange={(e) => updateQuantity(item.id, parseInt(e.target.value) || 1)} 
                            style={{ width: '50px', marginLeft: '5px' }}
                          />
                       </small>
@@ -222,7 +267,30 @@ function SalesPage() {
           >
             Finalizar Venta
           </button>
-          {message && <p style={{ color: 'red', marginTop: '10px' }}>{message}</p>}
+          {message && <p className={message.includes('Error') ? 'error-message' : 'success-message'}>{message}</p>}
+          
+          {lastSaleId && (
+            <button
+              onClick={() => handleDownloadReceipt(lastSaleId)}
+              style={{
+                width: '100%',
+                padding: '15px',
+                backgroundColor: '#007bff',
+                color: 'white',
+                fontSize: '1.2rem',
+                border: 'none',
+                cursor: 'pointer',
+                marginTop: '10px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '10px'
+              }}
+              title="Descargar Recibo de la Venta Actual"
+            >
+              <FaDownload /> Descargar Recibo
+            </button>
+          )}
         </div>
       </div>
     </div>
