@@ -1,140 +1,230 @@
 // venta_inventario_app/frontend/src/pages/productos/ProductoForm.jsx
 
 import React, { useState, useEffect } from 'react';
-import { createProduct, updateProduct, getSuppliers } from '../../services/apiService'; // <-- Importamos getSuppliers
+import { createProduct, updateProduct, getSuppliers } from '../../services/apiService';
+import { formatCOP } from '../../utils/formatters'; // Asegúrate de que este archivo y función existan
+// import '../../styles/Form.css'; // <-- ¡Línea eliminada!
 
-function ProductoForm({ onProductCreated, productToEdit, onEditComplete }) {
-  const [suppliers, setSuppliers] = useState([]); // <-- Nuevo estado para proveedores
-  const [form, setForm] = useState({
+const ProductoForm = ({ onProductCreated, productToEdit, onEditComplete }) => {
+  const [formData, setFormData] = useState({
     nombre: '',
-    sku: '',
     descripcion: '',
+    sku: '',
     precioCompra: '',
     precioVenta: '',
+    stockActual: '', // <-- Inicializamos como cadena vacía
     unidadMedida: '',
     categoria: '',
     imagenUrl: '',
-    supplierId: '', // <-- Nuevo campo para el ID del proveedor
+    supplierId: '',
   });
-  const [message, setMessage] = useState(null);
-  const [error, setError] = useState(null);
-  const [loading, setLoading] = useState(false);
-  const [isEditing, setIsEditing] = useState(false);
+  const [message, setMessage] = useState('');
+  const [error, setError] = useState('');
+  const [suppliers, setSuppliers] = useState([]);
+  const [loadingSuppliers, setLoadingSuppliers] = useState(true);
 
-  // useEffect para cargar proveedores y rellenar el formulario si se edita
+  // Cargar proveedores al inicio
   useEffect(() => {
     const fetchSuppliers = async () => {
       try {
-        const suppliersData = await getSuppliers();
-        setSuppliers(suppliersData);
+        const data = await getSuppliers();
+        setSuppliers(data);
       } catch (err) {
-        console.error('Error al obtener proveedores:', err);
-        setError('Error al cargar la lista de proveedores.');
+        console.error('Error al cargar proveedores:', err);
+        setError('No se pudieron cargar los proveedores.');
+      } finally {
+        setLoadingSuppliers(false);
       }
     };
     fetchSuppliers();
+  }, []);
 
+  // Cargar datos del producto a editar cuando `productToEdit` cambia
+  useEffect(() => {
     if (productToEdit) {
-      setForm({
+      setFormData({
         nombre: productToEdit.nombre || '',
-        sku: productToEdit.sku || '',
         descripcion: productToEdit.descripcion || '',
-        precioCompra: productToEdit.precioCompra || '',
-        precioVenta: productToEdit.precioVenta || '',
+        sku: productToEdit.sku || '',
+        // Aseguramos que los números sean strings para el input, o cadena vacía si es null/undefined
+        // toFixed(2) para precio podría ser útil si no quieres que se vea un .0000000001
+        precioCompra: productToEdit.precioCompra != null ? productToEdit.precioCompra.toString() : '',
+        precioVenta: productToEdit.precioVenta != null ? productToEdit.precioVenta.toString() : '',
+        stockActual: productToEdit.stockActual != null ? productToEdit.stockActual.toString() : '', // <-- Aquí convertimos a string
         unidadMedida: productToEdit.unidadMedida || '',
         categoria: productToEdit.categoria || '',
         imagenUrl: productToEdit.imagenUrl || '',
-        supplierId: productToEdit.supplierId || '', // <-- Rellenamos el proveedor si existe
+        supplierId: productToEdit.supplierId != null ? productToEdit.supplierId.toString() : '', // <-- Convertir a string
       });
-      setIsEditing(true);
-      setMessage(null);
-      setError(null);
     } else {
-      setForm({
-        nombre: '', sku: '', descripcion: '', precioCompra: '', precioVenta: '', unidadMedida: '', categoria: '', imagenUrl: '', supplierId: '',
+      // Resetear el formulario para un nuevo producto
+      setFormData({
+        nombre: '', descripcion: '', sku: '', precioCompra: '', precioVenta: '',
+        stockActual: '', unidadMedida: '', categoria: '', imagenUrl: '', supplierId: '',
       });
-      setIsEditing(false);
     }
+    setMessage('');
+    setError('');
   }, [productToEdit]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setForm({ ...form, [name]: value });
+    // Manejo especial para inputs numéricos: permiten cadena vacía pero no texto no numérico
+    if (['precioCompra', 'precioVenta', 'stockActual', 'supplierId'].includes(name)) {
+      // Solo actualiza si es un número válido o una cadena vacía
+      if (value === '' || !isNaN(Number(value))) {
+        setFormData(prev => ({ ...prev, [name]: value }));
+      }
+    } else {
+      setFormData(prev => ({ ...prev, [name]: value }));
+    }
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setMessage(null);
-    setError(null);
-    setLoading(true);
+    setMessage('');
+    setError('');
 
-    const productData = {
-      ...form,
-      precioCompra: parseFloat(form.precioCompra),
-      precioVenta: parseFloat(form.precioVenta),
-      supplierId: form.supplierId ? parseInt(form.supplierId, 10) : null, // <-- Aseguramos que sea un número o null
+    // Validación frontend: asegurar que los campos obligatorios no estén vacíos
+    if (!formData.nombre || !formData.sku || formData.precioCompra === '' || formData.precioVenta === '' || formData.stockActual === '' || !formData.unidadMedida || !formData.categoria) {
+      setError('Por favor, completa todos los campos obligatorios.');
+      return;
+    }
+
+    // Convertir a número los campos numéricos antes de enviar al backend
+    // `Number()` convierte "" a 0, lo cual puede no ser deseable para IDs opcionales.
+    // Usaremos un condicional para `supplierId` para asegurar que sea `null` si está vacío.
+    const dataToSend = {
+      ...formData,
+      precioCompra: Number(formData.precioCompra),
+      precioVenta: Number(formData.precioVenta),
+      stockActual: Number(formData.stockActual),
+      supplierId: formData.supplierId === '' ? null : Number(formData.supplierId)
     };
 
     try {
-      if (isEditing) {
-        await updateProduct(productToEdit.id, productData);
-        setMessage('Producto actualizado con éxito.');
-        onEditComplete();
+      let response;
+      if (productToEdit) {
+        response = await updateProduct(productToEdit.id, dataToSend);
+        setMessage('Producto actualizado con éxito!');
+        onEditComplete(); // Llama a la función para limpiar el estado de edición y refrescar la lista
       } else {
-        await createProduct(productData);
-        setMessage('Producto creado con éxito.');
-        setForm({
-          nombre: '', sku: '', descripcion: '', precioCompra: '', precioVenta: '', unidadMedida: '', categoria: '', imagenUrl: '', supplierId: '',
+        response = await createProduct(dataToSend);
+        setMessage('Producto creado con éxito!');
+        // Limpiar el formulario después de la creación exitosa
+        setFormData({
+          nombre: '', descripcion: '', sku: '', precioCompra: '', precioVenta: '',
+          stockActual: '', unidadMedida: '', categoria: '', imagenUrl: '', supplierId: '',
         });
-        onProductCreated();
+        onProductCreated(); // Llama a la función para refrescar la lista
       }
+      console.log('Operación exitosa:', response);
     } catch (err) {
-      console.error('Error al guardar el producto:', err);
-      setError(err.message || 'Error al guardar el producto.');
-    } finally {
-      setLoading(false);
+      console.error('Error durante la operación del producto:', err);
+      // Muestra el mensaje de error del backend si está disponible
+      setError(err.message || 'Error en la operación del producto.');
     }
   };
 
-  const handleCancel = () => {
-    setForm({ nombre: '', sku: '', descripcion: '', precioCompra: '', precioVenta: '', unidadMedida: '', categoria: '', imagenUrl: '', supplierId: '' });
-    setIsEditing(false);
-    onEditComplete();
-  };
+  if (loadingSuppliers) return <p>Cargando proveedores...</p>;
+  // El error de carga de proveedores ya se muestra arriba, no es necesario aquí.
+  // if (error) return <p className="error-message">Error: {error}</p>;
 
   return (
     <div className="form-container">
-      <h2>{isEditing ? 'Editar Producto' : 'Agregar Nuevo Producto'}</h2>
+      <h2>{productToEdit ? 'Editar Producto' : 'Crear Nuevo Producto'}</h2>
       <form onSubmit={handleSubmit}>
         <div className="form-grid">
-          <div className="form-group">
-            <label>Nombre:</label>
-            <input type="text" name="nombre" value={form.nombre} onChange={handleChange} required />
-          </div>
-          <div className="form-group">
-            <label>SKU:</label>
-            <input type="text" name="sku" value={form.sku} onChange={handleChange} required />
+          <div>
+            <label htmlFor="nombre">Nombre:</label>
+            <input
+              type="text"
+              id="nombre"
+              name="nombre"
+              value={formData.nombre}
+              onChange={handleChange}
+              required
+            />
           </div>
           <div>
-            <label>Precio Compra:</label>
-            <input type="number" step="0.01" name="precioCompra" value={form.precioCompra} onChange={handleChange} required />
+            <label htmlFor="sku">SKU:</label>
+            <input
+              type="text"
+              id="sku"
+              name="sku"
+              value={formData.sku}
+              onChange={handleChange}
+              required
+            />
           </div>
           <div>
-            <label>Precio Venta:</label>
-            <input type="number" step="0.01" name="precioVenta" value={form.precioVenta} onChange={handleChange} required />
+            <label htmlFor="precioCompra">Precio Compra:</label>
+            <input
+              type="number"
+              id="precioCompra"
+              name="precioCompra"
+              value={formData.precioCompra}
+              onChange={handleChange}
+              step="0.01"
+              required
+            />
           </div>
           <div>
-            <label>Unidad de Medida:</label>
-            <input type="text" name="unidadMedida" value={form.unidadMedida} onChange={handleChange} />
+            <label htmlFor="precioVenta">Precio Venta:</label>
+            <input
+              type="number"
+              id="precioVenta"
+              name="precioVenta"
+              value={formData.precioVenta}
+              onChange={handleChange}
+              step="0.01"
+              required
+            />
           </div>
           <div>
-            <label>Categoría:</label>
-            <input type="text" name="categoria" value={form.categoria} onChange={handleChange} />
+            <label htmlFor="stockActual">Stock Actual:</label>
+            <input
+              type="number"
+              id="stockActual"
+              name="stockActual"
+              value={formData.stockActual} // <-- El valor siempre debe ser una cadena
+              onChange={handleChange}
+              min="0"
+              required
+            />
           </div>
           <div>
-            <label>Proveedor:</label>
-            <select className="form-select" name="supplierId" value={form.supplierId} onChange={handleChange} required>
-              <option value="">Selecciona un proveedor</option>
+            <label htmlFor="unidadMedida">Unidad de Medida:</label>
+            <input
+              type="text"
+              id="unidadMedida"
+              name="unidadMedida"
+              value={formData.unidadMedida}
+              onChange={handleChange}
+              required
+            />
+          </div>
+          <div>
+            <label htmlFor="categoria">Categoría:</label>
+            <input
+              type="text"
+              id="categoria"
+              name="categoria"
+              value={formData.categoria}
+              onChange={handleChange}
+              required
+            />
+          </div>
+          <div>
+            <label htmlFor="supplierId">Proveedor:</label>
+            <select
+              id="supplierId"
+              name="supplierId"
+              value={formData.supplierId}
+              onChange={handleChange}
+              className="form-select"
+            >
+              <option value="">Seleccione un proveedor (Opcional)</option>
               {suppliers.map(supplier => (
                 <option key={supplier.id} value={supplier.id}>
                   {supplier.nombre}
@@ -144,28 +234,31 @@ function ProductoForm({ onProductCreated, productToEdit, onEditComplete }) {
           </div>
         </div>
         <div>
-          <label>Descripción:</label>
-          <textarea name="descripcion" value={form.descripcion} onChange={handleChange} rows="3"></textarea>
+          <label htmlFor="descripcion">Descripción:</label>
+          <textarea
+            id="descripcion"
+            name="descripcion"
+            value={formData.descripcion}
+            onChange={handleChange}
+          ></textarea>
         </div>
         <div>
-          <label>URL Imagen (opcional):</label>
-          <input type="text" name="imagenUrl" value={form.imagenUrl} onChange={handleChange} />
+          <label htmlFor="imagenUrl">URL Imagen:</label>
+          <input
+            type="text"
+            id="imagenUrl"
+            name="imagenUrl"
+            value={formData.imagenUrl}
+            onChange={handleChange}
+          />
         </div>
-        <div style={{ display: 'flex', gap: '10px', marginTop: '15px' }}>
-          <button type="submit" disabled={loading} style={{ backgroundColor: isEditing ? '#ffc107' : '#28a745' }}>
-            {loading ? 'Guardando...' : isEditing ? 'Guardar Cambios' : 'Crear Producto'}
-          </button>
-          {isEditing && (
-            <button type="button" onClick={handleCancel} style={{ backgroundColor: '#dc3545' }}>
-              Cancelar
-            </button>
-          )}
-        </div>
-        {message && <p className="success-message">{message}</p>}
-        {error && <p className="error-message">{error}</p>}
+        
+        <button type="submit">{productToEdit ? 'Actualizar Producto' : 'Crear Producto'}</button>
       </form>
+      {message && <p className="success-message">{message}</p>}
+      {error && <p className="error-message">{error}</p>}
     </div>
   );
-}
+};
 
 export default ProductoForm;
