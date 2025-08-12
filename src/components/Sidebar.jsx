@@ -4,12 +4,10 @@ import React from 'react';
 import { NavLink } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import '../styles/Sidebar.css';
-import { FaTachometerAlt, FaBox, FaHistory, FaShoppingCart, FaChartBar, FaUsers, FaTruck, FaUserCog } from 'react-icons/fa';
+import { FaTachometerAlt, FaBox, FaHistory, FaShoppingCart, FaChartBar, FaUsers, FaTruck, FaUserCog, FaFileUpload } from 'react-icons/fa'; // <-- Importar FaFileUpload
 
 const Sidebar = ({ isSidebarOpen }) => {
   const { user } = useAuth();
-  // Esta línea es crucial: define si el usuario es administrador
-  // Solo los roles 'admin_compania' o 'super_admin_sistema' se consideran administradores
   const isAdmin = user && (user.rol === 'admin_compania' || user.rol === 'super_admin_sistema');
 
   return (
@@ -53,6 +51,12 @@ const Sidebar = ({ isSidebarOpen }) => {
             <li>
               <NavLink to="/dashboard" className="sidebar-link" activeclassname="active">
                 <FaTachometerAlt className="sidebar-icon" /> <span className="sidebar-text">Dashboard</span>
+              </NavLink>
+            </li>
+            {/* Nuevo enlace para la carga masiva de productos */}
+            <li>
+              <NavLink to="/productos/upload" className="sidebar-link" activeclassname="active">
+                <FaFileUpload className="sidebar-icon" /> <span className="sidebar-text">Carga Productos</span>
               </NavLink>
             </li>
             <li>

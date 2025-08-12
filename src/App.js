@@ -1,10 +1,11 @@
 // venta_inventario_app/frontend/src/App.js
 
-import React, { useState } from 'react';
+import React, { useState } from 'react'; // <-- ¡CORRECCIÓN AQUÍ!
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import './App.css';
 import ProductosList from './pages/productos/ProductosList';
 import ProductoForm from './pages/productos/ProductoForm';
+import ProductUploadPage from './pages/productos/ProductUploadPage'; // <-- Importar la nueva página
 import Footer from './components/Footer';
 import LandingPage from './pages/LandingPage';
 import LoginPage from './pages/LoginPage';
@@ -27,8 +28,7 @@ import Sidebar from './components/Sidebar';
 function AppContent() {
   const [refreshProducts, setRefreshProducts] = useState(false);
   const [productToEdit, setProductToEdit] = useState(null);
-  // Nuevo estado para controlar si el sidebar está abierto o cerrado
-  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(true); // Nuevo estado para controlar si el sidebar está abierto o cerrado
   const { isAuthenticated } = useAuth();
   
   const handleProductCreated = () => {
@@ -45,7 +45,6 @@ function AppContent() {
     setRefreshProducts(prev => !prev);
   };
   
-  // Función para alternar el estado del sidebar
   const toggleSidebar = () => {
     setIsSidebarOpen(!isSidebarOpen);
   };
@@ -53,7 +52,7 @@ function AppContent() {
   if (!isAuthenticated) {
     return (
       <div className="App">
-        <Header />
+        <Header toggleSidebar={toggleSidebar} /> {/* Pasa la función aunque no se use en vista pública */}
         <main className="main-content-public">
           <Routes>
             <Route path="/" element={<LandingPage />} />
@@ -69,10 +68,8 @@ function AppContent() {
 
   return (
     <div className="App">
-      {/* Pasamos la función toggleSidebar como prop */}
       <Header toggleSidebar={toggleSidebar} />
       <div className={`main-layout ${!isSidebarOpen ? 'sidebar-collapsed' : ''}`}>
-        {/* Pasamos el estado isSidebarOpen como prop */}
         <Sidebar isSidebarOpen={isSidebarOpen} />
         <div className="main-and-footer-container">
           <main className="main-content-private">
@@ -96,13 +93,14 @@ function AppContent() {
                   </div>
                 </PrivateRoute>
               } />
+              <Route path="/productos/upload" element={<PrivateRoute requiredRole="admin_compania"><ProductUploadPage /></PrivateRoute>} /> {/* <-- Nueva ruta */}
               <Route path="/historial-stock" element={<PrivateRoute><StockHistoryPage /></PrivateRoute>} />
               <Route path="/ventas" element={<PrivateRoute><SalesPage /></PrivateRoute>} />
               <Route path="/gestion-usuarios" element={<PrivateRoute requiredRole="admin_compania"><UserManagementPage /></PrivateRoute>} />
               <Route path="/historial-ventas" element={<PrivateRoute><SalesHistoryPage /></PrivateRoute>} />
-              <Route path="/reporte-inventario" element={<PrivateRoute><InventoryReportPage /></PrivateRoute>} />
+              <Route path="/reporte-inventario" element={<PrivateRoute requiredRole="admin_compania"><InventoryReportPage /></PrivateRoute>} />
               <Route path="/clientes" element={<PrivateRoute><ClientesPage /></PrivateRoute>} />
-              <Route path="/dashboard" element={<PrivateRoute><DashboardPage /></PrivateRoute>} />
+              <Route path="/dashboard" element={<PrivateRoute requiredRole="admin_compania"><DashboardPage /></PrivateRoute>} />
               <Route path="/proveedores" element={<PrivateRoute><ProveedoresPage /></PrivateRoute>} />
               <Route path="*" element={<p>404: Página no encontrada</p>} />
             </Routes>

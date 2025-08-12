@@ -47,6 +47,13 @@ export const createProduct = async (productData) => {
   });
 };
 
+export const uploadProducts = async (productsDataArray) => {
+  return authenticatedFetch('productos/upload-csv', { // Nueva ruta en el backend
+    method: 'POST',
+    body: JSON.stringify(productsDataArray),
+  });
+};
+
 export const addStockEntry = async (data) => {
   return authenticatedFetch('stock/in', {
     method: 'POST',
