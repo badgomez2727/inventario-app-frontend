@@ -86,27 +86,29 @@ function ProductosList({ onEditClick }) {
               <td>{producto.unidadMedida}</td>
               <td>{producto.categoria}</td>
               <td>
+                <div style={{ display: 'flex', gap: '4px' }}>
                 <button
                   onClick={() => onEditClick(producto)}
                   className="action-button edit-button"
-                  title="Editar" /* Añadimos un tooltip para accesibilidad */
+                  title="Editar"
                 >
-                  <FaEdit /> {/* Ícono de Editar */}
+                  <FaEdit size={12} />
                 </button>
                 <button
                   onClick={() => handleDelete(producto.id)}
                   className="action-button delete-button"
-                  title="Eliminar" /* Añadimos un tooltip para accesibilidad */
+                  title="Eliminar"
                 >
-                  <FaTrashAlt /> {/* Ícono de Eliminar */}
+                  <FaTrashAlt size={12} />
                 </button>
                 <button
                   onClick={() => handleOpenStockModal(producto)}
                   className="action-button stock-button"
-                  title="Gestión de Stock" /* Añadimos un tooltip para accesibilidad */
+                  title="Gestión de Stock"
                 >
-                  <FaBoxes /> {/* Ícono de Gestión Stock */}
+                  <FaBoxes size={12} />
                 </button>
+                </div>
               </td>
             </tr>
           ))}

@@ -170,6 +170,10 @@ export const getGeneralStats = async () => {
   return authenticatedFetch('reports/general-stats');
 };
 
+export const getTopSellingProducts = async () => {
+  return authenticatedFetch('reports/top-selling-products');
+};
+
 // --- Función para obtener Recibo PDF (¡NUEVA Y CORREGIDA!) ---
 // No usa authenticatedFetch directamente porque el tipo de retorno es Blob, no JSON.
 export const getSaleReceiptPdf = async (saleId) => {
