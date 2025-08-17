@@ -1,8 +1,10 @@
 // venta_inventario_app/frontend/src/services/apiService.js
 
+// Usa process.env.REACT_APP_API_URL para la URL base en producción,
+// y 'http://localhost:3001' para desarrollo.
 const BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:3001';
 
-// Función genérica para hacer peticiones autenticadas que esperan JSON
+// Función genérica para hacer peticiones autenticadas
 const authenticatedFetch = async (endpoint, options = {}) => {
   const token = localStorage.getItem('token'); // Obtiene el token del localStorage
 
@@ -20,18 +22,63 @@ const authenticatedFetch = async (endpoint, options = {}) => {
     headers,
   });
 
+  // Manejo de error de autenticación (401)
   if (response.status === 401) {
     localStorage.removeItem('token');
     localStorage.removeItem('user');
-    window.location.href = '/login';
+    window.location.href = '/login'; // Redirige a la página de login
     throw new Error('Sesión expirada o no autorizada. Por favor, inicie sesión de nuevo.');
   }
 
-  if (!response.ok) {
-    const errorData = await response.json();
-    throw new Error(errorData.error || `Error en la petición a ${endpoint}`);
+  // Manejo de respuestas 207 (Multi-Status) del backend para carga masiva
+  if (response.status === 207) {
+    const data = await response.json();
+    // Lanzar un error pero con los datos de éxito/error parcial para que se manejen en el UI
+    const customError = new Error(JSON.stringify(data));
+    customError.isMultiStatus = true; // Flag para identificar este tipo de error
+    throw customError;
   }
 
+  // Si la respuesta no es OK y no es 207, intenta leer el mensaje de error del backend
+  if (!response.ok) {
+    let errorData = { error: `Error en la petición a ${endpoint}` };
+    try {
+      errorData = await response.json(); // Intenta parsear si la respuesta es JSON
+    } catch (e) {
+      // Si no es JSON, usa el estado HTTP y el texto crudo
+      errorData.error = `Error ${response.status}: ${response.statusText || 'Error desconocido'}.`;
+    }
+    throw new Error(errorData.error || 'Error desconocido en la respuesta del servidor.');
+  }
+
+  // Si todo es OK, devuelve el JSON
+  return response.json();
+};
+
+// --- Funciones de Autenticación ---
+export const login = async (credentials) => {
+  const response = await fetch(`${BASE_URL}/auth/login`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(credentials),
+  });
+  if (!response.ok) {
+    const errorData = await response.json();
+    throw new Error(errorData.error || 'Error en el inicio de sesión.');
+  }
+  return response.json();
+};
+
+export const registerCompanyAndAdmin = async (data) => {
+  const response = await fetch(`${BASE_URL}/auth/register-company-admin`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(data),
+  });
+  if (!response.ok) {
+    const errorData = await response.json();
+    throw new Error(errorData.error || 'Error al registrar compañía y admin.');
+  }
   return response.json();
 };
 
@@ -44,61 +91,6 @@ export const createProduct = async (productData) => {
   return authenticatedFetch('productos', {
     method: 'POST',
     body: JSON.stringify(productData),
-  });
-};
-
-export const uploadProducts = async (productsDataArray) => {
-  return authenticatedFetch('productos/upload-csv', { // Nueva ruta en el backend
-    method: 'POST',
-    body: JSON.stringify(productsDataArray),
-  });
-};
-
-export const addStockEntry = async (data) => {
-  return authenticatedFetch('stock/in', {
-    method: 'POST',
-    body: JSON.stringify(data),
-  });
-};
-
-export const addStockExit = async (data) => {
-  return authenticatedFetch('stock/out', {
-    method: 'POST',
-    body: JSON.stringify(data),
-  });
-};
-
-export const getStockMovementsHistory = async () => {
-  return authenticatedFetch('stock');
-};
-
-// --- Funciones de Usuarios ---
-export const getUsers = async () => {
-  return authenticatedFetch('users');
-};
-
-export const createUser = async (userData) => {
-  return authenticatedFetch('users', {
-    method: 'POST',
-    body: JSON.stringify(userData),
-  });
-};
-
-// --- Funciones de Ventas ---
-export const getSales = async () => {
-  // Esta es para obtener ventas individuales por ID, si tienes esa ruta
-  return authenticatedFetch('sales');
-};
-
-export const getSalesHistory = async () => {
-  // Esta es la función para el historial de ventas que necesitas en SalesHistoryPage
-  return authenticatedFetch('sales/history'); 
-};
-
-export const createSale = async (saleData) => {
-  return authenticatedFetch('sales', {
-    method: 'POST',
-    body: JSON.stringify(saleData),
   });
 };
 
@@ -115,13 +107,74 @@ export const deleteProduct = async (id) => {
   });
 };
 
-export const getInventoryValue = async () => {
-  return authenticatedFetch('reports/inventory-value');
+export const uploadProducts = async (productsDataArray) => {
+  // `authenticatedFetch` ahora maneja el 207 Multi-Status, así que podemos llamarlo directamente
+  try {
+    const data = await authenticatedFetch('productos/upload-csv', { 
+      method: 'POST',
+      body: JSON.stringify(productsDataArray),
+    });
+    return data; // Si la carga es 200 OK, devuelve los datos
+  } catch (error) {
+    // Si authenticatedFetch lanza un error con isMultiStatus, lo re-lanzamos para que se maneje
+    if (error.isMultiStatus) {
+      const data = JSON.parse(error.message); // Parseamos el mensaje de error de vuelta a JSON
+      return data; // Devolvemos los datos de éxito/error parcial
+    }
+    throw error; // Re-lanza cualquier otro error
+  }
 };
 
-export const getMonthlySales = async () => {
-  return authenticatedFetch('reports/monthly-sales');
+
+// --- Funciones de Stock ---
+export const addStockEntry = async (data) => {
+  return authenticatedFetch('stock/add', {
+    method: 'POST',
+    body: JSON.stringify(data),
+  });
 };
+
+export const addStockExit = async (data) => {
+  return authenticatedFetch('stock/remove', {
+    method: 'POST',
+    body: JSON.stringify(data),
+  });
+};
+
+// ¡CORREGIDO! Ahora llama a 'stock/history'
+export const getStockMovementsHistory = async () => {
+  return authenticatedFetch('stock/history'); 
+};
+
+// --- Funciones de Usuarios ---
+export const getUsers = async () => {
+  return authenticatedFetch('users');
+};
+
+export const createUser = async (userData) => {
+  return authenticatedFetch('users', {
+    method: 'POST',
+    body: JSON.stringify(userData),
+  });
+};
+
+// --- Funciones de Ventas ---
+export const getSales = async () => {
+  return authenticatedFetch('sales');
+};
+
+export const createSale = async (saleData) => {
+  return authenticatedFetch('sales', {
+    method: 'POST',
+    body: JSON.stringify(saleData),
+  });
+};
+
+// Función para obtener el historial de ventas
+export const getSalesHistory = async () => {
+  return authenticatedFetch('sales/history'); 
+};
+
 
 // --- Funciones de Clientes ---
 export const getClients = async () => {
@@ -173,16 +226,35 @@ export const deleteSupplier = async (supplierId) => {
   });
 };
 
+// --- Funciones de Reportes (ahora aceptan fechas opcionales) ---
 export const getGeneralStats = async () => {
   return authenticatedFetch('reports/general-stats');
 };
 
-export const getTopSellingProducts = async () => {
-  return authenticatedFetch('reports/top-selling-products');
+export const getInventoryValue = async () => {
+  return authenticatedFetch('reports/inventory-value');
 };
 
-// --- Función para obtener Recibo PDF (¡NUEVA Y CORREGIDA!) ---
-// No usa authenticatedFetch directamente porque el tipo de retorno es Blob, no JSON.
+// Modificada para aceptar startDate y endDate
+export const getMonthlySales = async (startDate = null, endDate = null) => {
+  let queryString = '';
+  if (startDate && endDate) {
+    queryString = `?startDate=${startDate}&endDate=${endDate}`;
+  }
+  return authenticatedFetch(`reports/monthly-sales${queryString}`);
+};
+
+// Modificada para aceptar startDate y endDate
+export const getTopSellingProducts = async (startDate = null, endDate = null) => {
+  let queryString = '';
+  if (startDate && endDate) {
+    queryString = `?startDate=${startDate}&endDate=${endDate}`;
+  }
+  return authenticatedFetch(`reports/top-selling-products${queryString}`);
+};
+
+
+// --- Función para obtener Recibo PDF ---
 export const getSaleReceiptPdf = async (saleId) => {
   const token = localStorage.getItem('token');
   const headers = {}; // Iniciamos headers vacíos
@@ -191,12 +263,11 @@ export const getSaleReceiptPdf = async (saleId) => {
     headers['Authorization'] = `Bearer ${token}`;
   }
 
-  const response = await fetch(`${BASE_URL}/api/receipts/${saleId}/pdf`, { // Usa /api/receipts/${saleId}/pdf
+  const response = await fetch(`${BASE_URL}/api/receipts/${saleId}/pdf`, { 
     headers,
   });
 
   if (!response.ok) {
-    // Manejo de error de autenticación (401)
     if (response.status === 401) {
       localStorage.removeItem('token');
       localStorage.removeItem('user');
@@ -204,19 +275,15 @@ export const getSaleReceiptPdf = async (saleId) => {
       throw new Error('Sesión expirada o no autorizada. Por favor, inicie sesión de nuevo.');
     }
 
-    // Intentar leer el error del cuerpo de la respuesta,
-    // asegurando que saleId esté disponible para el mensaje de error.
-    let errorMessage = `Error al generar el recibo para la venta ${saleId}.`; // saleId en scope aquí
+    let errorMessage = `Error al generar el recibo para la venta ${saleId}.`; 
     try {
       const errorData = await response.json();
       errorMessage = errorData.error || errorMessage;
     } catch (e) {
-      // Si no se puede parsear como JSON, usar el estado HTTP o el texto crudo
       errorMessage = `Error ${response.status}: ${response.statusText || 'Error desconocido'} al generar el recibo.`;
     }
     throw new Error(errorMessage);
   }
 
-  // Si la respuesta es OK, devuelve el Blob del PDF
   return response.blob();
 };

@@ -1,94 +1,74 @@
 // venta_inventario_app/frontend/src/pages/DashboardPage.jsx
 
-import React, { useEffect, useState, useRef } from 'react';
-import { getGeneralStats, getInventoryValue, getMonthlySales, getTopSellingProducts } from '../services/apiService'; // <-- Importar la nueva función
+import React, { useEffect, useState } from 'react';
+import { getGeneralStats, getInventoryValue, getMonthlySales, getTopSellingProducts } from '../services/apiService';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, Legend, CartesianGrid, ResponsiveContainer } from 'recharts';
 import '../styles/Dashboard.css';
-import { formatCOP } from '../utils/formatters'; // Asegúrate de tener este archivo y su contenido
+import { formatCOP } from '../utils/formatters';
 
 // Componente para las tarjetas de métricas
-const DashboardCard = ({ title, value }) => {
-  const valueRef = useRef(null); // Referencia al elemento del valor
-  const containerRef = useRef(null); // Referencia al contenedor del valor
-
-  // Efecto para ajustar dinámicamente el tamaño de la fuente
-  useEffect(() => {
-    const adjustFontSize = () => {
-      const valueElement = valueRef.current;
-      const containerElement = containerRef.current;
-
-      if (!valueElement || !containerElement) return;
-
-      const containerWidth = containerElement.offsetWidth;
-      let currentFontSize = parseFloat(window.getComputedStyle(valueElement).fontSize);
-      const originalFontSize = currentFontSize; // Guardamos el tamaño original
-
-      // Reducimos el tamaño de la fuente si el texto desborda el contenedor
-      while (valueElement.scrollWidth > containerWidth && currentFontSize > 12) { // Mínimo 12px
-        currentFontSize -= 0.5;
-        valueElement.style.fontSize = `${currentFontSize}px`;
-      }
-
-      // Si el texto se encogió, pero ahora hay espacio, lo agrandamos un poco (sin superar el original)
-      // Esto evita que quede demasiado pequeño si el valor cambia a uno corto
-      while (valueElement.scrollWidth < containerWidth && currentFontSize < originalFontSize) {
-        currentFontSize += 0.5;
-        if (currentFontSize > originalFontSize) {
-          currentFontSize = originalFontSize;
-        }
-        valueElement.style.fontSize = `${currentFontSize}px`;
-      }
-    };
-
-    // Ajustamos al montar y cada vez que el valor cambie
-    adjustFontSize();
-    // También ajustamos al redimensionar la ventana para adaptarnos a cambios de layout
-    window.addEventListener('resize', adjustFontSize);
-
-    // Limpieza al desmontar el componente
-    return () => {
-      window.removeEventListener('resize', adjustFontSize);
-    };
-  }, [value]); // El efecto se vuelve a ejecutar si el 'value' cambia
-
-  return (
-    <div className="dashboard-card" ref={containerRef}> {/* El contenedor de la tarjeta */}
-      <h4 className="card-title">{title}</h4>
-      <p className="card-value" ref={valueRef}>{value}</p> {/* El valor con la referencia */}
-    </div>
-  );
-};
+const DashboardCard = ({ title, value }) => (
+  <div className="dashboard-card">
+    <h4 className="card-title">{title}</h4>
+    <p className="card-value">{value}</p>
+  </div>
+);
 
 function DashboardPage() {
   const [generalStats, setGeneralStats] = useState(null);
   const [inventoryValue, setInventoryValue] = useState(null);
   const [monthlySalesData, setMonthlySalesData] = useState([]);
-  const [topSellingProducts, setTopSellingProducts] = useState([]); // <-- Nuevo estado
+  const [topSellingProducts, setTopSellingProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
+  // Estados para los filtros de fecha
+  const [startDate, setStartDate] = useState('');
+  const [endDate, setEndDate] = useState('');
+
+  // Función para obtener y actualizar todos los datos del dashboard
+  const fetchData = async (start, end) => { // Ahora recibe las fechas como argumentos
+    try {
+      setLoading(true);
+      setError(null);
+
+      const [stats, inventory, monthlySales, topProducts] = await Promise.all([
+        getGeneralStats(),
+        getInventoryValue(),
+        getMonthlySales(start, end), // Usamos las fechas pasadas como argumento
+        getTopSellingProducts(start, end), // Usamos las fechas pasadas como argumento
+      ]);
+      setGeneralStats(stats);
+      setInventoryValue(inventory);
+      setMonthlySalesData(monthlySales);
+      setTopSellingProducts(topProducts);
+    } catch (err) {
+      setError('No se pudieron cargar los datos del dashboard.');
+      console.error('Error al cargar datos del dashboard:', err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // useEffect para aplicar el debounce a la carga de datos
   useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const [stats, inventory, sales, topProducts] = await Promise.all([ // <-- Añadir la nueva promesa
-          getGeneralStats(),
-          getInventoryValue(),
-          getMonthlySales(),
-          getTopSellingProducts(), // <-- Llamada a la nueva función
-        ]);
-        setGeneralStats(stats);
-        setInventoryValue(inventory);
-        setMonthlySalesData(sales);
-        setTopSellingProducts(topProducts); // <-- Guardar los datos
-      } catch (err) {
-        setError('No se pudieron cargar los datos del dashboard.');
-        console.error('Error al cargar datos del dashboard:', err);
-      } finally {
-        setLoading(false);
-      }
+    // Limpiamos cualquier temporizador anterior para evitar llamadas múltiples
+    const handler = setTimeout(() => {
+      // Pasamos los estados actuales de startDate y endDate a fetchData
+      fetchData(startDate || null, endDate || null); 
+    }, 500); // Espera 500ms después de que el usuario deje de cambiar las fechas
+
+    // Función de limpieza: se ejecuta si el componente se desmonta o si las dependencias cambian antes de que el temporizador se dispare
+    return () => {
+      clearTimeout(handler);
     };
-    fetchData();
-  }, []);
+  }, [startDate, endDate]); // Las dependencias siguen siendo startDate y endDate
+
+  // Función para resetear los filtros de fecha
+  const handleResetDates = () => {
+    setStartDate('');
+    setEndDate('');
+  };
 
   if (loading) return <p className="loading-message">Cargando dashboard...</p>;
   if (error) return <p className="error-message">{error}</p>;
@@ -109,6 +89,29 @@ function DashboardPage() {
         </div>
       )}
 
+      {/* Sección de Filtros de Fecha */}
+      <div className="date-filters-section">
+        <h3>Filtrar Reportes por Fecha:</h3>
+        <div className="date-inputs">
+          <label htmlFor="startDate">Desde:</label>
+          <input
+            type="date"
+            id="startDate"
+            value={startDate}
+            onChange={(e) => setStartDate(e.target.value)}
+          />
+          <label htmlFor="endDate">Hasta:</label>
+          <input
+            type="date"
+            id="endDate"
+            value={endDate}
+            onChange={(e) => setEndDate(e.target.value)}
+          />
+          <button onClick={handleResetDates} className="reset-button">Limpiar Filtros</button>
+        </div>
+      </div>
+
+
       {monthlySalesData.length > 0 ? (
         <div className="dashboard-chart-section">
           <h3>Ventas Mensuales</h3>
@@ -125,25 +128,25 @@ function DashboardPage() {
         </div>
       ) : (
         <div className="no-data-message">
-          <p>No hay datos de ventas para mostrar en el dashboard.</p>
+          <p>No hay datos de ventas mensuales para mostrar en el período seleccionado.</p>
         </div>
       )}
 
-      {/* Nueva sección para los productos más vendidos */}
-      {topSellingProducts.length > 0 && (
+      {/* Sección de Productos Más Vendidos */}
+      {topSellingProducts.length > 0 ? (
         <div className="dashboard-chart-section" style={{ marginTop: '2rem' }}>
-          <h3>Productos Más Vendidos (por Cantidad)</h3>
-          <table className="top-products-table"> {/* Añadir una clase para posibles estilos específicos */}
+          <h3>Top 5 Productos Más Vendidos</h3>
+          <table>
             <thead>
               <tr>
                 <th>Producto</th>
                 <th>SKU</th>
-                <th>Cantidad Total Vendida</th>
+                <th>Cantidad Vendida</th>
               </tr>
             </thead>
             <tbody>
               {topSellingProducts.map((product, index) => (
-                <tr key={index}>
+                <tr key={product.productId || index}>
                   <td>{product.productName}</td>
                   <td>{product.productSku}</td>
                   <td>{product.totalQuantitySold}</td>
@@ -152,10 +155,9 @@ function DashboardPage() {
             </tbody>
           </table>
         </div>
-      )}
-      {topSellingProducts.length === 0 && !loading && (
+      ) : (
         <div className="no-data-message" style={{ marginTop: '2rem' }}>
-          <p>No hay datos de productos más vendidos para mostrar.</p>
+          <p>No hay datos de productos más vendidos para mostrar en el período seleccionado.</p>
         </div>
       )}
     </div>

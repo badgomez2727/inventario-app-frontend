@@ -1,9 +1,9 @@
 /* frontend/src/styles/Dashboard.css */
 
 .dashboard-container {
-  padding: 0; /* El padding ya lo da main-content-private en App.css, así que aquí lo ponemos en 0 */
-  max-width: 100%; /* Permitimos que ocupe todo el ancho del main-content-private */
-  margin: 0; /* Eliminar margen automático */
+  padding: 0;
+  max-width: 100%;
+  margin: 0;
 }
 
 .dashboard-container h2 {
@@ -16,9 +16,7 @@
 
 .dashboard-cards-grid {
   display: grid;
-  /* Aumentamos el ancho mínimo de las tarjetas para dar más espacio.
-     Las columnas se ajustarán automáticamente, pero cada tarjeta tendrá al menos 300px. */
-  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); /* Ajuste aquí */
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
   gap: 1.5rem;
   margin-bottom: 2rem;
 }
@@ -30,7 +28,6 @@
   padding: 1.5rem;
   text-align: center;
   transition: transform 0.3s ease, box-shadow 0.3s ease;
-  overflow: hidden; /* Asegura que el contenido dentro de la tarjeta no se desborde visualmente */
 }
 
 .dashboard-card:hover {
@@ -45,14 +42,9 @@
 }
 
 .card-value {
-  /* Ajustamos el tamaño de la fuente para que sea un poco más flexible */
-  font-size: clamp(1.8rem, 4vw, 2.2rem); /* Rango de tamaño de fuente */
+  font-size: 2.5rem;
   font-weight: bold;
   color: #007bff;
-  white-space: nowrap; /* Mantiene el texto en una sola línea */
-  overflow: hidden; /* Oculta el contenido que se desborda */
-  /* text-overflow: ellipsis; <-- Eliminado para evitar los puntos suspensivos */
-  min-width: 0; /* Necesario para que flexbox/grid permita el encogimiento del contenido */
 }
 
 .dashboard-chart-section {
@@ -78,4 +70,80 @@
 
 .error-message {
   color: #dc3545;
+}
+
+/* --- Nuevos estilos para filtros de fecha --- */
+.date-filters-section {
+  background-color: #fff;
+  border-radius: 8px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  padding: 1.5rem;
+  margin-bottom: 2rem;
+  text-align: center;
+}
+
+.date-filters-section h3 {
+  font-size: 1.3rem;
+  color: #333;
+  margin-bottom: 1rem;
+}
+
+.date-inputs {
+  display: flex;
+  flex-wrap: wrap; /* Permite que los elementos se envuelvan en pantallas pequeñas */
+  justify-content: center;
+  align-items: center;
+  gap: 1rem; /* Espacio entre los elementos del filtro */
+}
+
+.date-inputs label {
+  font-weight: bold;
+  color: #555;
+}
+
+.date-inputs input[type="date"] {
+  padding: 8px 12px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  font-size: 1rem;
+  flex: 1; /* Permite que los inputs ocupen el espacio disponible */
+  min-width: 150px; /* Ancho mínimo para los inputs de fecha */
+  max-width: 200px; /* Ancho máximo para los inputs de fecha */
+}
+
+.date-inputs .reset-button {
+  background-color: #6c757d; /* Gris para el botón de resetear */
+  color: white;
+  padding: 10px 15px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 1rem;
+  transition: background-color 0.3s ease;
+}
+
+.date-inputs .reset-button:hover {
+  background-color: #5a6268;
+}
+
+/* Estilos para la tabla de Top Selling Products */
+.dashboard-chart-section table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 1rem;
+}
+
+.dashboard-chart-section th,
+.dashboard-chart-section td {
+  border: 1px solid #ddd;
+  padding: 8px;
+  text-align: left;
+}
+
+.dashboard-chart-section th {
+  background-color: #f2f2f2;
+}
+
+.dashboard-chart-section tbody tr:nth-child(even) {
+  background-color: #f9f9f9;
 }
