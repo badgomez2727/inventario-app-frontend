@@ -5,13 +5,15 @@
   background-color: #34495e; /* Color de fondo del sidebar */
   color: white;
   padding-top: 2rem;
-  min-height: calc(100vh - 82px); /* Altura: 100vh - altura del header */
+  /* Altura: 100vh - altura del header. Usamos variables para adaptabilidad */
+  min-height: calc(100vh - var(--header-height-desktop)); 
   position: sticky;
   top: 0;
   box-shadow: 2px 0 5px rgba(0,0,0,0.1);
   flex-shrink: 0;
   transition: width 0.3s ease; /* Transición para el colapso */
   overflow-x: hidden; /* Oculta el contenido que se desborda al colapsar */
+  z-index: 10; /* Asegura que esté por encima de otros elementos si hay conflicto */
 }
 
 .sidebar-nav.collapsed {
@@ -55,8 +57,9 @@
 
 .sidebar-text {
   opacity: 1;
-  transition: opacity 0.3s ease, display 0.3s ease; /* Transición para el texto */
+  transition: opacity 0.3s ease, width 0.3s ease; /* Transición para el texto */
   white-space: nowrap; /* Evita que el texto se rompa en varias líneas */
+  flex-grow: 1; /* Permite que el texto ocupe el espacio disponible */
 }
 
 .sidebar-nav.collapsed .sidebar-text {
@@ -64,4 +67,38 @@
   width: 0; /* Colapsa el ancho del texto */
   overflow: hidden; /* Oculta el texto */
   display: none; /* Asegura que no ocupe espacio visual */
+}
+
+/* Media Query para pantallas muy pequeñas (ej. móviles) */
+@media (max-width: 768px) {
+  .sidebar-nav {
+    width: 70px; /* Por defecto colapsado en móviles */
+    padding-top: 1rem; /* Reduce el padding superior */
+    min-height: calc(100vh - var(--header-height-mobile)); /* Ajusta la altura para el header móvil */
+    /* Posición fija en la parte inferior o lateral para móviles, si no es sticky top */
+    /* Si queremos que el sidebar sea un overlay en móvil: */
+    /*
+    position: fixed;
+    height: 100vh;
+    top: 0;
+    left: -250px; // Oculto por defecto
+    // Cuando está abierto:
+    // left: 0;
+    */
+  }
+
+  .sidebar-nav.collapsed .sidebar-text {
+    display: none; /* Asegura que no haya texto visible */
+    opacity: 0;
+    width: 0;
+  }
+
+  .sidebar-link {
+    padding: 0.8rem; /* Menor padding para los enlaces */
+    justify-content: center; /* Centra el icono cuando el texto está oculto */
+  }
+
+  .sidebar-icon {
+    min-width: unset; /* Reinicia el ancho mínimo */
+  }
 }

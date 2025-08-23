@@ -1,0 +1,90 @@
+/* venta_inventario_app/frontend/src/styles/ProveedoresPage.css */
+
+.proveedores-list-container {
+  padding: 0;
+  max-width: 100%;
+  margin: 0;
+}
+
+.proveedores-list-container h2 {
+  font-size: 2rem;
+  color: #333;
+  margin-bottom: 1.5rem;
+  border-bottom: 2px solid #007bff;
+  padding-bottom: 0.5rem;
+}
+
+.supplier-form-section, .supplier-list-section {
+  background-color: #fff;
+  padding: 25px;
+  border-radius: 8px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  margin-bottom: 20px;
+  text-align: left;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+/* --- Adaptación de la tabla para móviles --- */
+@media (max-width: 768px) {
+  .proveedores-list-table {
+    border: 0;
+  }
+
+  .proveedores-list-table thead {
+    display: none;
+  }
+
+  .proveedores-list-table tbody {
+    display: block;
+    width: 100%;
+  }
+
+  .proveedores-list-table tr {
+    border-bottom: 3px solid #ddd;
+    display: block;
+    margin-bottom: 1rem;
+    background-color: #fff;
+    padding: 1rem;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+    border-radius: 8px;
+  }
+
+  .proveedores-list-table td {
+    border-bottom: 1px dotted #eee;
+    display: block;
+    text-align: right;
+    padding-left: 50%;
+    position: relative;
+    font-size: 0.9em;
+  }
+
+  .proveedores-list-table td::before {
+    content: attr(data-label);
+    position: absolute;
+    left: 10px;
+    width: calc(50% - 20px);
+    padding-right: 10px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    font-weight: bold;
+    text-align: left;
+    color: #555;
+  }
+
+  .proveedores-list-table td:last-child {
+    text-align: center;
+    padding-left: 10px;
+  }
+
+  .proveedores-list-table td .action-button {
+    width: auto;
+    padding: 8px 12px;
+    font-size: 0.9em;
+    margin: 5px;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+  }
+}

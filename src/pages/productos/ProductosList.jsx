@@ -1,15 +1,17 @@
 // venta_inventario_app/frontend/src/pages/productos/ProductosList.jsx
 
 import React, { useEffect, useState } from 'react';
-import { getProducts, deleteProduct } from '../../services/apiService'; // <-- ¡Importamos deleteProduct!
+import { getProducts, deleteProduct } from '../../services/apiService';
 import StockFormModal from '../../components/StockFormModal';
+import { formatCOP } from '../../utils/formatters';
 import { FaEdit, FaTrashAlt, FaBoxes } from 'react-icons/fa'; 
+import '../../styles/ProductosList.css'; // <-- Importamos el nuevo CSS
 
 function ProductosList({ onEditClick }) {
   const [productos, setProductos] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [selectedProduct, setSelectedProduct] = useState(null);
+  const [selectedProduct, setSelectedProduct] = useState(null); 
   const [refreshList, setRefreshList] = useState(false);
 
   useEffect(() => {
@@ -43,7 +45,7 @@ function ProductosList({ onEditClick }) {
     if (window.confirm('¿Estás seguro de que deseas eliminar este producto?')) {
       try {
         await deleteProduct(id);
-        setRefreshList(prev => !prev); // Refresca la lista después de eliminar
+        setRefreshList(prev => !prev);
       } catch (err) {
         console.error('Error al eliminar producto:', err);
         setError(err.message || 'Error al eliminar el producto.');
@@ -52,19 +54,19 @@ function ProductosList({ onEditClick }) {
   };
 
   if (loading) return <p>Cargando productos...</p>;
-  if (error) return <p className="error-message">Error: {error}</p>;
+  if (error) return <p className="error-message">{error}</p>;
   if (productos.length === 0) return <p>No hay productos registrados en esta compañía.</p>;
 
   return (
-    <div>
+    <div className="productos-list-container"> {/* Contenedor principal para la lista */}
       <h2>Lista de Productos</h2>
-      <table>
+      <table className="productos-list-table"> {/* Añadimos la clase para el nuevo CSS */}
         <thead>
           <tr>
             <th>ID</th>
             <th>Nombre</th>
             <th>SKU</th>
-            <th>Proveedor</th> {/* <-- ¡Nueva columna! */}
+            <th>Proveedor</th>
             <th>Stock Actual</th>
             <th>Precio Compra</th>
             <th>Precio Venta</th>
@@ -76,39 +78,37 @@ function ProductosList({ onEditClick }) {
         <tbody>
           {productos.map(producto => (
             <tr key={producto.id}>
-              <td>{producto.id}</td>
-              <td>{producto.nombre}</td>
-              <td>{producto.sku}</td>
-              <td>{producto.supplier?.nombre || 'N/A'}</td> {/* <-- Muestra el nombre del proveedor */}
-              <td>{producto.stockActual}</td>
-              <td>${parseFloat(producto.precioCompra).toFixed(2)}</td>
-              <td>${parseFloat(producto.precioVenta).toFixed(2)}</td>
-              <td>{producto.unidadMedida}</td>
-              <td>{producto.categoria}</td>
-              <td>
-                <div style={{ display: 'flex', gap: '4px' }}>
+              <td data-label="ID">{producto.id}</td>
+              <td data-label="Nombre">{producto.nombre}</td>
+              <td data-label="SKU">{producto.sku}</td>
+              <td data-label="Proveedor">{producto.supplier?.nombre || 'N/A'}</td>
+              <td data-label="Stock Actual">{producto.stockActual}</td>
+              <td data-label="Precio Compra">{formatCOP(producto.precioCompra)}</td>
+              <td data-label="Precio Venta">{formatCOP(producto.precioVenta)}</td>
+              <td data-label="Unidad">{producto.unidadMedida}</td>
+              <td data-label="Categoría">{producto.categoria}</td>
+              <td data-label="Acciones">
                 <button
                   onClick={() => onEditClick(producto)}
                   className="action-button edit-button"
                   title="Editar"
                 >
-                  <FaEdit size={12} />
+                  <FaEdit />
                 </button>
                 <button
                   onClick={() => handleDelete(producto.id)}
                   className="action-button delete-button"
                   title="Eliminar"
                 >
-                  <FaTrashAlt size={12} />
+                  <FaTrashAlt />
                 </button>
                 <button
                   onClick={() => handleOpenStockModal(producto)}
                   className="action-button stock-button"
                   title="Gestión de Stock"
                 >
-                  <FaBoxes size={12} />
+                  <FaBoxes />
                 </button>
-                </div>
               </td>
             </tr>
           ))}

@@ -13,7 +13,12 @@
   transition: margin-left 0.3s ease;
 }
 
-/* No necesitas .main-layout.sidebar-collapsed aquí, ya que el sidebar maneja su propio ancho y flex-grow del main-content-private lo empuja */
+/* En pantallas pequeñas, el sidebar estará colapsado y no empujará el contenido principal con margen */
+/* El contenido principal debe ocupar todo el ancho disponible */
+.main-layout.sidebar-collapsed .main-and-footer-container {
+  margin-left: 0; /* Asegura que no haya margen del sidebar colapsado empujando el contenido */
+}
+
 
 .main-and-footer-container {
   display: flex;
@@ -34,4 +39,14 @@
   padding: 0; /* La LandingPage maneja su propio padding */
 }
 
-/* Elimina cualquier estilo de .App-header o main que estuviera aquí y ahora está en otros archivos */
+/* Media Query para pantallas muy pequeñas (ej. móviles) */
+@media (max-width: 768px) {
+  .main-content-private {
+    padding: 1rem; /* Menor padding en móviles para maximizar el espacio */
+  }
+
+  /* Asegurarse de que el main-and-footer-container ocupe todo el ancho cuando el sidebar está colapsado */
+  .main-layout.sidebar-collapsed .main-and-footer-container {
+    width: 100%;
+  }
+}

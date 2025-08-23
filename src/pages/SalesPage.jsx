@@ -1,28 +1,28 @@
 // venta_inventario_app/frontend/src/pages/SalesPage.jsx
 
 import React, { useState, useEffect } from 'react';
-import { getProducts, createSale, getClients, getSaleReceiptPdf } from '../services/apiService'; // Importamos getSaleReceiptPdf
+import { getProducts, createSale, getClients, getSaleReceiptPdf } from '../services/apiService';
 import { formatCOP } from '../utils/formatters';
-import { FaDownload } from 'react-icons/fa'; // Importamos el ícono de descarga
+import { FaDownload } from 'react-icons/fa';
+import '../styles/SalesPage.css'; // <-- Importamos el nuevo CSS
 
 function SalesPage() {
   const [products, setProducts] = useState([]);
   const [cart, setCart] = useState([]);
-  const [clients, setClients] = useState([]); // Nuevo estado para la lista de clientes
-  const [selectedClient, setSelectedClient] = useState(''); // Nuevo estado para el cliente seleccionado
+  const [clients, setClients] = useState([]);
+  const [selectedClient, setSelectedClient] = useState('');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [message, setMessage] = useState('');
-  const [lastSaleId, setLastSaleId] = useState(null); // Nuevo estado para guardar el ID de la última venta
+  const [lastSaleId, setLastSaleId] = useState(null);
 
-  // Efecto para cargar productos y clientes
   useEffect(() => {
     const fetchData = async () => {
       try {
         const [productsData, clientsData] = await Promise.all([
           getProducts(),
-          getClients(), // <-- Nueva llamada para obtener clientes
+          getClients(),
         ]);
         setProducts(productsData);
         setClients(clientsData);
@@ -42,7 +42,6 @@ function SalesPage() {
   );
 
   const addToCart = (product) => {
-    // Asegurarse de que el precio de venta sea un número
     const productPrecioVenta = Number(product.precioVenta); 
 
     const existingItem = cart.find(item => item.id === product.id);
@@ -53,7 +52,6 @@ function SalesPage() {
             ? { 
                 ...item, 
                 cantidad: item.cantidad + 1, 
-                // Asegurar que el subtotal actual también sea un número antes de sumar
                 subtotal: Number(item.subtotal) + productPrecioVenta 
               }
             : item
@@ -67,7 +65,7 @@ function SalesPage() {
         {
           ...product,
           cantidad: 1,
-          subtotal: productPrecioVenta // El primer subtotal es simplemente el precio
+          subtotal: productPrecioVenta
         }
       ]);
     }
@@ -80,7 +78,6 @@ function SalesPage() {
   const updateQuantity = (productId, newCantidad) => {
     setCart(cart.map(item => {
       if (item.id === productId) {
-        // Asegurarse de que newCantidad sea un número y el precio de venta también
         const updatedCantidad = Number(newCantidad);
         const itemPrecioVenta = Number(item.precioVenta);
 
@@ -91,7 +88,7 @@ function SalesPage() {
         return {
           ...item,
           cantidad: updatedCantidad,
-          subtotal: updatedCantidad * itemPrecioVenta // Multiplicación con números
+          subtotal: updatedCantidad * itemPrecioVenta
         };
       }
       return item;
@@ -99,7 +96,6 @@ function SalesPage() {
   };
 
   const calculateTotal = () => {
-    // Asegurarse de que el subtotal de cada item sea un número al reducir
     const total = cart.reduce((sum, item) => sum + Number(item.subtotal), 0);
     return total;
   };
@@ -114,19 +110,18 @@ function SalesPage() {
         productId: item.id,
         cantidad: item.cantidad,
       })),
-      clientId: selectedClient ? Number(selectedClient) : null, // Asegurarse de que clientId sea un número o null
+      clientId: selectedClient ? Number(selectedClient) : null,
       total: calculateTotal(),
     };
 
     try {
-      setLastSaleId(null); // Limpiamos el ID de la venta anterior
-      const response = await createSale(saleData); // Guardamos la respuesta del backend
+      setLastSaleId(null);
+      const response = await createSale(saleData);
       setMessage('Venta registrada con éxito.');
       setCart([]);
       setSearchTerm('');
-      setSelectedClient(''); // Limpiamos el cliente seleccionado
+      setSelectedClient('');
       
-      // Si el backend devuelve el ID de la venta, lo guardamos para la descarga del PDF
       if (response && response.sale && response.sale.id) {
         setLastSaleId(response.sale.id);
         setMessage(prev => prev + ' Puedes descargar el recibo ahora.');
@@ -137,20 +132,19 @@ function SalesPage() {
     } catch (err) {
       console.error('Error al crear la venta:', err);
       setMessage(err.message || 'Error al registrar la venta.');
-      setLastSaleId(null); // Asegurarse de limpiar el ID si falla
+      setLastSaleId(null);
     }
   };
 
-  // Nueva función para descargar el recibo (similar a SalesHistoryPage)
   const handleDownloadReceipt = async (saleId) => {
-    setMessage(''); // Limpiar mensajes anteriores
+    setMessage('');
     try {
       const pdfBlob = await getSaleReceiptPdf(saleId);
       const url = window.URL.createObjectURL(pdfBlob);
       const a = document.createElement('a');
       a.href = url;
       a.download = `recibo_venta_${saleId}.pdf`;
-      a.target = '_blank'; // Abrir en una nueva pestaña
+      a.target = '_blank';
       document.body.appendChild(a);
       a.click();
       a.remove();
@@ -167,40 +161,31 @@ function SalesPage() {
 
   return (
     <div className="sales-page">
-      <h2 style={{ textAlign: 'center' }}>Punto de Venta (POS)</h2>
-      <div style={{ display: 'flex', gap: '20px' }}>
+      <h2>Punto de Venta (POS)</h2>
+      <div className="sales-content-wrapper"> {/* Usamos la clase CSS aquí */}
         {/* Panel de Productos */}
-        <div style={{ flex: 1, borderRight: '1px solid #ccc', paddingRight: '20px' }}>
+        <div className="products-panel"> {/* Usamos la clase CSS aquí */}
           <h3>Catálogo de Productos</h3>
           <input
             type="text"
             placeholder="Buscar producto por nombre o SKU..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            style={{ width: '100%', padding: '8px', marginBottom: '15px' }}
+            className="product-search-input" /* Usamos la clase CSS aquí */
           />
-          <ul style={{ listStyleType: 'none', padding: 0, maxHeight: '600px', overflowY: 'auto' }}>
+          <ul className="product-list"> {/* Usamos la clase CSS aquí */}
             {filteredProducts.map(product => (
               <li
                 key={product.id}
                 onClick={() => addToCart(product)}
-                style={{
-                  padding: '10px',
-                  border: '1px solid #eee',
-                  marginBottom: '5px',
-                  borderRadius: '5px',
-                  cursor: 'pointer',
-                  backgroundColor: '#f9f9f9',
-                  display: 'flex',
-                  justifyContent: 'space-between',
-                }}
+                className="product-item" /* Usamos la clase CSS aquí */
               >
                 <div>
                   <strong>{product.nombre}</strong> <br />
                   <small>SKU: {product.sku}</small>
                 </div>
                 <div>
-                  <span style={{ color: 'green', fontWeight: 'bold' }}>{formatCOP(product.precioVenta)}</span>
+                  <span className="product-price">{formatCOP(product.precioVenta)}</span>
                   <br/>
                   <small>Stock: {product.stockActual}</small>
                 </div>
@@ -210,14 +195,14 @@ function SalesPage() {
         </div>
 
         {/* Panel del Carrito */}
-        <div style={{ flex: 1 }}>
+        <div className="cart-panel"> {/* Usamos la clase CSS aquí */}
           <h3>Carrito de Venta</h3>
-          <div style={{ marginBottom: '15px' }}>
-            <label style={{ display: 'block', marginBottom: '5px' }}>Cliente (Opcional):</label>
+          <div className="client-select-group"> {/* Usamos la clase CSS aquí */}
+            <label>Cliente (Opcional):</label>
             <select
               value={selectedClient}
               onChange={(e) => setSelectedClient(e.target.value)}
-              style={{ width: '100%', padding: '8px', borderRadius: '5px' }}
+              className="client-select" /* Usamos la clase CSS aquí */
             >
               <option value="">Seleccione un cliente...</option>
               {clients.map(client => (
@@ -227,65 +212,49 @@ function SalesPage() {
               ))}
             </select>
           </div>
-          <ul style={{ listStyleType: 'none', padding: 0 }}>
+          <ul className="cart-list"> {/* Usamos la clase CSS aquí */}
             {cart.length === 0 ? (
               <p>El carrito está vacío.</p>
             ) : (
               cart.map(item => (
-                <li key={item.id} style={{ borderBottom: '1px solid #eee', padding: '10px 0' }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <div>
-                      <strong>{item.nombre}</strong> <br />
-                      <small>Cant:
-                          <input
-                           type="number"
-                           min="1"
-                           max={item.stockActual}
-                           value={item.cantidad}
-                           // Asegurar que el valor del input sea un número entero
-                           onChange={(e) => updateQuantity(item.id, parseInt(e.target.value) || 1)} 
-                           style={{ width: '50px', marginLeft: '5px' }}
-                         />
-                      </small>
-                    </div>
-                    <div>
-                      <span>{formatCOP(item.subtotal)}</span>
-                      <button onClick={() => removeFromCart(item.id)} style={{ marginLeft: '10px', color: 'red' }}>&times;</button>
-                    </div>
+                <li key={item.id} className="cart-item"> {/* Usamos la clase CSS aquí */}
+                  <div className="cart-item-info"> {/* Clase para agrupar info */}
+                    <strong>{item.nombre}</strong> <br />
+                    <small>Cant:
+                        <input
+                         type="number"
+                         min="1"
+                         max={item.stockActual}
+                         value={item.cantidad}
+                         onChange={(e) => updateQuantity(item.id, parseInt(e.target.value) || 1)}
+                         className="cart-item-quantity-input" /* Usamos la clase CSS aquí */
+                       />
+                    </small>
+                  </div>
+                  <div>
+                    <span>{formatCOP(item.subtotal)}</span>
+                    <button onClick={() => removeFromCart(item.id)} className="remove-from-cart-button">&times;</button>
                   </div>
                 </li>
               ))
             )}
           </ul>
-          <div style={{ marginTop: '20px', borderTop: '2px solid black', paddingTop: '10px' }}>
+          <div className="cart-total-section"> {/* Usamos la clase CSS aquí */}
             <strong>Total: {formatCOP(calculateTotal())}</strong>
           </div>
           <button
             onClick={handleCreateSale}
             disabled={cart.length === 0}
-            style={{ width: '100%', padding: '15px', backgroundColor: '#28a745', color: 'white', fontSize: '1.2rem', border: 'none', cursor: 'pointer', marginTop: '15px' }}
+            className="finish-sale-button" /* Usamos la clase CSS aquí */
           >
             Finalizar Venta
           </button>
-          {message && <p className={message.includes('Error') ? 'error-message' : 'success-message'}>{message}</p>}
+          {message && <p className={message.includes('Error') ? 'sales-message error-message' : 'sales-message success-message'}>{message}</p>}
           
           {lastSaleId && (
             <button
               onClick={() => handleDownloadReceipt(lastSaleId)}
-              style={{
-                width: '100%',
-                padding: '15px',
-                backgroundColor: '#007bff',
-                color: 'white',
-                fontSize: '1.2rem',
-                border: 'none',
-                cursor: 'pointer',
-                marginTop: '10px',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                gap: '10px'
-              }}
+              className="download-receipt-button" /* Usamos la clase CSS aquí */
               title="Descargar Recibo de la Venta Actual"
             >
               <FaDownload /> Descargar Recibo

@@ -1,11 +1,11 @@
 // venta_inventario_app/frontend/src/App.js
 
-import React, { useState } from 'react'; // <-- ¡CORRECCIÓN AQUÍ!
+import React, { useState, useEffect } from 'react'; // <-- Añadimos useEffect aquí
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import './App.css';
 import ProductosList from './pages/productos/ProductosList';
 import ProductoForm from './pages/productos/ProductoForm';
-import ProductUploadPage from './pages/productos/ProductUploadPage'; // <-- Importar la nueva página
+import ProductUploadPage from './pages/productos/ProductUploadPage';
 import Footer from './components/Footer';
 import LandingPage from './pages/LandingPage';
 import LoginPage from './pages/LoginPage';
@@ -16,7 +16,7 @@ import UserManagementPage from './pages/UserManagementPage';
 import SalesPage from './pages/SalesPage';
 import SalesHistoryPage from './pages/SalesHistoryPage';
 import PrivateRoute from './components/PrivateRoute';
-import InventoryReportPage from './pages/InventoryReportPage';
+import InventoryReportPage from './pages/InventoryReportPage'; // Asegúrate de que esta importación sea correcta
 import DashboardPage from './pages/DashboardPage';
 import ClientesPage from './pages/ClientesPage';
 import ProveedoresPage from './pages/ProveedoresPage';
@@ -28,9 +28,26 @@ import Sidebar from './components/Sidebar';
 function AppContent() {
   const [refreshProducts, setRefreshProducts] = useState(false);
   const [productToEdit, setProductToEdit] = useState(null);
-  const [isSidebarOpen, setIsSidebarOpen] = useState(true); // Nuevo estado para controlar si el sidebar está abierto o cerrado
+  const [isSidebarOpen, setIsSidebarOpen] = useState(true); // Estado inicial del sidebar
   const { isAuthenticated } = useAuth();
   
+  // Efecto para detectar el tamaño de pantalla y colapsar el sidebar en móviles
+  useEffect(() => {
+    const handleResize = () => {
+      // Define un breakpoint para considerar "móvil" (ej. 768px)
+      if (window.innerWidth < 768) {
+        setIsSidebarOpen(false); // Colapsa el sidebar en móviles
+      } else {
+        setIsSidebarOpen(true); // Mantiene abierto en pantallas grandes
+      }
+    };
+
+    handleResize(); // Establece el estado inicial al cargar la aplicación
+    window.addEventListener('resize', handleResize); // Añade el listener para cambios de tamaño
+
+    return () => window.removeEventListener('resize', handleResize); // Limpia el listener
+  }, []); // Se ejecuta solo una vez al montar el componente
+
   const handleProductCreated = () => {
     setRefreshProducts(prev => !prev);
   };
@@ -52,7 +69,7 @@ function AppContent() {
   if (!isAuthenticated) {
     return (
       <div className="App">
-        <Header toggleSidebar={toggleSidebar} /> {/* Pasa la función aunque no se use en vista pública */}
+        <Header toggleSidebar={toggleSidebar} />
         <main className="main-content-public">
           <Routes>
             <Route path="/" element={<LandingPage />} />
@@ -93,7 +110,7 @@ function AppContent() {
                   </div>
                 </PrivateRoute>
               } />
-              <Route path="/productos/upload" element={<PrivateRoute requiredRole="admin_compania"><ProductUploadPage /></PrivateRoute>} /> {/* <-- Nueva ruta */}
+              <Route path="/productos/upload" element={<PrivateRoute requiredRole="admin_compania"><ProductUploadPage /></PrivateRoute>} />
               <Route path="/historial-stock" element={<PrivateRoute><StockHistoryPage /></PrivateRoute>} />
               <Route path="/ventas" element={<PrivateRoute><SalesPage /></PrivateRoute>} />
               <Route path="/gestion-usuarios" element={<PrivateRoute requiredRole="admin_compania"><UserManagementPage /></PrivateRoute>} />

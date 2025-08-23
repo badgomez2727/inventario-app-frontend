@@ -6,7 +6,8 @@
  * @returns {string} The formatted currency string.
  */
 export const formatCOP = (number) => {
-  if (typeof number !== 'number') {
+  number = Number(number);
+  if (isNaN(number)) {
     return 'N/A';
   }
   return new Intl.NumberFormat('es-CO', {
@@ -16,3 +17,5 @@ export const formatCOP = (number) => {
     maximumFractionDigits: 0,
   }).format(number);
 };
+
+

@@ -1,161 +1,173 @@
-// frontend/src/pages/ProveedoresPage.jsx
+// venta_inventario_app/frontend/src/pages/ProveedoresPage.jsx
 
 import React, { useState, useEffect } from 'react';
-import { getSuppliers, createSupplier, updateSupplier, deleteSupplier } from '../services/apiService';
-import '../App.css';
+import { getSuppliers, createSupplier, updateSupplier, deleteSupplier } from '../services/apiService'; // Ruta corregida
+import { FaEdit, FaTrashAlt } from 'react-icons/fa';
+import '../styles/ProveedoresPage.css'; // Importamos el nuevo CSS
 
 const ProveedoresPage = () => {
-  const [suppliers, setSuppliers] = useState([]);
-  const [form, setForm] = useState({
+  const [proveedores, setProveedores] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [message, setMessage] = useState('');
+  const [editingSupplier, setEditingSupplier] = useState(null);
+  const [formData, setFormData] = useState({
     nombre: '',
     contacto: '',
     telefono: '',
-    direccion: '',
+    direccion: ''
   });
-  const [editingSupplierId, setEditingSupplierId] = useState(null);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(null);
-  const [success, setSuccess] = useState(null);
-
-  const fetchSuppliers = async () => {
-    setLoading(true);
-    setError(null);
-    try {
-      const data = await getSuppliers();
-      setSuppliers(data);
-    } catch (err) {
-      console.error(err);
-      setError('Error al cargar la lista de proveedores.');
-    } finally {
-      setLoading(false);
-    }
-  };
 
   useEffect(() => {
     fetchSuppliers();
   }, []);
 
-  const handleChange = (e) => {
-    setForm({ ...form, [e.target.name]: e.target.value });
-  };
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setLoading(true);
-    setError(null);
-    setSuccess(null);
-
+  const fetchSuppliers = async () => {
     try {
-      if (editingSupplierId) {
-        await updateSupplier(editingSupplierId, form);
-        setSuccess('Proveedor actualizado con éxito.');
-      } else {
-        await createSupplier(form);
-        setSuccess('Proveedor creado con éxito.');
-      }
-      resetForm();
-      fetchSuppliers();
+      setLoading(true);
+      setError(null);
+      const data = await getSuppliers();
+      setProveedores(data);
     } catch (err) {
-      setError(err.message || 'Error al guardar el proveedor.');
+      console.error('Error al cargar proveedores:', err);
+      setError(err.message || 'No se pudieron cargar los proveedores.');
     } finally {
       setLoading(false);
     }
   };
 
-  const resetForm = () => {
-    setForm({ nombre: '', contacto: '', telefono: '', direccion: '' });
-    setEditingSupplierId(null);
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({ ...prev, [name]: value }));
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setMessage('');
+    setError('');
+
+    try {
+      if (editingSupplier) {
+        await updateSupplier(editingSupplier.id, formData);
+        setMessage('Proveedor actualizado con éxito.');
+      } else {
+        await createSupplier(formData);
+        setMessage('Proveedor creado con éxito.');
+      }
+      setFormData({ nombre: '', contacto: '', telefono: '', direccion: '' });
+      setEditingSupplier(null);
+      fetchSuppliers();
+    } catch (err) {
+      console.error('Error al guardar proveedor:', err);
+      setError(err.message || 'Error al guardar el proveedor.');
+    }
   };
 
   const handleEdit = (supplier) => {
-    setForm(supplier);
-    setEditingSupplierId(supplier.id);
+    setEditingSupplier(supplier);
+    setFormData({
+      nombre: supplier.nombre,
+      contacto: supplier.contacto || '',
+      telefono: supplier.telefono || '',
+      direccion: supplier.direccion || ''
+    });
+    setMessage('');
+    setError('');
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
-  const handleDelete = async (id) => {
+  const handleDelete = async (supplierId) => {
     if (window.confirm('¿Estás seguro de que deseas eliminar este proveedor?')) {
+      setMessage('');
+      setError('');
       try {
-        await deleteSupplier(id);
-        setSuccess('Proveedor eliminado con éxito.');
+        await deleteSupplier(supplierId);
+        setMessage('Proveedor eliminado con éxito.');
         fetchSuppliers();
       } catch (err) {
-        setError('Error al eliminar el proveedor.');
+        console.error('Error al eliminar proveedor:', err);
+        setError(err.message || 'Error al eliminar el proveedor.');
       }
     }
   };
 
+  const handleCancelEdit = () => {
+    setEditingSupplier(null);
+    setFormData({ nombre: '', contacto: '', telefono: '', direccion: '' });
+    setMessage('');
+    setError('');
+  };
+
+  if (loading) return <p>Cargando proveedores...</p>;
+  if (error) return <p className="error-message">Error: {error}</p>;
+
   return (
-    <>
-      <div className="form-container">
-        <h2>{editingSupplierId ? 'Editar Proveedor' : 'Crear Nuevo Proveedor'}</h2>
+    <div className="proveedores-list-container">
+      <h2>Gestión de Proveedores</h2>
+
+      <div className="supplier-form-section"> {/* Usamos la clase CSS aquí */}
+        <h3>{editingSupplier ? 'Editar Proveedor' : 'Crear Nuevo Proveedor'}</h3>
         <form onSubmit={handleSubmit}>
-          <div className="form-grid">
-            <div className="form-group">
-              <label htmlFor="nombre">Nombre</label>
-              <input
-                id="nombre"
-                type="text"
-                name="nombre"
-                value={form.nombre}
-                onChange={handleChange}
-                required
-              />
-            </div>
-            <div className="form-group">
-              <label htmlFor="contacto">Nombre de Contacto</label>
-              <input
-                id="contacto"
-                type="text"
-                name="contacto"
-                value={form.contacto}
-                onChange={handleChange}
-              />
-            </div>
+          <div>
+            <label htmlFor="nombre">Nombre:</label>
+            <input
+              type="text"
+              id="nombre"
+              name="nombre"
+              value={formData.nombre}
+              onChange={handleChange}
+              required
+            />
           </div>
-          <div className="form-grid">
-            <div className="form-group">
-              <label htmlFor="telefono">Teléfono</label>
-              <input
-                id="telefono"
-                type="text"
-                name="telefono"
-                value={form.telefono}
-                onChange={handleChange}
-              />
-            </div>
-            <div className="form-group">
-              <label htmlFor="direccion">Dirección</label>
-              <input
-                id="direccion"
-                type="text"
-                name="direccion"
-                value={form.direccion}
-                onChange={handleChange}
-              />
-            </div>
+          <div>
+            <label htmlFor="contacto">Contacto:</label>
+            <input
+              type="text"
+              id="contacto"
+              name="contacto"
+              value={formData.contacto}
+              onChange={handleChange}
+            />
           </div>
-          {error && <p className="error-message">{error}</p>}
-          {success && <p className="success-message">{success}</p>}
-          <div className="nav-buttons">
-            <button type="submit" className="login-button" disabled={loading}>
-              {loading ? 'Cargando...' : editingSupplierId ? 'Actualizar Proveedor' : 'Crear Proveedor'}
+          <div>
+            <label htmlFor="telefono">Teléfono:</label>
+            <input
+              type="text"
+              id="telefono"
+              name="telefono"
+              value={formData.telefono}
+              onChange={handleChange}
+            />
+          </div>
+          <div>
+            <label htmlFor="direccion">Dirección:</label>
+            <textarea
+              id="direccion"
+              name="direccion"
+              value={formData.direccion}
+              onChange={handleChange}
+            ></textarea>
+          </div>
+          <button type="submit">{editingSupplier ? 'Actualizar Proveedor' : 'Crear Proveedor'}</button>
+          {editingSupplier && (
+            <button type="button" onClick={handleCancelEdit} className="action-button delete-button" style={{marginLeft: '10px'}}>
+              Cancelar
             </button>
-            {editingSupplierId && (
-              <button type="button" className="login-button" onClick={resetForm} style={{ backgroundColor: '#ccc' }}>
-                Cancelar
-              </button>
-            )}
-          </div>
+          )}
         </form>
+        {message && <p className="success-message">{message}</p>}
+        {error && <p className="error-message">{error}</p>}
       </div>
 
-      <div className="list-container">
-        <h2>Lista de Proveedores</h2>
-        {suppliers.length > 0 ? (
-          <table>
+      <div className="supplier-list-section"> {/* Usamos la clase CSS aquí */}
+        <h3>Lista de Proveedores</h3>
+        {proveedores.length === 0 ? (
+          <p>No hay proveedores registrados.</p>
+        ) : (
+          <table className="proveedores-list-table"> {/* Añadimos la clase para el nuevo CSS */}
             <thead>
               <tr>
+                <th>ID</th>
                 <th>Nombre</th>
                 <th>Contacto</th>
                 <th>Teléfono</th>
@@ -164,25 +176,28 @@ const ProveedoresPage = () => {
               </tr>
             </thead>
             <tbody>
-              {suppliers.map((supplier) => (
+              {proveedores.map(supplier => (
                 <tr key={supplier.id}>
-                  <td>{supplier.nombre}</td>
-                  <td>{supplier.contacto}</td>
-                  <td>{supplier.telefono}</td>
-                  <td>{supplier.direccion}</td>
-                  <td>
-                    <button onClick={() => handleEdit(supplier)} className="login-button" style={{ marginRight: '10px' }}>Editar</button>
-                    <button onClick={() => handleDelete(supplier.id)} className="login-button" style={{ backgroundColor: '#e53e3e' }}>Eliminar</button>
+                  <td data-label="ID">{supplier.id}</td>
+                  <td data-label="Nombre">{supplier.nombre}</td>
+                  <td data-label="Contacto">{supplier.contacto || 'N/A'}</td>
+                  <td data-label="Teléfono">{supplier.telefono || 'N/A'}</td>
+                  <td data-label="Dirección">{supplier.direccion || 'N/A'}</td>
+                  <td data-label="Acciones">
+                    <button onClick={() => handleEdit(supplier)} className="action-button edit-button" title="Editar">
+                      <FaEdit />
+                    </button>
+                    <button onClick={() => handleDelete(supplier.id)} className="action-button delete-button" title="Eliminar">
+                      <FaTrashAlt />
+                    </button>
                   </td>
                 </tr>
               ))}
             </tbody>
           </table>
-        ) : (
-          <p>No hay proveedores registrados.</p>
         )}
       </div>
-    </>
+    </div>
   );
 };
 

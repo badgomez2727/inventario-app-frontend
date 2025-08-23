@@ -1,22 +1,23 @@
 // venta_inventario_app/frontend/src/pages/SalesHistoryPage.jsx
 
 import React, { useEffect, useState } from 'react';
-import { getSalesHistory, getSaleReceiptPdf } from '../services/apiService'; // Importación correcta
-import { formatCOP } from '../utils/formatters'; // Asumiendo que tienes formatCOP
-import { FaDownload } from 'react-icons/fa'; // Importamos el ícono de descarga
+import { getSalesHistory, getSaleReceiptPdf } from '../services/apiService';
+import { formatCOP } from '../utils/formatters';
+import { FaDownload } from 'react-icons/fa';
+import '../styles/SalesHistoryPage.css'; // <-- Importamos el nuevo CSS
 
 function SalesHistoryPage() {
   const [sales, setSales] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [message, setMessage] = useState(''); // Para mensajes al usuario
+  const [message, setMessage] = useState('');
 
   useEffect(() => {
     const fetchSales = async () => {
       try {
         setLoading(true);
         setError(null);
-        const data = await getSalesHistory(); // Llamada a la función correcta
+        const data = await getSalesHistory();
         setSales(data);
       } catch (err) {
         console.error('Error fetching sales history:', err);
@@ -29,25 +30,16 @@ function SalesHistoryPage() {
   }, []);
 
   const handleDownloadReceipt = async (saleId) => {
-    setMessage(''); // Limpiar mensajes anteriores
+    setMessage('');
     try {
-      // 1. Llamar a la API para obtener el Blob del PDF
       const pdfBlob = await getSaleReceiptPdf(saleId);
-
-      // 2. Crear una URL para el Blob
       const url = window.URL.createObjectURL(pdfBlob);
-
-      // 3. Crear un elemento 'a' para la descarga
       const a = document.createElement('a');
       a.href = url;
-      a.download = `recibo_venta_${saleId}.pdf`; // Nombre del archivo
-      a.target = '_blank'; // Abrir en una nueva pestaña (opcional, pero útil para PDF)
-
-      // 4. Simular un clic para iniciar la descarga
+      a.download = `recibo_venta_${saleId}.pdf`;
+      a.target = '_blank';
       document.body.appendChild(a);
       a.click();
-
-      // 5. Limpiar (revocar la URL del objeto Blob)
       a.remove();
       window.URL.revokeObjectURL(url);
       setMessage(`Recibo para la venta ${saleId} descargado con éxito.`);
@@ -62,10 +54,11 @@ function SalesHistoryPage() {
   if (sales.length === 0) return <p>No hay ventas registradas para esta compañía.</p>;
 
   return (
-    <div>
+    <div className="sales-history-container"> {/* Contenedor principal */}
       <h2>Historial de Ventas</h2>
       {message && <p className={message.includes('Error') ? 'error-message' : 'success-message'}>{message}</p>}
-      <table>
+      
+      <table className="sales-history-table"> {/* Añadimos una clase para el nuevo CSS */}
         <thead>
           <tr>
             <th>ID Venta</th>
@@ -74,25 +67,25 @@ function SalesHistoryPage() {
             <th>Fecha Venta</th>
             <th>Total</th>
             <th>Estado</th>
-            <th>Acciones</th> {/* Nueva columna para el botón de descarga */}
+            <th>Acciones</th>
           </tr>
         </thead>
         <tbody>
           {sales.map(sale => (
             <tr key={sale.id}>
-              <td>{sale.id}</td>
-              <td>{sale.user?.nombreUsuario || 'N/A'}</td>
-              <td>{sale.client?.nombre || 'Consumidor Final'}</td>
-              <td>{new Date(sale.fechaVenta).toLocaleDateString('es-CO')}</td>
-              <td>{formatCOP(sale.total)}</td>
-              <td>{sale.estado}</td>
-              <td>
+              <td data-label="ID Venta">{sale.id}</td> {/* Añadimos data-label */}
+              <td data-label="Usuario">{sale.user?.nombreUsuario || 'N/A'}</td>
+              <td data-label="Cliente">{sale.client?.nombre || 'Consumidor Final'}</td>
+              <td data-label="Fecha Venta">{new Date(sale.fechaVenta).toLocaleDateString('es-CO')}</td>
+              <td data-label="Total">{formatCOP(sale.total)}</td>
+              <td data-label="Estado">{sale.estado}</td>
+              <td data-label="Acciones">
                 <button
                   onClick={() => handleDownloadReceipt(sale.id)}
-                  className="action-button stock-button" // Puedes reutilizar o crear una nueva clase CSS
+                  className="action-button stock-button"
                   title="Descargar Recibo PDF"
                 >
-                  <FaDownload />
+                  <FaDownload /> Descargar Recibo
                 </button>
               </td>
             </tr>

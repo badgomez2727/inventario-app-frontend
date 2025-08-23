@@ -44,6 +44,8 @@
 
 .user-greeting {
   font-weight: 500;
+  /* Ocultar el saludo del usuario en pantallas muy pequeñas */
+  display: block; /* Por defecto visible */
 }
 
 .logout-button {
@@ -54,8 +56,43 @@
   border-radius: 5px;
   cursor: pointer;
   transition: background-color 0.3s ease;
+  font-size: 0.9em; /* Reduce el tamaño de fuente del botón en móvil */
 }
 
 .logout-button:hover {
   background-color: #c0392b;
+}
+
+/* Media Query para pantallas muy pequeñas (ej. móviles) */
+@media (max-width: 768px) {
+  .main-header {
+    padding: 0.8rem 1rem; /* Reduce el padding del header */
+  }
+
+  .header-logo-link svg {
+    width: 180px; /* Reduce el tamaño del logo SVG */
+    height: 50px;
+  }
+  /* Ajusta el texto del logo si es necesario */
+  .header-logo-link svg text {
+    font-size: 40px !important; /* Ajusta el tamaño de fuente del logo */
+  }
+
+  .user-greeting {
+    display: none; /* Oculta el saludo del usuario en móviles para ahorrar espacio */
+  }
+}
+
+/* Media Query para pantallas aún más pequeñas si es necesario */
+@media (max-width: 480px) {
+  .main-header {
+    padding: 0.6rem 0.8rem;
+  }
+  .header-logo-link svg {
+    width: 150px;
+    height: 40px;
+  }
+  .header-logo-link svg text {
+    font-size: 30px !important;
+  }
 }

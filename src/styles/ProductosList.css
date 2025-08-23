@@ -1,0 +1,87 @@
+/* venta_inventario_app/frontend/src/styles/ProductosList.css */
+
+/* Estilos para el contenedor de la lista de productos */
+.productos-list-container {
+  padding: 0; /* El padding ya lo gestiona main-content-private */
+  max-width: 100%;
+  margin: 0;
+}
+
+.productos-list-container h2 {
+  font-size: 2rem;
+  color: #333;
+  margin-bottom: 1.5rem;
+  border-bottom: 2px solid #007bff;
+  padding-bottom: 0.5rem;
+}
+
+/* --- Adaptación de la tabla para móviles --- */
+@media (max-width: 768px) {
+  .productos-list-table {
+    border: 0; /* Elimina los bordes generales de la tabla en móvil */
+  }
+
+  /* Oculta los encabezados de la tabla en móvil */
+  .productos-list-table thead {
+    display: none;
+  }
+
+  /* Hace que el cuerpo de la tabla se comporte como un bloque */
+  .productos-list-table tbody {
+    display: block;
+    width: 100%; /* Ocupa todo el ancho disponible */
+  }
+
+  /* Cada fila de la tabla se convierte en un bloque con un poco de margen */
+  .productos-list-table tr {
+    border-bottom: 3px solid #ddd; /* Separador entre "tarjetas" */
+    display: block;
+    margin-bottom: 1rem;
+    background-color: #fff;
+    padding: 1rem;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+    border-radius: 8px;
+  }
+
+  /* Cada celda de la tabla se convierte en un bloque */
+  .productos-list-table td {
+    border-bottom: 1px dotted #eee; /* Separador entre campos dentro de la "tarjeta" */
+    display: block;
+    text-align: right; /* Alinea el valor a la derecha */
+    padding-left: 50%; /* Espacio para la etiqueta */
+    position: relative; /* Para posicionar la etiqueta */
+    font-size: 0.9em;
+  }
+
+  /* Inserta el contenido del encabezado como una etiqueta en cada celda */
+  .productos-list-table td::before {
+    /* Toma el valor del atributo data-label del td */
+    content: attr(data-label);
+    position: absolute;
+    left: 10px; /* Posiciona la etiqueta a la izquierda */
+    width: calc(50% - 20px); /* Ancho para la etiqueta */
+    padding-right: 10px; /* Espacio entre etiqueta y valor */
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    font-weight: bold;
+    text-align: left; /* Asegura que la etiqueta esté alineada a la izquierda */
+    color: #555;
+  }
+
+  /* Ajustes para los botones de acción en móviles */
+  .productos-list-table td:last-child {
+    text-align: center; /* Centrar los botones en la última celda */
+    padding-left: 10px; /* Resetear el padding-left para que no se vea afectado por ::before */
+  }
+
+  .productos-list-table td .action-button {
+    width: auto; /* Permite que el botón tome el ancho de su contenido */
+    padding: 8px 12px; /* Aumenta el padding para un mejor toque */
+    font-size: 0.9em;
+    margin: 5px; /* Espacio entre botones */
+    display: inline-flex; /* Asegura que el icono y texto estén en línea */
+    align-items: center;
+    gap: 5px; /* Espacio entre icono y texto */
+  }
+}

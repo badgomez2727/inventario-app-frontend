@@ -11,6 +11,12 @@
   --shadow-color: rgba(0, 0, 0, 0.1);
   --header-bg: #3f51b5; /* Azul oscuro para encabezado */
   --header-text: white;
+
+  /* Definimos alturas de header y footer para el cálculo del sidebar en diferentes vistas */
+  --header-height-desktop: 82px; /* Ajusta según el padding del header */
+  --header-height-mobile: 70px; /* Un poco más pequeño para móviles */
+  --footer-height-desktop: 100px; /* Estimado */
+  --footer-height-mobile: 80px; /* Estimado */
 }
 
 body {
@@ -60,11 +66,11 @@ form input[type="password"],
 form input[type="number"],
 form textarea,
 .form-select { /* Estilo genérico para selects */
-  width: calc(100% - 20px); /* 100% menos padding */
+  width: calc(100% - 20px); /* Ocupa el 100% del ancho del padre menos el padding */
   padding: 10px;
   border: 1px solid var(--border-color);
   border-radius: 4px;
-  box-sizing: border-box;
+  box-sizing: border-box; /* Incluye padding y borde en el ancho total */
   font-size: 1em;
   /* Estilos específicos para select (mantener aquí si es un estilo global para todos los selects) */
   -webkit-appearance: none;
@@ -109,17 +115,29 @@ form button[type="submit"]:hover {
   font-weight: bold;
 }
 
-/* Estilos para tablas (genéricos) */
+/* Estilos para tablas (genéricos) - AHORA MÁS RESPONSIVOS */
 table {
   width: 100%;
   border-collapse: collapse;
   margin-top: 20px;
+  /* NO forzar white-space: nowrap; para permitir que el texto se ajuste */
+  display: block; /* Permite que la tabla se comporte como un bloque para overflow */
+  overflow-x: auto; /* Habilita el scroll horizontal si el contenido es demasiado ancho */
+}
+
+table thead, table tbody {
+  display: table; /* Necesario para que la tabla se ajuste al ancho */
+  width: 100%;
+  table-layout: fixed; /* Distribuye las columnas de manera uniforme */
 }
 
 table th, table td {
   border: 1px solid var(--border-color);
   padding: 10px;
   text-align: left;
+  vertical-align: middle; /* Alineación vertical para contenido de celda */
+  word-wrap: break-word; /* Permite que el texto largo se rompa */
+  white-space: normal; /* Vuelve a habilitar el ajuste de línea */
 }
 
 table th {
@@ -139,6 +157,26 @@ table tbody tr:nth-child(even) {
   margin-bottom: 15px;
 }
 
+/* Media query para móviles: Las columnas del formulario se apilan */
+@media (max-width: 768px) {
+  .form-grid {
+    grid-template-columns: 1fr; /* Una columna para pantallas pequeñas */
+  }
+  form input[type="text"],
+  form input[type="email"],
+  form input[type="password"],
+  form input[type="number"],
+  form textarea,
+  .form-select {
+    width: 100%; /* Ajuste a 100% en móviles */
+  }
+  /* Reducir el padding de las celdas en móviles para ahorrar espacio */
+  table th, table td {
+    padding: 8px;
+    font-size: 0.9em; /* Ligeramente más pequeña la fuente */
+  }
+}
+
 /* Estilo para links (si los usamos globalmente) */
 a {
   color: var(--secondary-color);
@@ -155,6 +193,7 @@ a:hover {
   display: flex;
   gap: 10px;
   justify-content: center;
+  flex-wrap: wrap; /* Permite que los botones se envuelvan en pantallas pequeñas */
 }
 
 .nav-buttons button {
@@ -172,27 +211,33 @@ a:hover {
   background-color: #1976D2;
 }
 
+
+/* --- Estilos para Botones de Acción (ej. en listas de productos) --- */
 .action-button {
-  padding: 10px 18px; /* Aumentado el padding para hacer los botones más grandes */
+  padding: 10px;
   border: none;
-  border-radius: 8px; /* Bordes más redondeados */
+  border-radius: 8px;
   cursor: pointer;
-  font-size: 1em; /* Tamaño de fuente ligeramente mayor */
-  font-weight: 600; /* Mayor peso de fuente */
-  transition: background-color 0.3s ease, transform 0.1s ease, box-shadow 0.2s ease; /* Añadida transición para sombra */
-  margin-right: 8px; /* Más espacio entre botones */
-  white-space: nowrap; /* Evita que el texto del botón se rompa */
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* Sombra sutil */
-  display: flex; justify-content: center; align-items: center;
+  font-size: 1.1em;
+  font-weight: 600;
+  transition: background-color 0.3s ease, transform 0.1s ease, box-shadow 0.2s ease;
+  margin-right: 8px;
+  white-space: nowrap;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-width: 40px;
+  height: 40px;
 }
 
 .action-button:last-child {
-  margin-right: 0; /* Elimina el margen del último botón en un grupo */
+  margin-right: 0;
 }
 
 .action-button:hover {
-  transform: translateY(-2px); /* Efecto más pronunciado al pasar el ratón */
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); /* Sombra más intensa al pasar el ratón */
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
 }
 
 .edit-button {
@@ -201,7 +246,7 @@ a:hover {
 }
 
 .edit-button:hover {
-  background-color: #e0a800; /* Tono más oscuro al pasar el ratón */
+  background-color: #e0a800;
 }
 
 .delete-button {
@@ -210,7 +255,7 @@ a:hover {
 }
 
 .delete-button:hover {
-  background-color: #c82333; /* Tono más oscuro al pasar el ratón */
+  background-color: #c82333;
 }
 
 .stock-button {
@@ -219,5 +264,23 @@ a:hover {
 }
 
 .stock-button:hover {
-  background-color: #0d6efd; /* Tono más oscuro al pasar el ratón */
+  background-color: #0d6efd;
+}
+
+/* Media query para botones en tablas en móviles */
+@media (max-width: 768px) {
+  table td .action-button {
+    font-size: 0.9em; /* Reduce el tamaño de la fuente para que quepan */
+    padding: 5px 8px;
+    margin: 3px; /* Espacio reducido para botones de tablas en móvil */
+    min-width: 30px; /* Reduce el tamaño mínimo */
+    height: 30px;
+  }
+  /* Asegurar que el contenedor de botones de acción se justifique bien si están apilados */
+  table td:last-child {
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap; /* Permite que los botones se envuelvan */
+    gap: 5px; /* Pequeño espacio entre botones */
+  }
 }

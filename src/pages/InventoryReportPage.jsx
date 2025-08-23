@@ -2,6 +2,7 @@
 
 import React, { useEffect, useState } from 'react';
 import { getInventoryValue } from '../services/apiService';
+import { formatCOP } from '../utils/formatters';
 
 const InventoryReportPage = () => {
   const [report, setReport] = useState(null);
@@ -36,13 +37,13 @@ const InventoryReportPage = () => {
         <div style={{ padding: '20px', border: '1px solid #ccc', borderRadius: '8px', textAlign: 'center' }}>
           <h3>Valor Total (Costo)</h3>
           <p style={{ fontSize: '2rem', color: '#3f51b5', fontWeight: 'bold' }}>
-            ${Number(report.valorTotalCosto).toFixed(2)}
+            {formatCOP(report.valorTotalCosto)}
           </p>
         </div>
         <div style={{ padding: '20px', border: '1px solid #ccc', borderRadius: '8px', textAlign: 'center' }}>
           <h3>Valor Total (Venta)</h3>
           <p style={{ fontSize: '2rem', color: '#28a745', fontWeight: 'bold' }}>
-            ${Number(report.valorTotalVenta).toFixed(2)}
+            {formatCOP(report.valorTotalVenta)}
           </p>
         </div>
       </div>

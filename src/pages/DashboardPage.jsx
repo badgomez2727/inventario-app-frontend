@@ -1,10 +1,13 @@
 // venta_inventario_app/frontend/src/pages/DashboardPage.jsx
 
 import React, { useEffect, useState } from 'react';
-import { getGeneralStats, getInventoryValue, getMonthlySales, getTopSellingProducts } from '../services/apiService';
+import { getGeneralStats, getInventoryValue, getMonthlySales, getTopSellingProducts, getProducts } from '../services/apiService'; // Importamos getProducts
 import { BarChart, Bar, XAxis, YAxis, Tooltip, Legend, CartesianGrid, ResponsiveContainer } from 'recharts';
 import '../styles/Dashboard.css';
 import { formatCOP } from '../utils/formatters';
+
+// Define un umbral para considerar "bajo stock"
+const LOW_STOCK_THRESHOLD = 10; 
 
 // Componente para las tarjetas de métricas
 const DashboardCard = ({ title, value }) => (
@@ -19,6 +22,7 @@ function DashboardPage() {
   const [inventoryValue, setInventoryValue] = useState(null);
   const [monthlySalesData, setMonthlySalesData] = useState([]);
   const [topSellingProducts, setTopSellingProducts] = useState([]);
+  const [lowStockProducts, setLowStockProducts] = useState([]); // Nuevo estado para productos con bajo stock
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
@@ -27,21 +31,29 @@ function DashboardPage() {
   const [endDate, setEndDate] = useState('');
 
   // Función para obtener y actualizar todos los datos del dashboard
-  const fetchData = async (start, end) => { // Ahora recibe las fechas como argumentos
+  const fetchData = async (start, end) => {
     try {
       setLoading(true);
       setError(null);
 
-      const [stats, inventory, monthlySales, topProducts] = await Promise.all([
+      const [stats, inventory, monthlySales, topProducts, allProducts] = await Promise.all([ // También obtenemos todos los productos
         getGeneralStats(),
         getInventoryValue(),
-        getMonthlySales(start, end), // Usamos las fechas pasadas como argumento
-        getTopSellingProducts(start, end), // Usamos las fechas pasadas como argumento
+        getMonthlySales(start, end),
+        getTopSellingProducts(start, end),
+        getProducts(), // Nueva llamada para obtener todos los productos
       ]);
       setGeneralStats(stats);
       setInventoryValue(inventory);
       setMonthlySalesData(monthlySales);
       setTopSellingProducts(topProducts);
+
+      // Filtra los productos con bajo stock
+      const filteredLowStock = allProducts.filter(product => 
+        product.stockActual <= LOW_STOCK_THRESHOLD
+      );
+      setLowStockProducts(filteredLowStock);
+
     } catch (err) {
       setError('No se pudieron cargar los datos del dashboard.');
       console.error('Error al cargar datos del dashboard:', err);
@@ -52,17 +64,14 @@ function DashboardPage() {
 
   // useEffect para aplicar el debounce a la carga de datos
   useEffect(() => {
-    // Limpiamos cualquier temporizador anterior para evitar llamadas múltiples
     const handler = setTimeout(() => {
-      // Pasamos los estados actuales de startDate y endDate a fetchData
       fetchData(startDate || null, endDate || null); 
-    }, 500); // Espera 500ms después de que el usuario deje de cambiar las fechas
+    }, 500);
 
-    // Función de limpieza: se ejecuta si el componente se desmonta o si las dependencias cambian antes de que el temporizador se dispare
     return () => {
       clearTimeout(handler);
     };
-  }, [startDate, endDate]); // Las dependencias siguen siendo startDate y endDate
+  }, [startDate, endDate]);
 
   // Función para resetear los filtros de fecha
   const handleResetDates = () => {
@@ -86,7 +95,12 @@ function DashboardPage() {
             title="Valor Inventario (Costo)"
             value={formatCOP(inventoryValue.valorTotalCosto)}
           />
+          <DashboardCard
+            title="Valor Total (Venta)"
+            value={formatCOP(inventoryValue.valorTotalVenta)}
+          />
         </div>
+        
       )}
 
       {/* Sección de Filtros de Fecha */}
@@ -111,9 +125,35 @@ function DashboardPage() {
         </div>
       </div>
 
+      {/* Sección de Alerta de Bajo Stock */}
+      <div className="dashboard-chart-section" style={{ marginTop: '2rem' }}>
+        <h3>Productos con Bajo Stock ({lowStockProducts.length})</h3>
+        {lowStockProducts.length > 0 ? (
+          <table className="low-stock-table low-stock-table-responsive"> {/* <-- Añadimos la clase responsive */}
+            <thead>
+              <tr>
+                <th>Producto</th>
+                <th>SKU</th>
+                <th>Stock Actual</th>
+              </tr>
+            </thead>
+            <tbody>
+              {lowStockProducts.map(product => (
+                <tr key={product.id} className="low-stock-row">
+                  <td data-label="Producto">{product.nombre}</td> {/* <-- Añadimos data-label */}
+                  <td data-label="SKU">{product.sku}</td> {/* <-- Añadimos data-label */}
+                  <td data-label="Stock Actual" style={{ fontWeight: 'bold', color: 'red' }}>{product.stockActual}</td> {/* <-- Añadimos data-label */}
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        ) : (
+          <p className="success-message">¡Excelente! No hay productos con bajo stock.</p>
+        )}
+      </div>
 
       {monthlySalesData.length > 0 ? (
-        <div className="dashboard-chart-section">
+        <div className="dashboard-chart-section" style={{ marginTop: '2rem' }}>
           <h3>Ventas Mensuales</h3>
           <ResponsiveContainer width="100%" height={400}>
             <BarChart data={monthlySalesData} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
@@ -127,7 +167,7 @@ function DashboardPage() {
           </ResponsiveContainer>
         </div>
       ) : (
-        <div className="no-data-message">
+        <div className="no-data-message" style={{ marginTop: '2rem' }}>
           <p>No hay datos de ventas mensuales para mostrar en el período seleccionado.</p>
         </div>
       )}
@@ -136,7 +176,7 @@ function DashboardPage() {
       {topSellingProducts.length > 0 ? (
         <div className="dashboard-chart-section" style={{ marginTop: '2rem' }}>
           <h3>Top 5 Productos Más Vendidos</h3>
-          <table>
+          <table className="top-products-table">
             <thead>
               <tr>
                 <th>Producto</th>

@@ -1,0 +1,277 @@
+/* venta_inventario_app/frontend/src/styles/SalesPage.css */
+
+.sales-page {
+  padding: 0; /* El padding ya lo gestiona main-content-private */
+  max-width: 100%;
+  margin: 0;
+}
+
+.sales-page h2 {
+  font-size: 2rem;
+  color: #333;
+  margin-bottom: 1.5rem;
+  border-bottom: 2px solid #007bff;
+  padding-bottom: 0.5rem;
+  text-align: center;
+}
+
+.sales-content-wrapper {
+  display: flex;
+  gap: 20px; /* Espacio entre los paneles de productos y carrito */
+}
+
+.products-panel, .cart-panel {
+  background-color: #fff;
+  border-radius: 8px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  padding: 20px;
+  flex: 1; /* Ambos paneles ocuparán el mismo espacio en escritorio */
+}
+
+.products-panel {
+  border-right: 1px solid #eee; /* Separador visual */
+}
+
+.products-panel h3, .cart-panel h3 {
+  font-size: 1.5rem;
+  margin-bottom: 1rem;
+  color: #333;
+}
+
+/* Estilos para el campo de búsqueda de productos */
+.product-search-input {
+  width: 100%;
+  padding: 10px;
+  margin-bottom: 15px;
+  border: 1px solid var(--border-color);
+  border-radius: 5px;
+  box-sizing: border-box; /* Incluye padding en el ancho total */
+}
+
+/* Lista de productos en el catálogo */
+.product-list {
+  list-style-type: none;
+  padding: 0;
+  max-height: 600px; /* Altura máxima para el scroll */
+  overflow-y: auto; /* Scroll vertical */
+}
+
+.product-item {
+  padding: 10px;
+  border: 1px solid #eee;
+  margin-bottom: 8px;
+  border-radius: 5px;
+  cursor: pointer;
+  background-color: #f9f9f9;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  transition: background-color 0.2s ease;
+}
+
+.product-item:hover {
+  background-color: #f0f0f0;
+}
+
+.product-item strong {
+  color: #4CAF50; /* Color para el nombre del producto */
+}
+
+.product-item small {
+  color: #666;
+}
+
+.product-price {
+  font-weight: bold;
+  color: #2196F3; /* Color para el precio */
+}
+
+/* Panel del Carrito */
+.client-select-group {
+  margin-bottom: 15px;
+}
+
+.client-select-group label {
+  display: block;
+  margin-bottom: 5px;
+  font-weight: bold;
+  color: var(--text-color);
+}
+
+.client-select {
+  width: 100%;
+  padding: 8px;
+  border-radius: 5px;
+  border: 1px solid var(--border-color);
+  box-sizing: border-box;
+}
+
+.cart-list {
+  list-style-type: none;
+  padding: 0;
+}
+
+.cart-item {
+  border-bottom: 1px solid #eee;
+  padding: 10px 0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.cart-item-info strong {
+  color: #333;
+}
+
+.cart-item-quantity-input {
+  width: 50px;
+  margin-left: 5px;
+  padding: 5px;
+  border: 1px solid #ccc;
+  border-radius: 3px;
+}
+
+.remove-from-cart-button {
+  margin-left: 10px;
+  color: #dc3545; /* Rojo */
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 1.2em;
+}
+
+.cart-total-section {
+  margin-top: 20px;
+  border-top: 2px solid #333;
+  padding-top: 10px;
+  font-size: 1.2rem;
+}
+
+.finish-sale-button {
+  width: 100%;
+  padding: 15px;
+  background-color: #28a745; /* Verde */
+  color: white;
+  font-size: 1.2rem;
+  border: none;
+  cursor: pointer;
+  margin-top: 15px;
+  border-radius: 5px;
+  transition: background-color 0.3s ease, opacity 0.3s ease;
+}
+
+.finish-sale-button:hover:not(:disabled) {
+  background-color: #218838;
+}
+
+.finish-sale-button:disabled {
+  background-color: #cccccc;
+  cursor: not-allowed;
+  opacity: 0.7;
+}
+
+.download-receipt-button {
+  width: 100%;
+  padding: 15px;
+  background-color: #007bff; /* Azul */
+  color: white;
+  font-size: 1.2rem;
+  border: none;
+  cursor: pointer;
+  margin-top: 10px;
+  border-radius: 5px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  transition: background-color 0.3s ease;
+}
+
+.download-receipt-button:hover {
+  background-color: #0056b3;
+}
+
+/* Mensajes */
+.sales-message {
+  margin-top: 10px;
+  padding: 8px;
+  border-radius: 5px;
+  text-align: center;
+  font-weight: bold;
+}
+
+.sales-message.success-message {
+  color: green;
+  background-color: #e6ffed;
+}
+
+.sales-message.error-message {
+  color: red;
+  background-color: #ffe6e6;
+}
+
+/* --- Media Queries para Responsividad --- */
+@media (max-width: 768px) {
+  .sales-content-wrapper {
+    flex-direction: column; /* Apila los paneles en pantallas pequeñas */
+    gap: 15px;
+  }
+
+  .products-panel {
+    border-right: none; /* Elimina el borde vertical */
+    border-bottom: 1px solid #eee; /* Añade un borde inferior para separar */
+    padding-bottom: 15px;
+    margin-bottom: 15px;
+  }
+
+  .products-panel, .cart-panel {
+    padding: 15px; /* Reduce el padding en móviles */
+  }
+
+  .sales-page h2 {
+    font-size: 1.8rem; /* Título más pequeño */
+    margin-bottom: 1rem;
+  }
+
+  .product-list {
+    max-height: 400px; /* Reduce la altura máxima de la lista de productos */
+  }
+
+  .product-item {
+    flex-direction: column; /* Apila nombre/sku y precio/stock */
+    align-items: flex-start;
+    padding: 8px;
+  }
+
+  .product-item > div:last-child {
+    text-align: left; /* Alinea el precio a la izquierda si se apilan */
+    margin-top: 5px;
+  }
+
+  .cart-item {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .cart-item-quantity-input {
+    width: 60px; /* Un poco más ancho para mejor toque */
+    padding: 8px;
+  }
+
+  .remove-from-cart-button {
+    margin-left: 0;
+    margin-top: 5px;
+    align-self: flex-end; /* Alinea el botón de eliminar a la derecha en la fila apilada */
+  }
+
+  .finish-sale-button, .download-receipt-button {
+    font-size: 1.1rem; /* Botones ligeramente más pequeños */
+    padding: 12px;
+  }
+}
+
+@media (max-width: 480px) {
+  .sales-page h2 {
+    font-size: 1.5rem;
+  }
+}

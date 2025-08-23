@@ -1,12 +1,12 @@
-/* frontend/src/styles/Dashboard.css */
+/* venta_inventario_app/frontend/src/styles/InventoryReportPage.css */
 
-.dashboard-container {
-  padding: 0;
+.inventory-report-container {
+  padding: 0; /* El padding ya lo gestiona main-content-private */
   max-width: 100%;
   margin: 0;
 }
 
-.dashboard-container h2 {
+.inventory-report-container h2 {
   font-size: 2rem;
   color: #333;
   margin-bottom: 1.5rem;
@@ -14,14 +14,14 @@
   padding-bottom: 0.5rem;
 }
 
-.dashboard-cards-grid {
+.report-cards-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
   gap: 1.5rem;
   margin-bottom: 2rem;
 }
 
-.dashboard-card {
+.report-card {
   background-color: #fff;
   border-radius: 8px;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
@@ -30,7 +30,7 @@
   transition: transform 0.3s ease, box-shadow 0.3s ease;
 }
 
-.dashboard-card:hover {
+.report-card:hover {
   transform: translateY(-5px);
   box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
 }
@@ -47,14 +47,15 @@
   color: #007bff;
 }
 
-.dashboard-chart-section {
+.report-section {
   background-color: #fff;
   border-radius: 8px;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
   padding: 1.5rem;
+  margin-bottom: 2rem; /* Espacio entre secciones de reporte */
 }
 
-.dashboard-chart-section h3 {
+.report-section h3 {
   font-size: 1.5rem;
   color: #333;
   margin-bottom: 1rem;
@@ -72,7 +73,7 @@
   color: #dc3545;
 }
 
-/* --- Nuevos estilos para filtros de fecha --- */
+/* --- Estilos para filtros de fecha --- */
 .date-filters-section {
   background-color: #fff;
   border-radius: 8px;
@@ -126,25 +127,25 @@
   background-color: #5a6268;
 }
 
-/* Estilos para la tabla de Top Selling Products y Low Stock */
-.dashboard-chart-section table {
+/* Estilos para tablas de reportes (Top Selling Products y Low Stock) */
+.report-table {
   width: 100%;
   border-collapse: collapse;
   margin-top: 1rem;
 }
 
-.dashboard-chart-section th,
-.dashboard-chart-section td {
+.report-table th,
+.report-table td {
   border: 1px solid #ddd;
   padding: 8px;
   text-align: left;
 }
 
-.dashboard-chart-section th {
+.report-table th {
   background-color: #f2f2f2;
 }
 
-.dashboard-chart-section tbody tr:nth-child(even) {
+.report-table tbody tr:nth-child(even) {
   background-color: #f9f9f9;
 }
 
@@ -158,22 +159,22 @@
   font-weight: bold;
 }
 
-/* --- Adaptación de la tabla de bajo stock para móviles --- */
+/* --- Adaptación de tablas de reporte para móviles --- */
 @media (max-width: 768px) {
-  .low-stock-table-responsive {
+  .report-table-responsive {
     border: 0;
   }
 
-  .low-stock-table-responsive thead {
+  .report-table-responsive thead {
     display: none;
   }
 
-  .low-stock-table-responsive tbody {
+  .report-table-responsive tbody {
     display: block;
     width: 100%;
   }
 
-  .low-stock-table-responsive tr {
+  .report-table-responsive tr {
     border-bottom: 3px solid #ddd;
     display: block;
     margin-bottom: 1rem;
@@ -183,7 +184,7 @@
     border-radius: 8px;
   }
 
-  .low-stock-table-responsive td {
+  .report-table-responsive td {
     border-bottom: 1px dotted #eee;
     display: block;
     text-align: right;
@@ -192,7 +193,7 @@
     font-size: 0.9em;
   }
 
-  .low-stock-table-responsive td::before {
+  .report-table-responsive td::before {
     content: attr(data-label);
     position: absolute;
     left: 10px;
