@@ -38,7 +38,7 @@ function RegisterCompanyPage() {
 
     if (result.success) {
       setMessage('Compañía y usuario administrador registrados con éxito. Redirigiendo a login...');
-      setTimeout(() => navigate('/login'), 3000); // Redirige después de 3 segundos
+      setTimeout(() => navigate('/login'), 3000);
     } else {
       setError(result.error || 'Error al registrar. Inténtalo de nuevo.');
     }
@@ -46,54 +46,134 @@ function RegisterCompanyPage() {
   };
 
   return (
-    <div className="form-container" style={{ maxWidth: '600px', margin: '50px auto' }}>
-      <h2>Registrar Nueva Compañía y Administrador</h2>
-      <form onSubmit={handleSubmit}>
-        <h3>Datos de la Compañía</h3>
-        <div>
-          <label>Nombre de la Compañía:</label>
-          <input type="text" value={companyName} onChange={(e) => setCompanyName(e.target.value)} required />
-        </div>
-        <div>
-          <label>Email de Contacto de la Compañía:</label>
-          <input type="email" value={companyEmail} onChange={(e) => setCompanyEmail(e.target.value)} required />
-        </div>
-        <div>
-          <label>Dirección:</label>
-          <input type="text" value={companyAddress} onChange={(e) => setCompanyAddress(e.target.value)} />
-        </div>
-        <div>
-          <label>Teléfono:</label>
-          <input type="text" value={companyPhone} onChange={(e) => setCompanyPhone(e.target.value)} />
-        </div>
+    <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4">
+      <div className="w-full max-w-2xl bg-white shadow-lg rounded-2xl p-8">
+        <h2 className="text-2xl font-bold text-center text-gray-800 mb-6">
+          Registrar Nueva Compañía y Administrador
+        </h2>
 
-        <h3 style={{ marginTop: '30px' }}>Datos del Usuario Administrador</h3>
-        <div>
-          <label>Nombre de Usuario (para login):</label>
-          <input type="text" value={username} onChange={(e) => setUsername(e.target.value)} required />
-        </div>
-        <div>
-          <label>Email del Usuario:</label>
-          <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} required />
-        </div>
-        <div>
-          <label>Contraseña:</label>
-          <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} required />
-        </div>
-        <div>
-          <label>Confirmar Contraseña:</label>
-          <input type="password" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} required />
-        </div>
+        <form onSubmit={handleSubmit} className="space-y-6">
+          {/* Sección Compañía */}
+          <div>
+            <h3 className="text-lg font-semibold text-gray-700 mb-3 border-b pb-1">Datos de la Compañía</h3>
 
-        <button type="submit" disabled={loading}>
-          {loading ? 'Registrando...' : 'Registrar Compañía y Admin'}
-        </button>
-        {message && <p className="success-message">{message}</p>}
-        {error && <p className="error-message">{error}</p>}
-      </form>
-      <p style={{ marginTop: '20px', textAlign: 'center' }}>
-        ¿Ya tienes una cuenta? <Link to="/login">Inicia Sesión</Link>
-      </p>
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-600">Nombre de la Compañía</label>
+                <input
+                  type="text"
+                  value={companyName}
+                  onChange={(e) => setCompanyName(e.target.value)}
+                  required
+                  className="mt-1 w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring focus:ring-blue-200 focus:outline-none"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-600">Email de Contacto</label>
+                <input
+                  type="email"
+                  value={companyEmail}
+                  onChange={(e) => setCompanyEmail(e.target.value)}
+                  required
+                  className="mt-1 w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring focus:ring-blue-200 focus:outline-none"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-600">Dirección</label>
+                <input
+                  type="text"
+                  value={companyAddress}
+                  onChange={(e) => setCompanyAddress(e.target.value)}
+                  className="mt-1 w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring focus:ring-blue-200 focus:outline-none"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-600">Teléfono</label>
+                <input
+                  type="text"
+                  value={companyPhone}
+                  onChange={(e) => setCompanyPhone(e.target.value)}
+                  className="mt-1 w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring focus:ring-blue-200 focus:outline-none"
+                />
+              </div>
+            </div>
+          </div>
+
+          {/* Sección Usuario */}
+          <div>
+            <h3 className="text-lg font-semibold text-gray-700 mb-3 border-b pb-1">Datos del Usuario Administrador</h3>
+
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-600">Nombre de Usuario</label>
+                <input
+                  type="text"
+                  value={username}
+                  onChange={(e) => setUsername(e.target.value)}
+                  required
+                  className="mt-1 w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring focus:ring-blue-200 focus:outline-none"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-600">Email</label>
+                <input
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  required
+                  className="mt-1 w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring focus:ring-blue-200 focus:outline-none"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-600">Contraseña</label>
+                <input
+                  type="password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  required
+                  className="mt-1 w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring focus:ring-blue-200 focus:outline-none"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-600">Confirmar Contraseña</label>
+                <input
+                  type="password"
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  required
+                  className="mt-1 w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring focus:ring-blue-200 focus:outline-none"
+                />
+              </div>
+            </div>
+          </div>
+
+          {/* Mensajes */}
+          {message && <p className="text-green-600 text-center text-sm">{message}</p>}
+          {error && <p className="text-red-600 text-center text-sm">{error}</p>}
+
+          {/* Botón */}
+          <button
+            type="submit"
+            disabled={loading}
+            className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 rounded-lg transition duration-200"
+          >
+            {loading ? 'Registrando...' : 'Registrar Compañía y Admin'}
+          </button>
+        </form>
+
+        <p className="mt-6 text-center text-sm text-gray-600">
+          ¿Ya tienes una cuenta?{' '}
+          <Link to="/login" className="text-blue-600 hover:underline font-medium">
+            Inicia Sesión
+          </Link>
+        </p>
+      </div>
     </div>
   );
 }
