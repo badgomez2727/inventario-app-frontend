@@ -1,10 +1,7 @@
-// venta_inventario_app/frontend/src/pages/SalesPage.jsx
-
 import React, { useState, useEffect } from 'react';
 import { getProducts, createSale, getClients, getSaleReceiptPdf } from '../services/apiService';
 import { formatCOP } from '../utils/formatters';
 import { FaDownload } from 'react-icons/fa';
-import '../styles/SalesPage.css'; // <-- Importamos el nuevo CSS
 
 function SalesPage() {
   const [products, setProducts] = useState([]);
@@ -20,10 +17,7 @@ function SalesPage() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const [productsData, clientsData] = await Promise.all([
-          getProducts(),
-          getClients(),
-        ]);
+        const [productsData, clientsData] = await Promise.all([getProducts(), getClients()]);
         setProducts(productsData);
         setClients(clientsData);
       } catch (err) {
@@ -43,62 +37,40 @@ function SalesPage() {
 
   const addToCart = (product) => {
     const productPrecioVenta = Number(product.precioVenta); 
-
     const existingItem = cart.find(item => item.id === product.id);
     if (existingItem) {
       if (existingItem.cantidad < product.stockActual) {
         setCart(cart.map(item =>
           item.id === product.id
-            ? { 
-                ...item, 
-                cantidad: item.cantidad + 1, 
-                subtotal: Number(item.subtotal) + productPrecioVenta 
-              }
+            ? { ...item, cantidad: item.cantidad + 1, subtotal: Number(item.subtotal) + productPrecioVenta }
             : item
         ));
       } else {
         setMessage(`No hay más stock disponible de ${product.nombre}`);
       }
     } else {
-      setCart([
-        ...cart,
-        {
-          ...product,
-          cantidad: 1,
-          subtotal: productPrecioVenta
-        }
-      ]);
+      setCart([...cart, { ...product, cantidad: 1, subtotal: productPrecioVenta }]);
     }
   };
 
-  const removeFromCart = (productId) => {
-    setCart(cart.filter(item => item.id !== productId));
-  };
+  const removeFromCart = (productId) => setCart(cart.filter(item => item.id !== productId));
 
   const updateQuantity = (productId, newCantidad) => {
     setCart(cart.map(item => {
       if (item.id === productId) {
         const updatedCantidad = Number(newCantidad);
         const itemPrecioVenta = Number(item.precioVenta);
-
         if (updatedCantidad > item.stockActual) {
-            setMessage(`No hay más stock disponible de ${item.nombre}`);
-            return item;
+          setMessage(`No hay más stock disponible de ${item.nombre}`);
+          return item;
         }
-        return {
-          ...item,
-          cantidad: updatedCantidad,
-          subtotal: updatedCantidad * itemPrecioVenta
-        };
+        return { ...item, cantidad: updatedCantidad, subtotal: updatedCantidad * itemPrecioVenta };
       }
       return item;
     }));
   };
 
-  const calculateTotal = () => {
-    const total = cart.reduce((sum, item) => sum + Number(item.subtotal), 0);
-    return total;
-  };
+  const calculateTotal = () => cart.reduce((sum, item) => sum + Number(item.subtotal), 0);
 
   const handleCreateSale = async () => {
     if (cart.length === 0) {
@@ -106,10 +78,7 @@ function SalesPage() {
       return;
     }
     const saleData = {
-      items: cart.map(item => ({
-        productId: item.id,
-        cantidad: item.cantidad,
-      })),
+      items: cart.map(item => ({ productId: item.id, cantidad: item.cantidad })),
       clientId: selectedClient ? Number(selectedClient) : null,
       total: calculateTotal(),
     };
@@ -121,12 +90,7 @@ function SalesPage() {
       setCart([]);
       setSearchTerm('');
       setSelectedClient('');
-      
-      if (response && response.sale && response.sale.id) {
-        setLastSaleId(response.sale.id);
-        setMessage(prev => prev + ' Puedes descargar el recibo ahora.');
-      }
-
+      if (response?.sale?.id) setLastSaleId(response.sale.id);
       const updatedProducts = await getProducts();
       setProducts(updatedProducts);
     } catch (err) {
@@ -156,108 +120,118 @@ function SalesPage() {
     }
   };
 
-  if (loading) return <p>Cargando productos...</p>;
-  if (error) return <p className="error-message">{error}</p>;
+  if (loading) return <p className="p-4 text-gray-500">Cargando productos...</p>;
+  if (error) return <p className="p-4 text-red-600">{error}</p>;
 
   return (
-    <div className="sales-page">
-      <h2>Punto de Venta (POS)</h2>
-      <div className="sales-content-wrapper"> {/* Usamos la clase CSS aquí */}
-        {/* Panel de Productos */}
-        <div className="products-panel"> {/* Usamos la clase CSS aquí */}
-          <h3>Catálogo de Productos</h3>
+    <div className="p-4 md:p-6">
+      <h2 className="text-2xl md:text-3xl font-bold mb-6 text-center">Punto de Venta (POS)</h2>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        {/* Panel Productos */}
+        <div className="bg-white shadow-md rounded-xl p-4 flex flex-col">
+          <h3 className="text-xl font-semibold mb-4">Catálogo de Productos</h3>
           <input
             type="text"
             placeholder="Buscar producto por nombre o SKU..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="product-search-input" /* Usamos la clase CSS aquí */
+            className="w-full border border-gray-300 rounded-lg px-3 py-2 mb-4 focus:ring focus:ring-blue-200"
           />
-          <ul className="product-list"> {/* Usamos la clase CSS aquí */}
+          <ul className="space-y-2 flex-1 overflow-y-auto max-h-[400px]">
             {filteredProducts.map(product => (
-              <li
-                key={product.id}
-                onClick={() => addToCart(product)}
-                className="product-item" /* Usamos la clase CSS aquí */
-              >
+              <li key={product.id}
+                  onClick={() => addToCart(product)}
+                  className="flex justify-between items-center p-3 bg-gray-50 rounded-lg cursor-pointer hover:bg-blue-100 transition">
                 <div>
-                  <strong>{product.nombre}</strong> <br />
-                  <small>SKU: {product.sku}</small>
+                  <strong>{product.nombre}</strong>
+                  <p className="text-sm text-gray-500">SKU: {product.sku}</p>
                 </div>
-                <div>
-                  <span className="product-price">{formatCOP(product.precioVenta)}</span>
-                  <br/>
-                  <small>Stock: {product.stockActual}</small>
+                <div className="text-right">
+                  <span className="font-semibold">{formatCOP(product.precioVenta)}</span>
+                  <p className="text-xs text-gray-400">Stock: {product.stockActual}</p>
                 </div>
               </li>
             ))}
           </ul>
         </div>
 
-        {/* Panel del Carrito */}
-        <div className="cart-panel"> {/* Usamos la clase CSS aquí */}
-          <h3>Carrito de Venta</h3>
-          <div className="client-select-group"> {/* Usamos la clase CSS aquí */}
-            <label>Cliente (Opcional):</label>
+        {/* Panel Carrito */}
+        <div className="bg-white shadow-md rounded-xl p-4 flex flex-col">
+          <h3 className="text-xl font-semibold mb-4">Carrito de Venta</h3>
+          {/* Cliente */}
+          <div className="mb-4">
+            <label className="block text-sm font-medium mb-1">Cliente (Opcional):</label>
             <select
               value={selectedClient}
               onChange={(e) => setSelectedClient(e.target.value)}
-              className="client-select" /* Usamos la clase CSS aquí */
+              className="w-full border border-gray-300 rounded-lg px-3 py-2"
             >
               <option value="">Seleccione un cliente...</option>
-              {clients.map(client => (
-                <option key={client.id} value={client.id}>
-                  {client.nombre}
-                </option>
-              ))}
+              {clients.map(client => <option key={client.id} value={client.id}>{client.nombre}</option>)}
             </select>
           </div>
-          <ul className="cart-list"> {/* Usamos la clase CSS aquí */}
+
+          {/* Items del carrito */}
+          <ul className="space-y-2 flex-1 overflow-y-auto max-h-[400px] mb-4">
             {cart.length === 0 ? (
-              <p>El carrito está vacío.</p>
+              <p className="text-gray-500 text-sm">El carrito está vacío.</p>
             ) : (
               cart.map(item => (
-                <li key={item.id} className="cart-item"> {/* Usamos la clase CSS aquí */}
-                  <div className="cart-item-info"> {/* Clase para agrupar info */}
-                    <strong>{item.nombre}</strong> <br />
-                    <small>Cant:
-                        <input
-                         type="number"
-                         min="1"
-                         max={item.stockActual}
-                         value={item.cantidad}
-                         onChange={(e) => updateQuantity(item.id, parseInt(e.target.value) || 1)}
-                         className="cart-item-quantity-input" /* Usamos la clase CSS aquí */
-                       />
-                    </small>
-                  </div>
+                <li key={item.id} className="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
                   <div>
-                    <span>{formatCOP(item.subtotal)}</span>
-                    <button onClick={() => removeFromCart(item.id)} className="remove-from-cart-button">&times;</button>
+                    <strong>{item.nombre}</strong>
+                    <div className="flex items-center gap-2 text-sm text-gray-500 mt-1">
+                      Cant:
+                      <input
+                        type="number"
+                        min="1"
+                        max={item.stockActual}
+                        value={item.cantidad}
+                        onChange={(e) => updateQuantity(item.id, parseInt(e.target.value) || 1)}
+                        className="w-16 border border-gray-300 rounded-md px-2 py-1"
+                      />
+                    </div>
+                  </div>
+                  <div className="text-right flex flex-col items-end">
+                    <span className="font-semibold">{formatCOP(item.subtotal)}</span>
+                    <button
+                      onClick={() => removeFromCart(item.id)}
+                      className="ml-2 text-red-500 hover:text-red-700 mt-1"
+                    >
+                      &times;
+                    </button>
                   </div>
                 </li>
               ))
             )}
           </ul>
-          <div className="cart-total-section"> {/* Usamos la clase CSS aquí */}
-            <strong>Total: {formatCOP(calculateTotal())}</strong>
+
+          <div className="flex justify-between items-center mb-4 font-semibold">
+            <span>Total:</span>
+            <span>{formatCOP(calculateTotal())}</span>
           </div>
+
           <button
             onClick={handleCreateSale}
             disabled={cart.length === 0}
-            className="finish-sale-button" /* Usamos la clase CSS aquí */
+            className="w-full bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 transition disabled:bg-gray-300 mb-2"
           >
             Finalizar Venta
           </button>
-          {message && <p className={message.includes('Error') ? 'sales-message error-message' : 'sales-message success-message'}>{message}</p>}
-          
+
+          {message && (
+            <p className={`mt-1 text-sm ${message.includes('Error') ? 'text-red-600' : 'text-green-600'}`}>
+              {message}
+            </p>
+          )}
+
           {lastSaleId && (
             <button
               onClick={() => handleDownloadReceipt(lastSaleId)}
-              className="download-receipt-button" /* Usamos la clase CSS aquí */
+              className="mt-2 flex items-center justify-center gap-2 bg-green-600 text-white py-2 px-4 rounded-lg hover:bg-green-700 transition text-sm sm:text-base"
               title="Descargar Recibo de la Venta Actual"
             >
-              <FaDownload /> Descargar Recibo
+              <FaDownload /> <span>Descargar Recibo</span>
             </button>
           )}
         </div>

@@ -33,11 +33,14 @@
   padding: 2px 4px;
   border-radius: 3px;
   font-family: monospace;
+  /* Permitir que el código se rompa en varias líneas */
+  word-break: break-all; 
+  white-space: normal;
 }
 
 .upload-controls {
   display: flex;
-  flex-direction: column;
+  flex-direction: column; /* Apila los elementos verticalmente por defecto */
   gap: 1rem;
   margin-bottom: 2rem;
 }
@@ -48,6 +51,8 @@
   border-radius: 5px;
   background-color: #f8f8f8;
   cursor: pointer;
+  width: 100%; /* Asegura que ocupe todo el ancho disponible */
+  box-sizing: border-box; /* Incluye padding en el ancho */
 }
 
 .upload-button {
@@ -59,6 +64,8 @@
   cursor: pointer;
   font-size: 1.1em;
   transition: background-color 0.3s ease, opacity 0.3s ease;
+  width: 100%; /* Asegura que ocupe todo el ancho disponible */
+  box-sizing: border-box; /* Incluye padding en el ancho */
 }
 
 .upload-button:hover:not(:disabled) {
@@ -123,8 +130,57 @@
   list-style-type: disc;
   margin-left: 20px;
   color: #721c24;
+  /* Asegura que los elementos de la lista se ajusten en móviles */
+  word-break: break-word; 
 }
 
 .error-list li {
   margin-bottom: 0.5rem;
+}
+
+/* --- Media Queries para Responsividad --- */
+@media (max-width: 768px) {
+  .product-upload-container {
+    margin: 1rem; /* Menos margen en pantallas pequeñas */
+    padding: 1.5rem; /* Menos padding */
+  }
+
+  .product-upload-container h2 {
+    font-size: 1.75rem; /* Ajusta el tamaño del título */
+  }
+
+  .upload-instructions {
+    font-size: 0.9rem; /* Reduce el tamaño de la fuente de las instrucciones */
+  }
+
+  .upload-controls {
+    flex-direction: column; /* Asegura que los inputs se apilen */
+  }
+
+  .upload-button, .csv-file-input {
+    width: 100%; /* Ocupan todo el ancho disponible */
+  }
+
+  .upload-error-details {
+    padding: 0.8rem; /* Ajusta padding del detalle de errores */
+  }
+
+  .error-list {
+    margin-left: 15px; /* Menos margen para la lista de errores */
+  }
+}
+
+@media (max-width: 480px) {
+  .product-upload-container {
+    padding: 1rem; /* Aún menos padding en pantallas muy pequeñas */
+    margin: 0.5rem;
+  }
+
+  .product-upload-container h2 {
+    font-size: 1.5rem;
+  }
+
+  .upload-instructions {
+    font-size: 0.85rem;
+  }
 }

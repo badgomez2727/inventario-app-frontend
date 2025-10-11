@@ -1,24 +1,20 @@
 // venta_inventario_app/frontend/src/pages/productos/ProductUploadPage.jsx
 
 import React, { useState } from 'react';
-import Papa from 'papaparse'; // Importar Papa Parse
-import { uploadProducts } from '../../services/apiService'; // Importar la función de carga masiva
-import '../../styles/ProductUpload.css'; // Crearemos este archivo CSS
+import Papa from 'papaparse';
+import { uploadProducts } from '../../services/apiService';
 
 function ProductUploadPage() {
   const [file, setFile] = useState(null);
   const [message, setMessage] = useState('');
   const [error, setError] = useState('');
-  const [uploadResults, setUploadResults] = useState(null); // Para mostrar resultados detallados
+  const [uploadResults, setUploadResults] = useState(null);
   const [loading, setLoading] = useState(false);
 
-  // Columnas esperadas en el CSV (en el orden que Prisma las espera o las mapea)
-  // 'supplierName' es especial, se usará para buscar o crear el proveedor en el backend
   const expectedHeaders = [
     'nombre', 'descripcion', 'sku', 'precioCompra', 'precioVenta',
     'stockActual', 'unidadMedida', 'categoria', 'imagenUrl', 'supplierName',
-    // Puedes añadir 'supplierContacto', 'supplierTelefono', 'supplierDireccion'
-    // si quieres crear el proveedor con más detalle desde el CSV
+    'supplierContacto', 'supplierTelefono', 'supplierDireccion'
   ];
 
   const handleFileChange = (e) => {
@@ -39,11 +35,10 @@ function ProductUploadPage() {
     setMessage('');
     setUploadResults(null);
 
-    // Parsear el archivo CSV
     Papa.parse(file, {
-      header: true, // Asume que la primera fila son los encabezados
+      header: true,
       skipEmptyLines: true,
-      transformHeader: (header) => header.trim(), // Limpia espacios en blanco de los encabezados
+      transformHeader: (header) => header.trim(),
       complete: async (results) => {
         const productsToUpload = results.data;
         const parseErrors = results.errors;
@@ -61,39 +56,35 @@ function ProductUploadPage() {
           return;
         }
 
-        // Validación simple de encabezados (puedes hacerla más estricta si es necesario)
         const actualHeaders = Object.keys(productsToUpload[0] || {});
         const missingHeaders = expectedHeaders.filter(header => !actualHeaders.includes(header));
-        if (missingHeaders.length > 0) {
-          setError(`Faltan las siguientes columnas en el CSV: ${missingHeaders.join(', ')}. Asegúrate de que los encabezados coincidan exactamente.`);
+        const optionalHeaders = ['descripcion', 'imagenUrl', 'supplierContacto', 'supplierTelefono', 'supplierDireccion'];
+        const trulyMissingHeaders = missingHeaders.filter(h => !optionalHeaders.includes(h));
+
+        if (trulyMissingHeaders.length > 0) {
+          setError(`Faltan columnas obligatorias: ${trulyMissingHeaders.join(', ')}.`);
           setLoading(false);
           return;
         }
 
         try {
-          // Llamar a la API de carga masiva
           const response = await uploadProducts(productsToUpload);
-          
           setMessage(response.message);
           setUploadResults({
             successCount: response.successCount,
             errorCount: response.errorCount,
-            errors: response.errors || [], // Asegurar que sea un array
+            errors: response.errors || [],
           });
-          setFile(null); // Limpiar el archivo seleccionado
-          
+          setFile(null);
         } catch (err) {
-          // Si el backend envía un 207 (Multi-Status), el error.message podría contener el JSON de resultados
           let backendErrorData = {};
           try {
-            // Intentar parsear el mensaje de error como JSON si viene del backend
-            backendErrorData = JSON.parse(err.message); 
+            backendErrorData = JSON.parse(err.message);
           } catch (e) {
-            backendErrorData = { error: err.message }; // Si no es JSON, usa el mensaje tal cual
+            backendErrorData = { error: err.message || 'Error desconocido.' };
           }
 
-          setError(backendErrorData.error || 'Error al cargar productos. Consulta los detalles abajo.');
-          
+          setError(backendErrorData.error || 'Error al cargar productos.');
           setUploadResults({
             successCount: backendErrorData.successCount || 0,
             errorCount: backendErrorData.errorCount || (backendErrorData.errors ? backendErrorData.errors.length : 0),
@@ -112,43 +103,49 @@ function ProductUploadPage() {
   };
 
   return (
-    <div className="product-upload-container">
-      <h2>Carga Masiva de Productos (CSV)</h2>
-      <p className="upload-instructions">
-        Sube un archivo CSV con tus productos. Asegúrate de que las columnas tengan los siguientes encabezados:
-        <br/>
-        <code>nombre, descripcion, sku, precioCompra, precioVenta, stockActual, unidadMedida, categoria, imagenUrl, supplierName</code>
-        <br/>
-        (<code>descripcion</code> e <code>imagenUrl</code> son opcionales. <code>supplierName</code> se usará para buscar/crear el proveedor.)
+    <div className="p-6 max-w-3xl mx-auto bg-white rounded-lg shadow">
+      <h2 className="text-2xl font-bold mb-4">Carga Masiva de Productos (CSV)</h2>
+      <p className="text-gray-600 mb-4 text-sm">
+        Sube un archivo CSV con tus productos. Encabezados requeridos:
+        <br />
+        <code className="bg-gray-100 px-2 py-1 rounded text-xs">
+          nombre, descripcion, sku, precioCompra, precioVenta, stockActual, unidadMedida, categoria, imagenUrl, supplierName, supplierContacto, supplierTelefono, supplierDireccion
+        </code>
+        <br />
+        <span className="text-gray-500">Algunas columnas como <code>descripcion</code>, <code>imagenUrl</code>, <code>supplierContacto</code>, <code>supplierTelefono</code>, <code>supplierDireccion</code> son opcionales.</span>
       </p>
-      
-      <div className="upload-controls">
+
+      <div className="flex items-center gap-3 mb-4">
         <input
           type="file"
           accept=".csv"
           onChange={handleFileChange}
-          className="csv-file-input"
+          className="block w-full text-sm text-gray-600 border border-gray-300 rounded-lg cursor-pointer bg-gray-50 focus:outline-none"
         />
-        <button onClick={handleUpload} disabled={!file || loading} className="upload-button">
-          {loading ? 'Cargando...' : 'Subir Productos'}
+        <button
+          onClick={handleUpload}
+          disabled={!file || loading}
+          className={`px-4 py-2 rounded-lg text-white ${loading ? 'bg-gray-400' : 'bg-blue-600 hover:bg-blue-700'}`}
+        >
+          {loading ? 'Cargando...' : 'Subir'}
         </button>
       </div>
 
-      {message && <p className="success-message">{message}</p>}
-      {error && <p className="error-message">{error}</p>}
+      {message && <p className="text-green-600 font-medium mb-4">{message}</p>}
+      {error && <p className="text-red-600 font-medium mb-4">{error}</p>}
 
       {uploadResults && (
-        <div className="upload-results">
-          <h3>Resultados de la Carga</h3>
-          <p>Productos Cargados con Éxito: <span className="success-count">{uploadResults.successCount}</span></p>
-          <p>Productos con Errores: <span className="error-count">{uploadResults.errorCount}</span></p>
+        <div className="mt-6 p-4 border rounded-lg bg-gray-50">
+          <h3 className="text-lg font-semibold mb-2">Resultados de la Carga</h3>
+          <p>✅ Productos cargados: <span className="font-bold">{uploadResults.successCount}</span></p>
+          <p>❌ Errores: <span className="font-bold text-red-600">{uploadResults.errorCount}</span></p>
 
           {uploadResults.errors.length > 0 && (
-            <div className="upload-error-details">
-              <h4>Detalles de los Errores:</h4>
-              <ul className="error-list">
+            <div className="mt-4">
+              <h4 className="font-medium text-red-700 mb-2">Detalles de los Errores:</h4>
+              <ul className="space-y-2 text-sm">
                 {uploadResults.errors.map((err, index) => (
-                  <li key={index}>
+                  <li key={index} className="p-2 bg-red-50 border border-red-200 rounded">
                     <strong>Fila:</strong> {JSON.stringify(err.rowData)} <br />
                     <strong>Error:</strong> {err.error}
                   </li>

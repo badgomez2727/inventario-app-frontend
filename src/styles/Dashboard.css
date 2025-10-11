@@ -1,4 +1,7 @@
 /* frontend/src/styles/Dashboard.css */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
 
 .dashboard-container {
   padding: 0;

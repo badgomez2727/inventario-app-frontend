@@ -2,29 +2,6 @@
 import React, { useState } from 'react';
 import { addStockEntry, addStockExit } from '../services/apiService';
 
-// Estilos básicos para el modal (puedes ajustarlos en tu CSS)
-const modalStyles = {
-  position: 'fixed',
-  top: 0,
-  left: 0,
-  width: '100%',
-  height: '100%',
-  backgroundColor: 'rgba(0, 0, 0, 0.5)',
-  display: 'flex',
-  justifyContent: 'center',
-  alignItems: 'center',
-  zIndex: 1000,
-};
-
-const modalContentStyles = {
-  backgroundColor: 'white',
-  padding: '25px',
-  borderRadius: '8px',
-  boxShadow: '0 4px 8px rgba(0, 0, 0, 0.2)',
-  maxWidth: '450px',
-  width: '100%',
-};
-
 function StockFormModal({ product, onClose, onStockUpdated }) {
   const [cantidad, setCantidad] = useState('');
   const [motivo, setMotivo] = useState('');
@@ -52,10 +29,8 @@ function StockFormModal({ product, onClose, onStockUpdated }) {
         await addStockExit(data);
         setMessage(`Salida de stock de ${cantidad} unidades registrada con éxito.`);
       }
-      // Opcional: limpiar el formulario después de un envío exitoso
       setCantidad('');
       setMotivo('');
-      // Llamar a la función para que el componente padre actualice la lista
       onStockUpdated();
     } catch (err) {
       console.error('Error al registrar movimiento de stock:', err);
@@ -66,36 +41,45 @@ function StockFormModal({ product, onClose, onStockUpdated }) {
   };
 
   return (
-    <div style={modalStyles}>
-      <div style={modalContentStyles}>
-        <h2>Gestión de Stock: {product.nombre}</h2>
-        <p>Stock actual: <strong>{product.stockActual}</strong></p>
-        <form>
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+      <div className="bg-white p-6 rounded-lg shadow-lg w-full max-w-md">
+        <h2 className="text-xl font-bold text-gray-800 mb-2">
+          Gestión de Stock: {product.nombre}
+        </h2>
+        <p className="text-gray-600 mb-4">
+          Stock actual: <strong>{product.stockActual}</strong>
+        </p>
+
+        <form className="space-y-4">
           <div>
-            <label>Cantidad:</label>
+            <label className="block text-sm font-medium text-gray-700">Cantidad:</label>
             <input
               type="number"
               value={cantidad}
               onChange={(e) => setCantidad(e.target.value)}
               min="1"
               required
+              className="mt-1 w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring focus:ring-blue-300"
             />
           </div>
+
           <div>
-            <label>Motivo:</label>
+            <label className="block text-sm font-medium text-gray-700">Motivo:</label>
             <input
               type="text"
               value={motivo}
               onChange={(e) => setMotivo(e.target.value)}
               placeholder="Ej. Compra a proveedor, Venta, Daño"
+              className="mt-1 w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring focus:ring-blue-300"
             />
           </div>
-          <div style={{ display: 'flex', gap: '10px', marginTop: '20px' }}>
+
+          <div className="flex gap-3 mt-4">
             <button
               onClick={(e) => handleSubmit(e, 'ENTRADA')}
               type="button"
               disabled={loading || cantidad <= 0}
-              style={{ backgroundColor: '#4CAF50', color: 'white' }}
+              className="flex-1 bg-green-600 hover:bg-green-700 text-white font-semibold py-2 px-4 rounded-md disabled:opacity-50"
             >
               Registrar Entrada
             </button>
@@ -103,20 +87,25 @@ function StockFormModal({ product, onClose, onStockUpdated }) {
               onClick={(e) => handleSubmit(e, 'SALIDA')}
               type="button"
               disabled={loading || cantidad <= 0}
-              style={{ backgroundColor: '#f44336', color: 'white' }}
+              className="flex-1 bg-red-600 hover:bg-red-700 text-white font-semibold py-2 px-4 rounded-md disabled:opacity-50"
             >
               Registrar Salida
             </button>
             <button
               onClick={onClose}
               type="button"
-              style={{ backgroundColor: '#ccc' }}
+              className="bg-gray-300 hover:bg-gray-400 text-gray-800 font-semibold py-2 px-4 rounded-md"
             >
               Cerrar
             </button>
           </div>
-          {message && <p className="success-message">{message}</p>}
-          {error && <p className="error-message">{error}</p>}
+
+          {message && (
+            <p className="mt-3 text-green-600 font-medium">{message}</p>
+          )}
+          {error && (
+            <p className="mt-3 text-red-600 font-medium">{error}</p>
+          )}
         </form>
       </div>
     </div>

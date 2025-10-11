@@ -26,23 +26,27 @@ const InventoryReportPage = () => {
     fetchReport();
   }, []);
 
-  if (loading) return <p>Cargando reporte de inventario...</p>;
-  if (error) return <p className="error-message">Error: {error}</p>;
+  if (loading) return <p className="text-center text-gray-600">Cargando reporte de inventario...</p>;
+  if (error) return <p className="text-center text-red-500 font-semibold">Error: {error}</p>;
   if (!report) return null;
 
   return (
-    <div className="list-container">
-      <h2>Reporte de Valor de Inventario</h2>
-      <div style={{ display: 'flex', gap: '20px', justifyContent: 'center', marginTop: '30px' }}>
-        <div style={{ padding: '20px', border: '1px solid #ccc', borderRadius: '8px', textAlign: 'center' }}>
-          <h3>Valor Total (Costo)</h3>
-          <p style={{ fontSize: '2rem', color: '#3f51b5', fontWeight: 'bold' }}>
+    <div className="p-6 bg-white rounded-xl shadow-md">
+      <h2 className="text-2xl font-bold text-gray-800 mb-6 text-center">
+        Reporte de Valor de Inventario
+      </h2>
+
+      <div className="flex flex-col md:flex-row gap-6 justify-center mt-6">
+        <div className="flex-1 max-w-sm bg-gray-50 border border-gray-200 rounded-xl p-6 shadow-sm text-center">
+          <h3 className="text-lg font-semibold text-gray-700">Valor Total (Costo)</h3>
+          <p className="text-3xl text-indigo-600 font-bold mt-3">
             {formatCOP(report.valorTotalCosto)}
           </p>
         </div>
-        <div style={{ padding: '20px', border: '1px solid #ccc', borderRadius: '8px', textAlign: 'center' }}>
-          <h3>Valor Total (Venta)</h3>
-          <p style={{ fontSize: '2rem', color: '#28a745', fontWeight: 'bold' }}>
+
+        <div className="flex-1 max-w-sm bg-gray-50 border border-gray-200 rounded-xl p-6 shadow-sm text-center">
+          <h3 className="text-lg font-semibold text-gray-700">Valor Total (Venta)</h3>
+          <p className="text-3xl text-green-600 font-bold mt-3">
             {formatCOP(report.valorTotalVenta)}
           </p>
         </div>

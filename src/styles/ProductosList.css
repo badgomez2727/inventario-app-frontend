@@ -1,6 +1,5 @@
 /* venta_inventario_app/frontend/src/styles/ProductosList.css */
 
-/* Estilos para el contenedor de la lista de productos */
 .productos-list-container {
   padding: 0; /* El padding ya lo gestiona main-content-private */
   max-width: 100%;
@@ -15,26 +14,131 @@
   padding-bottom: 0.5rem;
 }
 
-/* --- Adaptación de la tabla para móviles --- */
+/* --- Nuevos estilos para el input de búsqueda --- */
+.search-input-container {
+  position: relative;
+  margin-bottom: 1.5rem;
+  width: 100%;
+  max-width: 700px; /* ¡Aumentado el ancho máximo para escritorio! */
+  margin-left: auto;
+  margin-right: auto; /* Centrar el input */
+}
+
+.search-input {
+  width: 100%;
+  padding: 14px 14px 14px 50px; /* Más padding y espacio a la izquierda para el ícono */
+  border: 1px solid #ccc;
+  border-radius: 28px; /* Bordes más redondeados */
+  font-size: 1.2rem; /* Tamaño de fuente más grande */
+  box-shadow: inset 0 1px 3px rgba(0,0,0,0.05);
+  transition: border-color 0.3s ease, box-shadow 0.3s ease;
+  box-sizing: border-box; /* Asegura que el padding se incluya en el ancho */
+}
+
+.search-input:focus {
+  border-color: #007bff;
+  box-shadow: inset 0 1px 3px rgba(0,0,0,0.05), 0 0 0 0.2rem rgba(0,123,255,.25);
+  outline: none;
+}
+
+.search-icon {
+  position: absolute;
+  left: 20px; /* Ajustado para el nuevo padding */
+  top: 50%;
+  transform: translateY(-50%);
+  color: #888;
+  font-size: 1.3rem; /* Tamaño de ícono más grande */
+}
+
+
+/* Estilos de tabla base para pantallas grandes */
+.productos-list-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 20px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  border-radius: 8px;
+  overflow: hidden; /* Asegura que las esquinas redondeadas se apliquen */
+}
+
+.productos-list-table th, .productos-list-table td {
+  border: 1px solid #ddd;
+  padding: 10px;
+  text-align: left;
+}
+
+.productos-list-table th {
+  background-color: #e0e0e0;
+  font-weight: bold;
+}
+
+.productos-list-table tbody tr:nth-child(even) {
+  background-color: #f9f9f9;
+}
+
+/* Estilos para los botones de acción */
+.action-button {
+  background-color: #007bff;
+  color: white;
+  border: none;
+  padding: 8px 12px;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 0.9em;
+  transition: background-color 0.3s ease;
+  margin-right: 5px; /* Espacio entre botones en desktop */
+  display: inline-flex; /* Para alinear íconos con texto si es necesario */
+  align-items: center;
+  gap: 5px;
+}
+
+.action-button:hover {
+  background-color: #0056b3;
+}
+
+.action-button.edit-button { background-color: #ffc107; }
+.action-button.edit-button:hover { background-color: #e0a800; }
+.action-button.delete-button { background-color: #dc3545; }
+.action-button.delete-button:hover { background-color: #c82333; }
+.action-button.stock-button { background-color: #17a2b8; }
+.action-button.stock-button:hover { background-color: #138496; }
+
+
+/* --- Media Queries para Responsividad (Tarjetas en Móviles) --- */
 @media (max-width: 768px) {
-  .productos-list-table {
-    border: 0; /* Elimina los bordes generales de la tabla en móvil */
+  .search-input-container {
+    max-width: 100%;
+    padding: 0 10px;
+    box-sizing: border-box;
   }
 
-  /* Oculta los encabezados de la tabla en móvil */
+  .search-input {
+    padding: 10px 10px 10px 38px; /* Reducido el padding para móviles */
+    font-size: 0.95rem; /* Ajustado el tamaño de fuente para móviles */
+    box-sizing: border-box; /* Asegurado que box-sizing esté aquí también */
+  }
+
+  .search-icon {
+    left: 12px; /* Ajustado el ícono para el nuevo padding móvil */
+    font-size: 1rem; /* Ajustado el tamaño del ícono para móviles */
+  }
+
+  .productos-list-table {
+    border: 0;
+    box-shadow: none;
+  }
+
   .productos-list-table thead {
     display: none;
   }
 
-  /* Hace que el cuerpo de la tabla se comporte como un bloque */
   .productos-list-table tbody {
     display: block;
-    width: 100%; /* Ocupa todo el ancho disponible */
+    width: 100%;
   }
 
-  /* Cada fila de la tabla se convierte en un bloque con un poco de margen */
   .productos-list-table tr {
-    border-bottom: 3px solid #ddd; /* Separador entre "tarjetas" */
+    border-bottom: 3px solid #ddd;
     display: block;
     margin-bottom: 1rem;
     background-color: #fff;
@@ -43,45 +147,55 @@
     border-radius: 8px;
   }
 
-  /* Cada celda de la tabla se convierte en un bloque */
   .productos-list-table td {
-    border-bottom: 1px dotted #eee; /* Separador entre campos dentro de la "tarjeta" */
+    border-bottom: 1px dotted #eee;
     display: block;
-    text-align: right; /* Alinea el valor a la derecha */
-    padding-left: 50%; /* Espacio para la etiqueta */
-    position: relative; /* Para posicionar la etiqueta */
+    text-align: right;
+    padding-left: 50%;
+    position: relative;
     font-size: 0.9em;
   }
 
-  /* Inserta el contenido del encabezado como una etiqueta en cada celda */
   .productos-list-table td::before {
-    /* Toma el valor del atributo data-label del td */
     content: attr(data-label);
     position: absolute;
-    left: 10px; /* Posiciona la etiqueta a la izquierda */
-    width: calc(50% - 20px); /* Ancho para la etiqueta */
-    padding-right: 10px; /* Espacio entre etiqueta y valor */
+    left: 10px;
+    width: calc(50% - 20px);
+    padding-right: 10px;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
     font-weight: bold;
-    text-align: left; /* Asegura que la etiqueta esté alineada a la izquierda */
+    text-align: left;
     color: #555;
   }
 
-  /* Ajustes para los botones de acción en móviles */
-  .productos-list-table td:last-child {
-    text-align: center; /* Centrar los botones en la última celda */
-    padding-left: 10px; /* Resetear el padding-left para que no se vea afectado por ::before */
+  .productos-list-table td.product-actions-cell {
+    padding-left: 10px;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-top: 10px;
+    border-bottom: none;
   }
 
-  .productos-list-table td .action-button {
-    width: auto; /* Permite que el botón tome el ancho de su contenido */
-    padding: 8px 12px; /* Aumenta el padding para un mejor toque */
-    font-size: 0.9em;
-    margin: 5px; /* Espacio entre botones */
-    display: inline-flex; /* Asegura que el icono y texto estén en línea */
-    align-items: center;
-    gap: 5px; /* Espacio entre icono y texto */
+  .productos-list-table td.product-actions-cell::before {
+    content: attr(data-label);
+    position: static;
+    display: block;
+    text-align: center;
+    font-weight: bold;
+    color: #333;
+    margin-bottom: 10px;
+    padding-right: 0;
+    width: auto;
+  }
+
+  .product-actions-cell .action-button {
+    width: 100%;
+    margin-right: 0;
+    padding: 10px;
+    font-size: 1em;
   }
 }
