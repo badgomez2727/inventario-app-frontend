@@ -3,49 +3,16 @@
   <head>
     <meta charset="utf-8" />
     <link rel="icon" href="%PUBLIC_URL%/favicon.ico?v=2" />
-    <link rel="apple-touch-icon" href="%PUBLIC_URL%/logo192.png" />
-    
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0" />
     <meta name="theme-color" content="#10b981" />
-    
-    <meta name="description" content="Vendita: Gestión de inventario, ventas y facturación ágil." />
-    <link rel="manifest" href="%PUBLIC_URL%/manifest.json" />
-
+    <meta name="description" content="Vendita: Gestión de inventario y ventas ágil." />
     <title>Vendita | Gestión de Inventario</title>
-
     <style>
-      /* Evitamos el rebote horizontal que bloquea el scroll en móviles */
-      html, body {
-        margin: 0;
-        padding: 0;
-        width: 100%;
-        overflow-x: hidden; 
-        background-color: #f8fafc;
-        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-        /* Optimización para altura en móviles (ignora la barra de URL) */
-        min-height: -webkit-fill-available;
-      }
-
-      #root {
-        width: 100%;
-        min-height: 100vh;
-        display: flex;
-        flex-direction: column;
-        overflow-x: hidden;
-      }
-
-      /* Corregimos el Aside para que no sea rígido en móviles */
-      aside, .sidebar {
-        height: 100%;
-      }
-
-      /* Prevenimos que el zoom accidental bloquee la UI */
-      input, select, textarea {
-        font-size: 16px !important; /* Evita que iOS haga zoom al clickear inputs */
-      }
+      /* Evita que se vea blanco antes de cargar React */
+      body { background-color: #f8fafc; margin: 0; }
     </style>
   </head>
-  <body class="antialiased">
+  <body>
     <noscript>Necesitas activar JavaScript para usar Vendita.</noscript>
     <div id="root"></div>
   </body>
