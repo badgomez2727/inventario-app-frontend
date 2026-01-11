@@ -194,15 +194,21 @@ function SalesPage() {
                     <strong>{item.nombre}</strong>
                     <div className="flex items-center gap-2 text-sm text-gray-500 mt-1">
                       Cant:
+                      
                       <input
-                        type="number"
-                        min="1"
-                        max={item.stockActual}
-                        value={item.cantidad}
-                        onChange={(e) => updateQuantity(item.id, parseInt(e.target.value) || 1)}
-                        className="w-16 border border-gray-300 rounded-md px-2 py-1"
-                      />
+                      type="text" // Cambia temporalmente "number" por "text"
+                      inputMode="numeric" // Esto mantendrá el teclado de números
+                      value={item.cantidad}
+                      onChange={(e) => updateQuantity(item.id, e.target.value)}
+                      onBlur={(e) => {
+                        if (e.target.value === "" || parseInt(e.target.value) <= 0) {
+                          updateQuantity(item.id, 1);
+                        }
+                      }}
+                      className="w-16 border border-gray-300 rounded-md px-2 py-1 text-center font-bold"
+                    />
                     </div>
+                    
                   </div>
                   <div className="text-right flex flex-col items-end">
                     <span className="font-semibold">{formatCOP(item.subtotal)}</span>
