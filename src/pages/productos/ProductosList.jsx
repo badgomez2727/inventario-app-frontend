@@ -118,10 +118,13 @@ function ProductosList({ onEditClick }) {
                   <td className="px-6 py-4 hidden md:table-cell text-gray-500">
                     {p.categoria}
                   </td>
-                  <td className="px-6 py-4 text-center font-bold">
-                    <span className={`px-3 py-1 rounded-full text-xs ${getStockBadge(p.stockActual)}`}>
-                      {p.stockActual} <span className="text-[10px] font-normal">{p.unidadMedida}</span>
-                    </span>
+                  <td className="px-2 py-4 text-center font-bold"> {/* Bajamos px-6 a px-2 */}
+                    <div className="flex items-center justify-center"> {/* Contenedor flex para centrar mejor */}
+                      <span className={`inline-flex items-center gap-1 px-2 py-1 rounded-full text-[11px] ${getStockBadge(p.stockActual)}`}>
+                        {p.stockActual} 
+                        <span className="text-[9px] font-normal opacity-80">{p.unidadMedida}</span>
+                      </span>
+                    </div>
                   </td>
                   <td className="px-6 py-4 font-black text-gray-900">
                     {formatCOP(p.precioVenta)}
