@@ -51,16 +51,14 @@ function AppContent() {
   // 🔹 Rutas públicas (sin autenticación)
   if (!isAuthenticated) {
     return (
-      <div className="min-h-screen flex flex-col bg-gray-100">
-        <main className="flex-1 p-6">
-          <Routes>
-            <Route path="/" element={<LandingPage />} />
-            <Route path="/login" element={<LoginPage />} />
-            <Route path="/register-company" element={<RegisterCompanyPage />} />
-            <Route path="*" element={<Navigate to="/" />} />
-          </Routes>
-        </main>
-        <Footer />
+      <div className="w-full min-h-screen bg-white">
+        <Routes>
+          <Route path="/" element={<LandingPage />} />
+          <Route path="/login" element={<LoginPage />} />
+          <Route path="/register-company" element={<RegisterCompanyPage />} />
+          <Route path="*" element={<Navigate to="/" />} />
+        </Routes>
+        {/* Nota: Quité el Footer de aquí porque tu Landing ya tiene uno propio */}
       </div>
     );
   }

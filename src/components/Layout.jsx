@@ -2,31 +2,43 @@ import React from 'react';
 import Header from './Header';
 import Sidebar from './Sidebar';
 import Footer from './Footer';
+import BottomNavbar from './BottomNavbar';
 
 export default function Layout({ children, toggleSidebar, isSidebarOpen, isMobile }) {
   return (
-    <div className="flex min-h-screen bg-[#f8fafc]">
+    <div className="flex min-h-screen w-full bg-[#f8fafc]">
       
-      {/* Sidebar - Asegúrate que en Sidebar.jsx tenga h-full */}
-      <Sidebar 
-        isSidebarOpen={isSidebarOpen} 
-        isMobile={isMobile} 
-        toggleSidebar={toggleSidebar} 
-      />
+      {/* Sidebar fijo solo en escritorio para no romper el flujo */}
+      <div className="hidden md:block">
+        <Sidebar 
+          isSidebarOpen={isSidebarOpen} 
+          isMobile={isMobile} 
+          toggleSidebar={toggleSidebar} 
+        />
+      </div>
 
-      <div className="flex flex-col flex-1 min-w-0">
+      {/* Sidebar móvil (solo se ve cuando se activa) */}
+      <div className="md:hidden">
+        <Sidebar 
+          isSidebarOpen={isSidebarOpen} 
+          isMobile={isMobile} 
+          toggleSidebar={toggleSidebar} 
+        />
+      </div>
+
+      <div className="flex flex-col flex-1 min-w-0 w-full">
         <Header toggleSidebar={toggleSidebar} isMobile={isMobile} />
 
-        {/* flex-1 asegura que el contenido crezca.
-           min-h-screen junto con el flex-col del padre 
-           ayudará a empujar el footer al fondo.
-        */}
-        <main className="flex-1 p-4 md:p-8 pt-24 md:pt-28">
-          <div className="max-w-7xl mx-auto w-full min-h-[70vh]">
+        {/* Quitamos el h-screen del padre y dejamos que el main fluya 
+            pero le ponemos un fondo que cubra el lateral */}
+        <main className="flex-1 pt-24 md:pt-28 pb-20 md:pb-0">
+          <div className="p-4 md:p-8 max-w-7xl mx-auto min-h-[calc(100vh-200px)]">
             {children}
           </div>
           <Footer />
         </main>
+
+        <BottomNavbar />
       </div>
     </div>
   );
