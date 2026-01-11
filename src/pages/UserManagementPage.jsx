@@ -1,20 +1,24 @@
 import React, { useState, useEffect } from 'react';
 import { getUsers, createUser } from '../services/apiService';
+import { FaUserPlus, FaUserShield, FaUsers } from 'react-icons/fa';
 
 const UserManagementPage = () => {
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [form, setForm] = useState({
-    nombreUsuario: '',
-    email: '',
-    password: '',
-    rol: '',
-  });
+  const [form, setForm] = useState({ nombreUsuario: '', email: '', password: '', rol: '' });
   const [message, setMessage] = useState(null);
   const [formError, setFormError] = useState(null);
 
   useEffect(() => { fetchUsers(); }, []);
+
+  // Auto-ocultar mensajes
+  useEffect(() => {
+    if (message || formError) {
+      const timer = setTimeout(() => { setMessage(null); setFormError(null); }, 4000);
+      return () => clearTimeout(timer);
+    }
+  }, [message, formError]);
 
   const fetchUsers = async () => {
     setLoading(true);
@@ -23,7 +27,6 @@ const UserManagementPage = () => {
       const usersData = await getUsers();
       setUsers(usersData);
     } catch (err) {
-      console.error('Error al obtener usuarios:', err);
       setError(err.message || 'No se pudieron cargar los usuarios.');
     } finally {
       setLoading(false);
@@ -38,127 +41,112 @@ const UserManagementPage = () => {
     setMessage(null);
     try {
       await createUser(form);
-      setMessage('✅ Usuario creado con éxito.');
+      setMessage('✅ Usuario creado correctamente en Vendita.');
       setForm({ nombreUsuario: '', email: '', password: '', rol: '' });
       fetchUsers();
     } catch (err) {
-      console.error('Error al crear usuario:', err);
       setFormError(err.message || '❌ Error al crear el usuario.');
     }
   };
 
+  // Mapeo de roles para vista amigable
+  const roleDisplay = {
+    'ADMIN_COMPANIA': { label: 'Administrador', color: 'bg-purple-100 text-purple-700' },
+    'OPERARIO': { label: 'Operario', color: 'bg-blue-100 text-blue-700' },
+    'VENDEDOR': { label: 'Vendedor', color: 'bg-emerald-100 text-emerald-700' }
+  };
+
+  if (loading) return <div className="p-10 text-center text-emerald-600 animate-pulse font-bold">Cargando sistema de usuarios...</div>;
+
   return (
-    <div className="max-w-7xl mx-auto p-4 sm:p-6 lg:p-8 space-y-8">
-      {/* Formulario */}
-      <div className="bg-white shadow rounded-lg p-4 sm:p-6 lg:p-8">
-        <h2 className="text-2xl font-bold text-gray-700 mb-4 text-center sm:text-left">Crear Nuevo Usuario</h2>
-        <form onSubmit={handleSubmit} className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <div className="flex flex-col">
-            <label className="text-gray-600 font-medium mb-1">Nombre de Usuario:</label>
-            <input
-              type="text"
-              name="nombreUsuario"
-              value={form.nombreUsuario}
-              onChange={handleChange}
-              required
-              className="w-full border border-gray-300 rounded-lg p-2 focus:ring-2 focus:ring-blue-500 focus:outline-none"
-            />
-          </div>
-          <div className="flex flex-col">
-            <label className="text-gray-600 font-medium mb-1">Email:</label>
-            <input
-              type="email"
-              name="email"
-              value={form.email}
-              onChange={handleChange}
-              required
-              className="w-full border border-gray-300 rounded-lg p-2 focus:ring-2 focus:ring-blue-500 focus:outline-none"
-            />
-          </div>
-          <div className="flex flex-col">
-            <label className="text-gray-600 font-medium mb-1">Contraseña:</label>
-            <input
-              type="password"
-              name="password"
-              value={form.password}
-              onChange={handleChange}
-              required
-              className="w-full border border-gray-300 rounded-lg p-2 focus:ring-2 focus:ring-blue-500 focus:outline-none"
-            />
-          </div>
-          <div className="flex flex-col">
-            <label className="text-gray-600 font-medium mb-1">Rol:</label>
-            <select
-              name="rol"
-              value={form.rol}
-              onChange={handleChange}
-              required
-              className="w-full border border-gray-300 rounded-lg p-2 bg-white focus:ring-2 focus:ring-blue-500 focus:outline-none"
-            >
-              <option value="">-- Selecciona un rol --</option>
-              <option value="ADMIN_COMPANIA">Administrador</option>
-              <option value="OPERARIO">Operario</option>
-              <option value="VENDEDOR">Vendedor</option>
-            </select>
-          </div>
-          <div className="sm:col-span-2 flex flex-col sm:flex-row gap-2 mt-2">
-            <button
-              type="submit"
-              className="flex-1 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition font-semibold"
-            >
-              Crear Usuario
-            </button>
-          </div>
-        </form>
-        {message && <p className="text-green-600 mt-3">{message}</p>}
-        {formError && <p className="text-red-600 mt-3">{formError}</p>}
+    <div className="max-w-7xl mx-auto p-4 md:p-8 space-y-8 animate-fadeIn">
+      
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div>
+          <h2 className="text-3xl font-black text-gray-800 tracking-tight">Control de <span className="text-emerald-500">Accesos</span></h2>
+          <p className="text-gray-500 text-sm">Gestiona quién tiene permiso para operar en tu negocio.</p>
+        </div>
+        <div className="bg-white px-4 py-2 rounded-2xl shadow-sm border border-gray-100 flex items-center gap-3">
+          <FaUsers className="text-emerald-500 text-xl" />
+          <span className="font-bold text-gray-700">{users.length} Usuarios</span>
+        </div>
       </div>
 
-      {/* Lista de usuarios: tabla desktop / cards mobile */}
-      <div className="bg-white shadow rounded-lg p-4 sm:p-6 lg:p-8 space-y-4">
-        <h2 className="text-2xl font-bold text-gray-700 mb-4">Usuarios de la Compañía</h2>
-        {loading ? (
-          <p className="text-gray-500">Cargando usuarios...</p>
-        ) : error ? (
-          <p className="text-red-600">Error: {error}</p>
-        ) : users.length === 0 ? (
-          <p className="text-gray-500">No hay usuarios registrados.</p>
-        ) : (
-          <>
-            {/* Desktop Table */}
-            <div className="hidden md:block overflow-x-auto">
-              <table className="min-w-full border border-gray-200">
-                <thead className="bg-gray-100 text-gray-700">
-                  <tr>
-                    <th className="p-3 border-b text-left">Nombre de Usuario</th>
-                    <th className="p-3 border-b text-left">Email</th>
-                    <th className="p-3 border-b text-left">Rol</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {users.map((user) => (
-                    <tr key={user.id} className="hover:bg-gray-50 transition">
-                      <td className="p-3 border-b">{user.nombreUsuario}</td>
-                      <td className="p-3 border-b">{user.email}</td>
-                      <td className="p-3 border-b">{user.rol}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        {/* Formulario Lateral */}
+        <div className="lg:col-span-1">
+          <div className="bg-white shadow-sm border border-gray-100 rounded-2xl p-6 sticky top-28">
+            <div className="flex items-center gap-2 mb-6">
+              <FaUserPlus className="text-emerald-500" />
+              <h3 className="font-bold text-gray-700 text-lg">Nuevo Integrante</h3>
             </div>
+            
+            <form onSubmit={handleSubmit} className="space-y-4">
+              <div>
+                <label className="text-xs font-bold text-gray-400 uppercase ml-1">Usuario</label>
+                <input type="text" name="nombreUsuario" value={form.nombreUsuario} onChange={handleChange} required className="w-full border border-gray-200 rounded-xl p-2.5 focus:ring-2 focus:ring-emerald-500 outline-none transition-all" placeholder="Ej: dario_admin" />
+              </div>
+              <div>
+                <label className="text-xs font-bold text-gray-400 uppercase ml-1">Email</label>
+                <input type="email" name="email" value={form.email} onChange={handleChange} required className="w-full border border-gray-200 rounded-xl p-2.5 focus:ring-2 focus:ring-emerald-500 outline-none transition-all" placeholder="correo@vendita.com" />
+              </div>
+              <div>
+                <label className="text-xs font-bold text-gray-400 uppercase ml-1">Contraseña</label>
+                <input type="password" name="password" value={form.password} onChange={handleChange} required className="w-full border border-gray-200 rounded-xl p-2.5 focus:ring-2 focus:ring-emerald-500 outline-none transition-all" placeholder="••••••••" />
+              </div>
+              <div>
+                <label className="text-xs font-bold text-gray-400 uppercase ml-1">Rol de Acceso</label>
+                <select name="rol" value={form.rol} onChange={handleChange} required className="w-full border border-gray-200 rounded-xl p-2.5 bg-gray-50 focus:ring-2 focus:ring-emerald-500 outline-none transition-all cursor-pointer">
+                  <option value="">Seleccionar...</option>
+                  <option value="ADMIN_COMPANIA">Administrador</option>
+                  <option value="OPERARIO">Operario</option>
+                  <option value="VENDEDOR">Vendedor</option>
+                </select>
+              </div>
+              <button type="submit" className="w-full bg-gray-900 text-white font-bold py-3 rounded-xl hover:bg-emerald-600 transition-all shadow-lg hover:shadow-emerald-500/20 mt-2">
+                Registrar Usuario
+              </button>
+            </form>
+            {message && <p className="text-emerald-600 text-sm mt-4 font-medium text-center">{message}</p>}
+            {formError && <p className="text-red-500 text-sm mt-4 font-medium text-center">{formError}</p>}
+          </div>
+        </div>
 
-            {/* Mobile Cards */}
-            <div className="md:hidden space-y-3">
-              {users.map((user) => (
-                <div key={user.id} className="border rounded-lg p-4 shadow hover:shadow-md transition">
-                  <p><span className="font-semibold">Nombre de Usuario:</span> {user.nombreUsuario}</p>
-                  <p><span className="font-semibold">Email:</span> {user.email}</p>
-                  <p><span className="font-semibold">Rol:</span> {user.rol}</p>
-                </div>
-              ))}
-            </div>
-          </>
-        )}
+        {/* Tabla Principal */}
+        <div className="lg:col-span-2">
+          <div className="bg-white shadow-sm border border-gray-100 rounded-2xl overflow-hidden">
+            <table className="w-full text-left border-collapse">
+              <thead>
+                <tr className="bg-gray-50/50 text-gray-400 text-xs font-black uppercase tracking-widest">
+                  <th className="px-6 py-4">Usuario</th>
+                  <th className="px-6 py-4">Acceso</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-50">
+                {users.map((user) => (
+                  <tr key={user.id} className="hover:bg-gray-50/50 transition-colors">
+                    <td className="px-6 py-4">
+                      <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center font-bold">
+                          {user.nombreUsuario.charAt(0).toUpperCase()}
+                        </div>
+                        <div>
+                          <p className="font-bold text-gray-800">{user.nombreUsuario}</p>
+                          <p className="text-xs text-gray-400">{user.email}</p>
+                        </div>
+                      </div>
+                    </td>
+                    <td className="px-6 py-4">
+                      <span className={`text-[10px] font-black px-2.5 py-1 rounded-full uppercase tracking-tighter ${roleDisplay[user.rol]?.color || 'bg-gray-100'}`}>
+                        {roleDisplay[user.rol]?.label || user.rol}
+                      </span>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
       </div>
     </div>
   );

@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { getClients, createClient, updateClient, deleteClient } from '../services/apiService';
-import { FaEdit, FaTrashAlt } from 'react-icons/fa';
+import { FaEdit, FaTrashAlt, FaRocket } from 'react-icons/fa';
 
 const ClientesPage = () => {
+  // 1. Definición de todos los estados (Esto corrige los errores de 'no-undef')
   const [clientes, setClientes] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -10,142 +11,147 @@ const ClientesPage = () => {
   const [editingClient, setEditingClient] = useState(null);
   const [formData, setFormData] = useState({ nombre: '', email: '', telefono: '', direccion: '' });
 
-  useEffect(() => { fetchClients(); }, []);
+  // 2. Cargar clientes al iniciar
+  useEffect(() => { 
+    fetchClients(); 
+  }, []);
+
+  // 3. Auto-ocultar mensajes de éxito (Mejora de UX)
+  useEffect(() => {
+    if (message) {
+      const timer = setTimeout(() => setMessage(''), 3000);
+      return () => clearTimeout(timer);
+    }
+  }, [message]);
 
   const fetchClients = async () => {
-    try { setLoading(true); setError(null); const data = await getClients(); setClientes(data); }
-    catch (err) { console.error('Error al cargar clientes:', err); setError(err.message || 'No se pudieron cargar los clientes.'); }
-    finally { setLoading(false); }
+    try { 
+      setLoading(true); 
+      setError(null); 
+      const data = await getClients(); 
+      setClientes(data); 
+    } catch (err) { 
+      console.error('Error al cargar clientes:', err); 
+      setError(err.message || 'No se pudieron cargar los clientes.'); 
+    } finally { 
+      setLoading(false); 
+    }
   };
 
   const handleChange = (e) => setFormData(prev => ({ ...prev, [e.target.name]: e.target.value }));
 
   const handleSubmit = async (e) => {
-    e.preventDefault(); setMessage(''); setError('');
+    e.preventDefault(); 
+    setMessage(''); 
+    setError('');
     try {
-      if (editingClient) { await updateClient(editingClient.id, formData); setMessage('Cliente actualizado con éxito.'); }
-      else { await createClient(formData); setMessage('Cliente creado con éxito.'); }
+      if (editingClient) { 
+        await updateClient(editingClient.id, formData); 
+        setMessage('✅ Cliente actualizado con éxito.'); 
+      } else { 
+        await createClient(formData); 
+        setMessage('🚀 Cliente creado con éxito.'); 
+      }
       setFormData({ nombre: '', email: '', telefono: '', direccion: '' });
       setEditingClient(null);
       fetchClients();
-    } catch (err) { console.error('Error al guardar cliente:', err); setError(err.message || 'Error al guardar el cliente.'); }
+    } catch (err) { 
+      setError(err.message || 'Error al guardar el cliente.'); 
+    }
   };
 
   const handleEdit = (client) => {
     setEditingClient(client);
     setFormData({ nombre: client.nombre, email: client.email || '', telefono: client.telefono || '', direccion: client.direccion || '' });
-    setMessage(''); setError('');
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   const handleDelete = async (clientId) => {
     if (!window.confirm('¿Estás seguro de que deseas eliminar este cliente?')) return;
-    setMessage(''); setError('');
-    try { await deleteClient(clientId); setMessage('Cliente eliminado con éxito.'); fetchClients(); }
-    catch (err) { console.error('Error al eliminar cliente:', err); setError(err.message || 'Error al eliminar el cliente.'); }
+    try { 
+      await deleteClient(clientId); 
+      setMessage('🗑️ Cliente eliminado.'); 
+      fetchClients(); 
+    } catch (err) { 
+      setError(err.message || 'Error al eliminar el cliente.'); 
+    }
   };
 
-  const handleCancelEdit = () => { setEditingClient(null); setFormData({ nombre: '', email: '', telefono: '', direccion: '' }); setMessage(''); setError(''); };
+  const handleCancelEdit = () => { 
+    setEditingClient(null); 
+    setFormData({ nombre: '', email: '', telefono: '', direccion: '' }); 
+  };
 
-  if (loading) return <p className="text-gray-600">Cargando clientes...</p>;
-  if (error) return <p className="text-red-500 font-medium">Error: {error}</p>;
+  if (loading) return <div className="p-10 text-center text-emerald-600 font-bold">Cargando clientes...</div>;
 
   return (
-    <div className="max-w-6xl mx-auto p-4 md:p-6 space-y-8">
-      <h2 className="text-2xl md:text-3xl font-bold text-center text-gray-800 mb-6">Gestión de Clientes</h2>
-
-      {/* Formulario */}
-      <div className="bg-white p-4 md:p-6 rounded-lg shadow">
-        <h3 className="text-xl md:text-2xl font-semibold mb-4">{editingClient ? 'Editar Cliente' : 'Crear Nuevo Cliente'}</h3>
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <label htmlFor="nombre" className="block text-gray-700 font-medium mb-1">Nombre:</label>
-              <input type="text" id="nombre" name="nombre" value={formData.nombre} onChange={handleChange} required
-                className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring focus:ring-blue-300" />
-            </div>
-            <div>
-              <label htmlFor="email" className="block text-gray-700 font-medium mb-1">Email:</label>
-              <input type="email" id="email" name="email" value={formData.email} onChange={handleChange}
-                className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring focus:ring-blue-300" />
-            </div>
-            <div>
-              <label htmlFor="telefono" className="block text-gray-700 font-medium mb-1">Teléfono:</label>
-              <input type="text" id="telefono" name="telefono" value={formData.telefono} onChange={handleChange}
-                className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring focus:ring-blue-300" />
-            </div>
-            <div>
-              <label htmlFor="direccion" className="block text-gray-700 font-medium mb-1">Dirección:</label>
-              <textarea id="direccion" name="direccion" value={formData.direccion} onChange={handleChange}
-                className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring focus:ring-blue-300" />
-            </div>
-          </div>
-
-          <div className="flex flex-col md:flex-row gap-4 mt-2">
-            <button type="submit" className="flex-1 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition">{editingClient ? 'Actualizar Cliente' : 'Crear Cliente'}</button>
-            {editingClient && <button type="button" onClick={handleCancelEdit} className="flex-1 bg-gray-400 text-white px-4 py-2 rounded-lg hover:bg-gray-500 transition">Cancelar</button>}
-          </div>
-        </form>
-        {message && <p className="text-green-600 mt-3">{message}</p>}
-        {error && <p className="text-red-600 mt-3">{error}</p>}
+    <div className="max-w-6xl mx-auto p-4 md:p-6 space-y-8 animate-fadeIn">
+      <div className="flex justify-between items-center">
+        <h2 className="text-2xl md:text-3xl font-black text-gray-800">
+          Gestión de <span className="text-emerald-500">Clientes</span>
+        </h2>
       </div>
 
-      {/* Lista: tabla en desktop, cards en móvil */}
-      <div className="bg-white p-4 md:p-6 rounded-lg shadow space-y-4">
-        <h3 className="text-xl md:text-2xl font-semibold mb-4">Lista de Clientes</h3>
+      {/* Formulario */}
+      <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
+        <h3 className="text-lg font-bold mb-4 text-gray-700">
+          {editingClient ? '📝 Editar Cliente' : '👤 Nuevo Cliente'}
+        </h3>
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <input type="text" name="nombre" placeholder="Nombre completo" value={formData.nombre} onChange={handleChange} required className="w-full border border-gray-200 rounded-xl px-4 py-2 focus:ring-2 focus:ring-emerald-500 outline-none" />
+            <input type="email" name="email" placeholder="Correo electrónico" value={formData.email} onChange={handleChange} className="w-full border border-gray-200 rounded-xl px-4 py-2 focus:ring-2 focus:ring-emerald-500 outline-none" />
+            <input type="text" name="telefono" placeholder="Teléfono" value={formData.telefono} onChange={handleChange} className="w-full border border-gray-200 rounded-xl px-4 py-2 focus:ring-2 focus:ring-emerald-500 outline-none" />
+            <input type="text" name="direccion" placeholder="Dirección" value={formData.direccion} onChange={handleChange} className="w-full border border-gray-200 rounded-xl px-4 py-2 focus:ring-2 focus:ring-emerald-500 outline-none" />
+          </div>
 
-        {/* Desktop table */}
-        <div className="hidden md:block overflow-x-auto">
-          <table className="w-full min-w-[600px] border border-gray-200 rounded-lg">
-            <thead>
-              <tr className="bg-gray-100 text-left">
-                <th className="p-3">ID</th>
-                <th className="p-3">Nombre</th>
-                <th className="p-3">Email</th>
-                <th className="p-3">Teléfono</th>
-                <th className="p-3">Dirección</th>
-                <th className="p-3 text-center">Acciones</th>
+          <div className="flex gap-3">
+            <button type="submit" className="flex-1 bg-emerald-500 text-white font-bold py-2 rounded-xl hover:bg-emerald-600 transition-all shadow-lg shadow-emerald-500/20">
+              {editingClient ? 'Actualizar' : 'Guardar Cliente'}
+            </button>
+            {editingClient && <button type="button" onClick={handleCancelEdit} className="flex-1 bg-gray-200 text-gray-600 font-bold py-2 rounded-xl">Cancelar</button>}
+          </div>
+        </form>
+        {message && <div className="mt-4 p-3 bg-emerald-50 text-emerald-700 rounded-xl text-center font-medium animate-pulse">{message}</div>}
+        {error && <div className="mt-4 p-3 bg-red-50 text-red-700 rounded-xl text-center font-medium">{error}</div>}
+      </div>
+
+      {/* Tabla / Lista */}
+      <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+        <div className="p-6 border-b border-gray-50 flex justify-between items-center">
+          <h3 className="font-bold text-gray-700">Lista de Clientes</h3>
+          <span className="text-sm text-gray-400">{clientes.length} registrados</span>
+        </div>
+        
+        <div className="overflow-x-auto">
+          <table className="w-full">
+            <thead className="bg-gray-50">
+              <tr className="text-left text-xs font-bold text-gray-500 uppercase tracking-widest">
+                <th className="px-6 py-4">Nombre</th>
+                <th className="px-6 py-4">Contacto</th>
+                <th className="px-6 py-4 text-center">Acciones</th>
               </tr>
             </thead>
-            <tbody>
+            <tbody className="divide-y divide-gray-50">
               {clientes.map(client => (
-                <tr key={client.id} className="border-t hover:bg-gray-50 transition">
-                  <td className="p-3">{client.id}</td>
-                  <td className="p-3">{client.nombre}</td>
-                  <td className="p-3">{client.email || 'N/A'}</td>
-                  <td className="p-3">{client.telefono || 'N/A'}</td>
-                  <td className="p-3">{client.direccion || 'N/A'}</td>
-                  <td className="p-3 text-center flex justify-center gap-3">
-                    <button onClick={() => handleEdit(client)} className="text-blue-600 hover:text-blue-800" title="Editar"><FaEdit /></button>
-                    <button onClick={() => handleDelete(client.id)} className="text-red-600 hover:text-red-800" title="Eliminar"><FaTrashAlt /></button>
+                <tr key={client.id} className="hover:bg-gray-50/50 transition-colors">
+                  <td className="px-6 py-4 font-medium text-gray-800">{client.nombre}</td>
+                  <td className="px-6 py-4 text-sm text-gray-500">{client.email || 'Sin correo'}<br/>{client.telefono}</td>
+                  <td className="px-6 py-4">
+                    <div className="flex justify-center gap-2">
+                      <button onClick={() => handleEdit(client)} className="p-2 text-blue-500 hover:bg-blue-50 rounded-lg"><FaEdit /></button>
+                      <button onClick={() => handleDelete(client.id)} className="p-2 text-red-500 hover:bg-red-50 rounded-lg"><FaTrashAlt /></button>
+                    </div>
                   </td>
                 </tr>
               ))}
             </tbody>
           </table>
         </div>
-
-        {/* Mobile cards */}
-        <div className="md:hidden space-y-3">
-          {clientes.map(client => (
-            <div key={client.id} className="border rounded-lg p-4 shadow hover:shadow-md transition">
-              <p><span className="font-semibold">ID:</span> {client.id}</p>
-              <p><span className="font-semibold">Nombre:</span> {client.nombre}</p>
-              <p><span className="font-semibold">Email:</span> {client.email || 'N/A'}</p>
-              <p><span className="font-semibold">Teléfono:</span> {client.telefono || 'N/A'}</p>
-              <p><span className="font-semibold">Dirección:</span> {client.direccion || 'N/A'}</p>
-              <div className="flex justify-end gap-3 mt-2">
-                <button onClick={() => handleEdit(client)} className="text-blue-600 hover:text-blue-800"><FaEdit /></button>
-                <button onClick={() => handleDelete(client.id)} className="text-red-600 hover:text-red-800"><FaTrashAlt /></button>
-              </div>
-            </div>
-          ))}
-        </div>
-
-        {clientes.length === 0 && <p className="text-gray-600">No hay clientes registrados.</p>}
       </div>
     </div>
   );
 };
 
+// ESTA LÍNEA ES LA MÁS IMPORTANTE (Corrige el error de App.js)
 export default ClientesPage;

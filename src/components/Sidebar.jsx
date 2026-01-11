@@ -1,4 +1,3 @@
-// src/components/Sidebar.jsx
 import React, { useState } from 'react';
 import { NavLink } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
@@ -16,156 +15,135 @@ import {
   FaBars,
 } from 'react-icons/fa';
 
+const LogoVendita = ({ collapsed }) => (
+  <div className={`flex items-center ${collapsed ? 'justify-center' : 'gap-3'} w-full transition-all duration-300`}>
+    <div className="min-w-[40px] w-10 h-10 bg-gradient-to-br from-emerald-400 to-blue-600 rounded-xl flex items-center justify-center shadow-lg transform rotate-2 flex-shrink-0">
+      <span className="text-white font-black text-2xl -rotate-2">V</span>
+    </div>
+    {!collapsed && (
+      <span className="text-xl font-black tracking-tighter text-white whitespace-nowrap animate-fadeIn">
+        Ven<span className="text-emerald-500">dita</span>
+      </span>
+    )}
+  </div>
+);
+
 const Sidebar = ({ isSidebarOpen, toggleSidebar }) => {
   const { user } = useAuth();
-  const isAdmin =
-    user && (user.rol === 'admin_compania' || user.rol === 'super_admin_sistema');
-
+  const isAdmin = user && (user.rol === 'admin_compania' || user.rol === 'super_admin_sistema');
   const [collapsed, setCollapsed] = useState(false);
 
-  const baseLink =
-    'flex items-center gap-3 px-4 py-2 rounded-md hover:bg-gray-700 transition-colors relative group';
-  const activeLink = 'bg-gray-800 text-white font-semibold';
+  const baseLink = 'flex items-center gap-3 px-4 py-3 rounded-xl transition-all relative group mx-2 mb-1';
+  const activeLink = 'bg-emerald-500/10 text-emerald-500 font-bold';
+  const inactiveLink = 'text-gray-400 hover:bg-gray-800 hover:text-gray-100';
+
+  const menuLinks = [
+    { to: '/productos', icon: <FaBox />, label: 'Inventario' },
+    { to: '/ventas', icon: <FaShoppingCart />, label: 'Vender (POS)' },
+    { to: '/historial-ventas', icon: <FaChartBar />, label: 'Reporte Ventas' },
+    { to: '/clientes', icon: <FaUsers />, label: 'Clientes' },
+    { to: '/proveedores', icon: <FaTruck />, label: 'Proveedores' },
+    { to: '/historial-stock', icon: <FaHistory />, label: 'Movimientos' },
+  ];
+
+  const adminLinks = [
+    { to: '/dashboard', icon: <FaTachometerAlt />, label: 'Panel Control' },
+    { to: '/productos/upload', icon: <FaFileUpload />, label: 'Carga Masiva' },
+    { to: '/gestion-usuarios', icon: <FaUserCog />, label: 'Configuración' },
+  ];
 
   return (
     <>
       {/* Overlay móvil */}
       <div
-        className={`fixed inset-0 bg-black bg-opacity-40 z-40 transition-opacity md:hidden ${
+        className={`fixed inset-0 bg-black/60 backdrop-blur-sm z-40 transition-opacity md:hidden ${
           isSidebarOpen ? 'opacity-100 visible' : 'opacity-0 invisible'
         }`}
         onClick={toggleSidebar}
       ></div>
 
-      {/* Sidebar */}
+      {/* Sidebar Principal */}
       <nav
-  className={`fixed md:static top-0 left-0 h-screen md:h-auto bg-gray-900 text-gray-300 
-    transform transition-all duration-300 z-50 flex flex-col
-    ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'}
-    ${collapsed ? 'w-20' : 'w-64'}`}
->
+        className={`fixed md:sticky top-0 left-0 h-screen bg-gray-900 border-r border-gray-800
+                    transform transition-all duration-300 z-50 flex flex-col shadow-2xl
+                    ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'} 
+                    ${collapsed ? 'md:w-20' : 'md:w-64'} w-64 overflow-hidden`}
+      >
+        
+        {/* Header: Logo y Toggle */}
+        <div className={`flex ${collapsed ? 'flex-col gap-4' : 'justify-between'} items-center px-4 py-6 flex-shrink-0`}>
+          <LogoVendita collapsed={collapsed} />
+          <button
+            onClick={() => setCollapsed(!collapsed)}
+            className={`text-gray-500 hover:text-emerald-500 transition-all p-1 md:block hidden ${collapsed ? 'mt-2' : ''}`}
+          >
+            <FaBars size={18} className={collapsed ? 'rotate-90 transition-transform' : ''} />
+          </button>
+          <button onClick={toggleSidebar} className="text-gray-500 hover:text-white md:hidden">
+            <FaTimes size={20} />
+          </button>
+        </div>
 
-        {/* Logo */}
-        <div className="flex justify-between items-center px-4 py-3 border-b border-gray-700">
-          <div className="flex items-center">
-            {!collapsed && (
-              <svg
-                width="160"
-                height="40"
-                viewBox="0 0 620 100"
-                xmlns="http://www.w3.org/2000/svg"
-              >
-                <rect x="0" y="0" width="320" height="100" rx="24" fill="#fff" />
-                <path
-                  d="M36 70 Q42 90 60 80 Q70 78 72 70 Q74 62 64 62 Q56 62 54 70 Q52 76 36 70"
-                  fill="#22c55e"
-                  opacity="0.9"
-                />
-                <circle cx="54" cy="54" r="11" fill="#2563eb" />
-                <rect x="48" y="65" width="12" height="20" rx="7" fill="#3b82f6" />
-                <text
-                  x="90"
-                  y="62"
-                  fontFamily="Montserrat, Arial, sans-serif"
-                  fontSize="48"
-                  fontWeight="bold"
-                  fill="#2563eb"
-                >
-                  Acudero
-                </text>
-                <text
-                  x="93"
-                  y="85"
-                  fontFamily="Montserrat, Arial, sans-serif"
-                  fontSize="16"
-                  fill="#22c55e"
-                  fontWeight="600"
-                >
-                  Inventarios
-                </text>
-              </svg>
-            )}
-          </div>
+        {/* Links con Scroll Vertical Invisible */}
+        <div className="flex-1 overflow-y-auto overflow-x-hidden scrollbar-hide py-2">
+          <style>{`
+            .scrollbar-hide::-webkit-scrollbar { display: none; }
+            .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
+          `}</style>
+          
+          {isAdmin && (
+            <div className="mb-4">
+              {!collapsed && <p className="px-6 text-[10px] font-black text-gray-600 uppercase tracking-widest mb-2">Admin</p>}
+              <ul>
+                {adminLinks.map((link) => (
+                  <li key={link.to}>
+                    <NavLink
+                      to={link.to}
+                      className={({ isActive }) => `${baseLink} ${collapsed ? 'justify-center px-0' : ''} ${isActive ? activeLink : inactiveLink}`}
+                      onClick={() => window.innerWidth < 768 && toggleSidebar()}
+                    >
+                      <span className="text-lg flex-shrink-0">{link.icon}</span>
+                      {!collapsed && <span className="text-sm tracking-tight whitespace-nowrap">{link.label}</span>}
+                    </NavLink>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
 
-          {/* Botones */}
-          <div className="flex items-center gap-2">
-            <button
-              onClick={() => setCollapsed(!collapsed)}
-              className="text-gray-400 hover:text-white transition md:block hidden"
-            >
-              <FaBars size={20} />
-            </button>
-            <button
-              onClick={toggleSidebar}
-              className="text-gray-400 hover:text-white transition md:hidden"
-            >
-              <FaTimes size={20} />
-            </button>
+          <div>
+            {!collapsed && <p className="px-6 text-[10px] font-black text-gray-600 uppercase tracking-widest mb-2">Operaciones</p>}
+            <ul>
+              {menuLinks.map((link) => (
+                <li key={link.to}>
+                  <NavLink
+                    to={link.to}
+                    className={({ isActive }) => `${baseLink} ${collapsed ? 'justify-center px-0' : ''} ${isActive ? activeLink : inactiveLink}`}
+                    onClick={() => window.innerWidth < 768 && toggleSidebar()}
+                  >
+                    <span className="text-lg flex-shrink-0">{link.icon}</span>
+                    {!collapsed && <span className="text-sm tracking-tight whitespace-nowrap">{link.label}</span>}
+                  </NavLink>
+                </li>
+              ))}
+            </ul>
           </div>
         </div>
 
-        {/* Lista de enlaces */}
-        <ul className="mt-4 space-y-1">
-          {[ // Enlaces comunes
-            { to: '/productos', icon: <FaBox />, label: 'Productos' },
-            { to: '/historial-stock', icon: <FaHistory />, label: 'Historial Stock' },
-            { to: '/ventas', icon: <FaShoppingCart />, label: 'Ventas' },
-            { to: '/historial-ventas', icon: <FaChartBar />, label: 'Historial Ventas' },
-            { to: '/clientes', icon: <FaUsers />, label: 'Clientes' },
-            { to: '/proveedores', icon: <FaTruck />, label: 'Proveedores' },
-          ].map((link) => (
-            <li key={link.to}>
-              <NavLink
-                to={link.to}
-                className={({ isActive }) =>
-                  `${baseLink} ${isActive ? activeLink : ''}`
-                }
-                onClick={() => {
-                  if (window.innerWidth < 768) toggleSidebar(); // 👈 solo cerrar en móvil
-                }}
-              >
-                {link.icon}
-                {!collapsed && <span>{link.label}</span>}
-
-                {/* Tooltip cuando está colapsado */}
-                {collapsed && (
-                  <span className="absolute left-full ml-2 px-2 py-1 bg-gray-800 text-sm text-white rounded opacity-0 group-hover:opacity-100 transition">
-                    {link.label}
-                  </span>
-                )}
-              </NavLink>
-            </li>
-          ))}
-
-          {isAdmin &&
-            [
-              { to: '/dashboard', icon: <FaTachometerAlt />, label: 'Dashboard' },
-              { to: '/productos/upload', icon: <FaFileUpload />, label: 'Carga Masiva Productos' },
-              { to: '/gestion-usuarios', icon: <FaUserCog />, label: 'Gestión de Usuarios' },
-            ].map((link) => (
-              <li key={link.to}>
-                <NavLink
-                  to={link.to}
-                  className={({ isActive }) =>
-                    `${baseLink} ${isActive ? activeLink : ''}`
-                  }
-                  onClick={() => {
-                    if (window.innerWidth < 768) toggleSidebar(); // 👈 también solo en móvil
-                  }}
-                >
-                  {link.icon}
-                  {!collapsed && <span>{link.label}</span>}
-
-                  {/* Tooltip cuando está colapsado */}
-                  {collapsed && (
-                    <span className="absolute left-full ml-2 px-2 py-1 bg-gray-800 text-sm text-white rounded opacity-0 group-hover:opacity-100 transition">
-                      {link.label}
-                    </span>
-                  )}
-                </NavLink>
-              </li>
-            ))}
-        </ul>
+        {/* Perfil de Usuario - Fijo en la base */}
+        <div className="p-4 border-t border-gray-800 bg-gray-900 flex-shrink-0">
+          <div className={`bg-gray-800/40 rounded-2xl p-2 flex items-center ${collapsed ? 'justify-center' : 'gap-3'}`}>
+            <div className="w-8 h-8 rounded-full bg-emerald-500 flex-shrink-0 flex items-center justify-center text-xs font-bold text-white shadow-lg">
+              {user?.nombreUsuario?.substring(0, 2).toUpperCase() || 'AD'}
+            </div>
+            {!collapsed && (
+              <div className="overflow-hidden animate-fadeIn">
+                <p className="text-[11px] font-bold text-white truncate leading-tight">{user?.nombreUsuario || 'Admin'}</p>
+                <p className="text-[9px] text-emerald-500 truncate uppercase tracking-tighter">{user?.rol?.split('_')[0]}</p>
+              </div>
+            )}
+          </div>
+        </div>
       </nav>
     </>
   );

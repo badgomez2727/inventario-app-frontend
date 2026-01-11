@@ -1,71 +1,64 @@
-// venta_inventario_app/frontend/src/components/BottomNavbar.jsx
-
 import React from 'react';
-import { NavLink } from 'react-router-dom';
-import { useAuth } from '../contexts/AuthContext';
-import { FaTachometerAlt, FaBox, FaShoppingCart, FaUsers } from 'react-icons/fa';
+import Header from './Header';
+import Sidebar from './Sidebar';
+import Footer from './Footer';
+import BottomNavbar from './BottomNavbar';
 
-const BottomNavbar = () => {
-  const { user } = useAuth();
-  const isAdmin = user && (user.rol === 'ADMIN_COMPANIA' || user.rol === 'SUPER_ADMIN_SISTEMA');
-
+export default function Layout({ children, toggleSidebar, isSidebarOpen, isMobile }) {
   return (
-    <nav className="fixed bottom-0 left-0 w-full bg-white border-t border-gray-200 shadow-md md:hidden z-50">
-      <div className="flex justify-around">
-        <NavLink
-          to="/dashboard"
-          className={({ isActive }) =>
-            `flex flex-col items-center p-2 text-gray-600 ${isActive ? 'text-blue-600' : ''}`
-          }
-        >
-          <FaTachometerAlt size={20} />
-          <span className="text-xs">Dashboard</span>
-        </NavLink>
+    // min-h-screen asegura que ocupe todo el alto, overflow-hidden evita doble scroll
+    <div className="flex h-screen overflow-hidden bg-[#f8fafc]">
+      
+      {/* 1. SIDEBAR: Ahora es parte del flujo horizontal */}
+      <Sidebar 
+        isSidebarOpen={isSidebarOpen} 
+        isMobile={isMobile} 
+        toggleSidebar={toggleSidebar} 
+      />
 
-        <NavLink
-          to="/productos"
-          className={({ isActive }) =>
-            `flex flex-col items-center p-2 text-gray-600 ${isActive ? 'text-blue-600' : ''}`
-          }
-        >
-          <FaBox size={20} />
-          <span className="text-xs">Productos</span>
-        </NavLink>
+      {/* 2. CONTENEDOR DERECHO: Header + Contenido + Footer */}
+      <div className="flex flex-col flex-1 min-w-0 relative">
+        
+        {/* HEADER: Fijo arriba */}
+        <Header toggleSidebar={toggleSidebar} isMobile={isMobile} />
 
-        <NavLink
-          to="/ventas"
-          className={({ isActive }) =>
-            `flex flex-col items-center p-2 text-gray-600 ${isActive ? 'text-blue-600' : ''}`
-          }
-        >
-          <FaShoppingCart size={20} />
-          <span className="text-xs">Ventas</span>
-        </NavLink>
+        {/* 3. ÁREA DE SCROLL: Aquí es donde vive el contenido */}
+        <main className="flex-1 overflow-y-auto pt-20 flex flex-col custom-scrollbar">
+          
+          {/* Contenedor del contenido real */}
+          <div className="flex-1 p-4 md:p-8">
+            <div className="max-w-7xl mx-auto w-full animate-fadeIn">
+              {children}
+            </div>
+          </div>
 
-        <NavLink
-          to="/clientes"
-          className={({ isActive }) =>
-            `flex flex-col items-center p-2 text-gray-600 ${isActive ? 'text-blue-600' : ''}`
-          }
-        >
-          <FaUsers size={20} />
-          <span className="text-xs">Clientes</span>
-        </NavLink>
+          {/* FOOTER: Dentro del scroll para que aparezca al final del contenido, 
+              pero con mt-auto para que si hay poco contenido, se pegue abajo */}
+          <div className="mt-auto">
+             <Footer />
+          </div>
 
-        {isAdmin && (
-          <NavLink
-            to="/gestion-usuarios"
-            className={({ isActive }) =>
-              `flex flex-col items-center p-2 text-gray-600 ${isActive ? 'text-blue-600' : ''}`
-            }
-          >
-            <FaUsers size={20} />
-            <span className="text-xs">Usuarios</span>
-          </NavLink>
-        )}
+          {/* Espaciador para no tapar contenido con el BottomNavbar en móvil */}
+          <div className="h-20 md:hidden"></div>
+        </main>
+
+        {/* NAVBAR MÓVIL: Solo visible en pantallas pequeñas */}
+        <BottomNavbar />
       </div>
-    </nav>
-  );
-};
 
-export default BottomNavbar;
+      {/* Estilos para limpiar el scrollbar */}
+      <style jsx global>{`
+        .custom-scrollbar::-webkit-scrollbar {
+          width: 5px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+          background: #e2e8f0;
+          border-radius: 10px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+          background: #cbd5e1;
+        }
+      `}</style>
+    </div>
+  );
+}

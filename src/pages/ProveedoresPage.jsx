@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { getSuppliers, createSupplier, updateSupplier, deleteSupplier } from "../services/apiService";
-import { FaEdit, FaTrashAlt } from "react-icons/fa";
+import { FaEdit, FaTrashAlt, FaTruck, FaPhone, FaMapMarkerAlt, FaUser } from "react-icons/fa";
 
 const ProveedoresPage = () => {
   const [proveedores, setProveedores] = useState([]);
@@ -12,6 +12,14 @@ const ProveedoresPage = () => {
 
   useEffect(() => { fetchSuppliers(); }, []);
 
+  // Auto-ocultar mensajes
+  useEffect(() => {
+    if (message) {
+      const timer = setTimeout(() => setMessage(""), 3000);
+      return () => clearTimeout(timer);
+    }
+  }, [message]);
+
   const fetchSuppliers = async () => {
     try {
       setLoading(true);
@@ -19,7 +27,6 @@ const ProveedoresPage = () => {
       const data = await getSuppliers();
       setProveedores(data);
     } catch (err) {
-      console.error("Error al cargar proveedores:", err);
       setError(err.message || "No se pudieron cargar los proveedores.");
     } finally { setLoading(false); }
   };
@@ -32,107 +39,112 @@ const ProveedoresPage = () => {
     try {
       if (editingSupplier) {
         await updateSupplier(editingSupplier.id, formData);
-        setMessage("Proveedor actualizado con éxito.");
+        setMessage("✅ Proveedor actualizado con éxito.");
       } else {
         await createSupplier(formData);
-        setMessage("Proveedor creado con éxito.");
+        setMessage("🚀 Proveedor registrado en el sistema.");
       }
       setFormData({ nombre: "", contacto: "", telefono: "", direccion: "" });
       setEditingSupplier(null);
       fetchSuppliers();
     } catch (err) {
-      console.error("Error al guardar proveedor:", err);
       setError(err.message || "Error al guardar el proveedor.");
     }
   };
 
   const handleEdit = (supplier) => {
     setEditingSupplier(supplier);
-    setFormData({ nombre: supplier.nombre, contacto: supplier.contacto || "", telefono: supplier.telefono || "", direccion: supplier.direccion || "" });
-    setMessage(""); setError("");
+    setFormData({ 
+      nombre: supplier.nombre, 
+      contacto: supplier.contacto || "", 
+      telefono: supplier.telefono || "", 
+      direccion: supplier.direccion || "" 
+    });
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
   const handleDelete = async (supplierId) => {
     if (window.confirm("¿Estás seguro de que deseas eliminar este proveedor?")) {
-      setMessage(""); setError("");
-      try { await deleteSupplier(supplierId); setMessage("Proveedor eliminado con éxito."); fetchSuppliers(); }
-      catch (err) { console.error("Error al eliminar proveedor:", err); setError(err.message || "Error al eliminar el proveedor."); }
+      try { 
+        await deleteSupplier(supplierId); 
+        setMessage("🗑️ Proveedor eliminado."); 
+        fetchSuppliers(); 
+      }
+      catch (err) { setError(err.message || "Error al eliminar."); }
     }
   };
 
-  const handleCancelEdit = () => {
-    setEditingSupplier(null);
-    setFormData({ nombre: "", contacto: "", telefono: "", direccion: "" });
-    setMessage(""); setError("");
-  };
-
-  if (loading) return <p className="text-gray-600">Cargando proveedores...</p>;
-  if (error) return <p className="text-red-500 font-semibold">Error: {error}</p>;
+  if (loading) return <div className="p-10 text-center text-emerald-600 font-bold animate-pulse">Cargando aliados logísticos...</div>;
 
   return (
-    <div className="max-w-6xl mx-auto p-4 md:p-6 space-y-8">
-      <h2 className="text-2xl md:text-3xl font-bold mb-4 text-center">Gestión de Proveedores</h2>
-
-      {/* Formulario */}
-      <div className="bg-white p-4 md:p-6 rounded-lg shadow">
-        <h3 className="text-xl md:text-2xl font-semibold mb-4">{editingSupplier ? "Editar Proveedor" : "Crear Nuevo Proveedor"}</h3>
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <label className="block font-medium mb-1">Nombre:</label>
-              <input type="text" name="nombre" value={formData.nombre} onChange={handleChange} required
-                className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring focus:ring-indigo-300" />
-            </div>
-            <div>
-              <label className="block font-medium mb-1">Contacto:</label>
-              <input type="text" name="contacto" value={formData.contacto} onChange={handleChange}
-                className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring focus:ring-indigo-300" />
-            </div>
-            <div>
-              <label className="block font-medium mb-1">Teléfono:</label>
-              <input type="text" name="telefono" value={formData.telefono} onChange={handleChange}
-                className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring focus:ring-indigo-300" />
-            </div>
-            <div>
-              <label className="block font-medium mb-1">Dirección:</label>
-              <textarea name="direccion" value={formData.direccion} onChange={handleChange}
-                className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring focus:ring-indigo-300"></textarea>
-            </div>
-          </div>
-
-          <div className="flex flex-col md:flex-row gap-4 mt-2">
-            <button type="submit" className="flex-1 bg-indigo-600 text-white px-5 py-2 rounded-lg hover:bg-indigo-700 transition">{editingSupplier ? "Actualizar Proveedor" : "Crear Proveedor"}</button>
-            {editingSupplier && <button type="button" onClick={handleCancelEdit} className="flex-1 bg-red-500 text-white px-5 py-2 rounded-lg hover:bg-red-600 transition">Cancelar</button>}
-          </div>
-        </form>
-        {message && <p className="text-green-600 mt-3">{message}</p>}
-        {error && <p className="text-red-600 mt-3">{error}</p>}
+    <div className="max-w-6xl mx-auto p-4 md:p-6 space-y-8 animate-fadeIn">
+      <div className="flex items-center gap-3">
+        <div className="p-3 bg-gray-900 rounded-2xl text-emerald-500 shadow-lg">
+          <FaTruck size={24} />
+        </div>
+        <h2 className="text-2xl md:text-3xl font-black text-gray-800 tracking-tight">
+          Gestión de <span className="text-emerald-500">Proveedores</span>
+        </h2>
       </div>
 
-      {/* Lista de proveedores responsive (cards en móvil) */}
-      <div className="space-y-4">
-        {proveedores.length === 0 ? (
-          <p className="text-gray-600">No hay proveedores registrados.</p>
-        ) : (
-          <div className="grid grid-cols-1 md:grid-cols-1 gap-4">
-            {proveedores.map(supplier => (
-              <div key={supplier.id} className="bg-white p-4 rounded-lg shadow flex flex-col md:flex-row md:items-center md:justify-between gap-3">
-                <div className="flex flex-col md:flex-row md:gap-4">
-                  <p><span className="font-semibold">ID:</span> {supplier.id}</p>
-                  <p><span className="font-semibold">Nombre:</span> {supplier.nombre}</p>
-                  <p><span className="font-semibold">Contacto:</span> {supplier.contacto || "N/A"}</p>
-                  <p><span className="font-semibold">Teléfono:</span> {supplier.telefono || "N/A"}</p>
-                  <p><span className="font-semibold">Dirección:</span> {supplier.direccion || "N/A"}</p>
-                </div>
-                <div className="flex gap-2 mt-2 md:mt-0">
-                  <button onClick={() => handleEdit(supplier)} className="text-blue-600 hover:text-blue-800" title="Editar"><FaEdit /></button>
-                  <button onClick={() => handleDelete(supplier.id)} className="text-red-600 hover:text-red-800" title="Eliminar"><FaTrashAlt /></button>
-                </div>
-              </div>
-            ))}
+      {/* Formulario Estilizado */}
+      <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 transition-all">
+        <h3 className="text-lg font-bold mb-4 text-gray-700">
+          {editingSupplier ? "📝 Actualizar Datos" : "➕ Agregar Nuevo Aliado"}
+        </h3>
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <input type="text" name="nombre" placeholder="Nombre de la empresa" value={formData.nombre} onChange={handleChange} required
+              className="w-full border border-gray-100 bg-gray-50 rounded-xl px-4 py-2.5 focus:ring-2 focus:ring-emerald-500 outline-none" />
+            <input type="text" name="contacto" placeholder="Nombre del asesor" value={formData.contacto} onChange={handleChange}
+              className="w-full border border-gray-100 bg-gray-50 rounded-xl px-4 py-2.5 focus:ring-2 focus:ring-emerald-500 outline-none" />
+            <input type="text" name="telefono" placeholder="Teléfono / WhatsApp" value={formData.telefono} onChange={handleChange}
+              className="w-full border border-gray-100 bg-gray-50 rounded-xl px-4 py-2.5 focus:ring-2 focus:ring-emerald-500 outline-none" />
+            <input type="text" name="direccion" placeholder="Dirección de bodega" value={formData.direccion} onChange={handleChange}
+              className="w-full border border-gray-100 bg-gray-50 rounded-xl px-4 py-2.5 focus:ring-2 focus:ring-emerald-500 outline-none" />
           </div>
-        )}
+
+          <div className="flex gap-3">
+            <button type="submit" className="flex-1 bg-emerald-500 text-white font-bold py-3 rounded-xl hover:bg-emerald-600 transition shadow-lg shadow-emerald-500/20">
+              {editingSupplier ? "Guardar Cambios" : "Registrar Proveedor"}
+            </button>
+            {editingSupplier && (
+              <button type="button" onClick={() => { setEditingSupplier(null); setFormData({ nombre: "", contacto: "", telefono: "", direccion: "" }); }} 
+                className="px-6 bg-gray-100 text-gray-500 font-bold rounded-xl">Cancelar</button>
+            )}
+          </div>
+        </form>
+        {message && <p className="text-emerald-600 mt-3 text-center font-medium animate-bounce">{message}</p>}
+      </div>
+
+      {/* Lista de Proveedores en Cards Modernas */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        {proveedores.map(supplier => (
+          <div key={supplier.id} className="bg-white p-5 rounded-2xl shadow-sm border border-gray-50 hover:border-emerald-200 transition-all group">
+            <div className="flex justify-between items-start mb-4">
+              <div>
+                <h4 className="font-black text-gray-800 text-lg uppercase">{supplier.nombre}</h4>
+                <p className="text-xs text-gray-400 font-mono">ID: {supplier.id}</p>
+              </div>
+              <div className="flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                <button onClick={() => handleEdit(supplier)} className="p-2 text-blue-500 hover:bg-blue-50 rounded-lg"><FaEdit /></button>
+                <button onClick={() => handleDelete(supplier.id)} className="p-2 text-red-400 hover:bg-red-50 rounded-lg"><FaTrashAlt /></button>
+              </div>
+            </div>
+            
+            <div className="space-y-2 text-sm text-gray-600">
+              <div className="flex items-center gap-2">
+                <FaUser className="text-emerald-500 w-4" /> <span>{supplier.contacto || "Sin contacto directo"}</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <FaPhone className="text-emerald-500 w-4" /> <span>{supplier.telefono || "Sin teléfono"}</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <FaMapMarkerAlt className="text-emerald-500 w-4" /> <span className="truncate">{supplier.direccion || "Sin dirección"}</span>
+              </div>
+            </div>
+          </div>
+        ))}
       </div>
     </div>
   );
