@@ -1,0 +1,127 @@
+/* frontend/src/styles/AuthPages.css */
+
+.auth-container {
+    min-h-screen: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: #f9fafb; /* gray-50 */
+    padding: 1rem;
+}
+
+.auth-card {
+    width: 100%;
+    max-width: 400px;
+    background: white;
+    padding: 2.5rem;
+    border-radius: 2rem;
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+    border: 1px solid #f3f4f6;
+}
+
+.auth-title {
+    font-size: 1.875rem;
+    font-weight: 900;
+    color: #111827;
+    text-align: center;
+    margin-bottom: 0.5rem;
+}
+
+.auth-subtitle {
+    color: #6b7280;
+    text-align: center;
+    margin-bottom: 2rem;
+    font-size: 0.875rem;
+}
+
+.auth-form-group {
+    margin-bottom: 1.5rem;
+}
+
+.auth-label {
+    display: block;
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: #9ca3af;
+    margin-left: 0.25rem;
+    margin-bottom: 0.5rem;
+}
+
+.auth-input {
+    width: 100%;
+    background-color: #f9fafb;
+    border: 2px solid transparent;
+    border-radius: 1rem;
+    padding: 1rem 1.5rem;
+    outline: none;
+    transition: all 0.2s;
+    font-weight: 500;
+}
+
+.auth-input:focus {
+    border-color: #10b981; /* emerald-500 */
+    background-color: white;
+    box-shadow: 0 0 0 4px rgba(16, 185, 129, 0.1);
+}
+
+.auth-button {
+    width: 100%;
+    background-color: #111827;
+    color: white;
+    font-weight: 900;
+    padding: 1rem;
+    border-radius: 1rem;
+    transition: all 0.3s;
+    margin-top: 1rem;
+    cursor: pointer;
+    border: none;
+}
+
+.auth-button:hover {
+    background-color: #059669; /* emerald-600 */
+    transform: translateY(-1px);
+}
+
+.auth-button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.auth-link {
+    display: block;
+    text-align: center;
+    margin-top: 1.5rem;
+    font-size: 0.875rem;
+    font-weight: 700;
+    color: #9ca3af;
+    text-decoration: none;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    transition: color 0.2s;
+}
+
+.auth-link:hover {
+    color: #10b981;
+}
+
+.message-success {
+    background-color: #ecfdf5;
+    color: #059669;
+    padding: 1rem;
+    border-radius: 0.75rem;
+    text-align: center;
+    font-weight: 700;
+    margin-top: 1rem;
+}
+
+.message-error {
+    background-color: #fef2f2;
+    color: #dc2626;
+    padding: 1rem;
+    border-radius: 0.75rem;
+    text-align: center;
+    font-weight: 700;
+    margin-top: 1rem;
+}

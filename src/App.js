@@ -8,6 +8,8 @@ import { AuthProvider, useAuth } from './contexts/AuthContext';
 import LandingPage from './pages/LandingPage';
 import LoginPage from './pages/LoginPage';
 import RegisterCompanyPage from './pages/RegisterCompanyPage';
+import ResetPasswordPage from './pages/ResetPasswordPage';
+import ForgotPasswordPage from './pages/ForgotPasswordPage';
 import ProductosList from './pages/productos/ProductosList';
 import ProductoForm from './pages/productos/ProductoForm';
 import ProductUploadPage from './pages/productos/ProductUploadPage';
@@ -57,6 +59,8 @@ function AppContent() {
           <Route path="/login" element={<LoginPage />} />
           <Route path="/register-company" element={<RegisterCompanyPage />} />
           <Route path="*" element={<Navigate to="/" />} />
+          <Route path="/forgot-password" element={<ForgotPasswordPage />} /> 
+          <Route path="/reset-password" element={<ResetPasswordPage />} />
         </Routes>
         {/* Nota: Quité el Footer de aquí porque tu Landing ya tiene uno propio */}
       </div>
@@ -99,6 +103,7 @@ function AppContent() {
           <Route path="/dashboard" element={<PrivateRoute><DashboardPage /></PrivateRoute>} />
           <Route path="/gestion-usuarios" element={<PrivateRoute requiredRole="admin_compania"><UserManagementPage /></PrivateRoute>} />
           <Route path="*" element={<p className="text-center text-red-500 font-semibold">404: Página no encontrada</p>} />
+          
         </Routes>
       </Layout>
 

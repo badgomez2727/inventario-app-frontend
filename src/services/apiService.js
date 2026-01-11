@@ -287,3 +287,40 @@ export const getSaleReceiptPdf = async (saleId) => {
 
   return response.blob();
 };
+
+// En frontend/src/services/apiService.js
+
+// Al final de tu archivo apiService.js, reemplaza la función resetPassword por esta:
+
+export const resetPassword = async (token, data) => {
+  const response = await fetch(`${BASE_URL}/auth/reset-password`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      token: token,
+      newPassword: data.password // Coincide con tu backend
+    }),
+  });
+
+  if (!response.ok) {
+    const errorData = await response.json();
+    throw new Error(errorData.error || 'Error al restablecer la contraseña.');
+  }
+
+  return response.json();
+};
+
+export const forgotPassword = async (email) => {
+  const response = await fetch(`${BASE_URL}/auth/forgot-password`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ email }),
+  });
+
+  if (!response.ok) {
+    const errorData = await response.json();
+    throw new Error(errorData.error || 'Error al solicitar recuperación.');
+  }
+
+  return response.json();
+};

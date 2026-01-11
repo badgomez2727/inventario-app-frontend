@@ -103,6 +103,15 @@ function LoginPage() {
               </div>
             </div>
 
+            <div className="flex justify-end mt-2">
+              <Link 
+                to="/forgot-password" 
+                className="text-xs font-bold text-gray-400 hover:text-emerald-600 transition-colors uppercase tracking-widest"
+              >
+                ¿Olvidaste tu contraseña?
+              </Link>
+            </div>
+
             {/* Manejo de Errores */}
             {error && (
               <div className="bg-red-50 text-red-600 text-sm font-bold p-4 rounded-xl text-center animate-shake">
