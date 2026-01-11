@@ -56,15 +56,27 @@ function SalesPage() {
   const removeFromCart = (productId) => setCart(cart.filter(item => item.id !== productId));
 
   const updateQuantity = (productId, newCantidad) => {
-    setCart(cart.map(item => {
-      if (item.id === productId) {
-        const updatedCantidad = Number(newCantidad);
-        const itemPrecioVenta = Number(item.precioVenta);
-        if (updatedCantidad > item.stockActual) {
+  setCart(cart.map(item => {
+    if (item.id === productId) {
+      // Si el usuario borró el número, dejamos cantidad vacía para que pueda escribir
+      if (newCantidad === "") {
+        return { ...item, cantidad: "", subtotal: 0 };
+      }
+
+      const updatedCantidad = Number(newCantidad);
+      const itemPrecioVenta = Number(item.precioVenta);
+
+      // Validación de stock
+      if (updatedCantidad > item.stockActual) {
           setMessage(`No hay más stock disponible de ${item.nombre}`);
           return item;
         }
-        return { ...item, cantidad: updatedCantidad, subtotal: updatedCantidad * itemPrecioVenta };
+
+        return { 
+          ...item, 
+          cantidad: updatedCantidad, 
+          subtotal: updatedCantidad * itemPrecioVenta 
+        };
       }
       return item;
     }));
