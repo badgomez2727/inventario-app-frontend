@@ -1,14 +1,9 @@
-// venta_inventario_app/frontend/src/pages/productos/ProductoForm.jsx
-
 import React, { useState, useEffect } from "react";
-import {
-  createProduct,
-  updateProduct,
-  getSuppliers,
-} from "../../services/apiService";
+import { createProduct, updateProduct, getSuppliers } from "../../services/apiService";
+import { FaSave, FaEdit, FaBarcode, FaTag, FaBox } from "react-icons/fa";
 
 const ProductoForm = ({ onProductCreated, productToEdit, onEditComplete }) => {
-  const [formData, setFormData] = useState({
+  const initialState = {
     nombre: "",
     descripcion: "",
     sku: "",
@@ -19,20 +14,20 @@ const ProductoForm = ({ onProductCreated, productToEdit, onEditComplete }) => {
     categoria: "",
     imagenUrl: "",
     supplierId: "",
-  });
+  };
+
+  const [formData, setFormData] = useState(initialState);
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
   const [suppliers, setSuppliers] = useState([]);
   const [loadingSuppliers, setLoadingSuppliers] = useState(true);
 
-  // Cargar proveedores
   useEffect(() => {
     const fetchSuppliers = async () => {
       try {
         const data = await getSuppliers();
         setSuppliers(data);
       } catch (err) {
-        console.error("Error al cargar proveedores:", err);
         setError("No se pudieron cargar los proveedores.");
       } finally {
         setLoadingSuppliers(false);
@@ -41,46 +36,17 @@ const ProductoForm = ({ onProductCreated, productToEdit, onEditComplete }) => {
     fetchSuppliers();
   }, []);
 
-  // Cargar datos del producto en edición
   useEffect(() => {
     if (productToEdit) {
       setFormData({
-        nombre: productToEdit.nombre || "",
-        descripcion: productToEdit.descripcion || "",
-        sku: productToEdit.sku || "",
-        precioCompra:
-          productToEdit.precioCompra != null
-            ? productToEdit.precioCompra.toString()
-            : "",
-        precioVenta:
-          productToEdit.precioVenta != null
-            ? productToEdit.precioVenta.toString()
-            : "",
-        stockActual:
-          productToEdit.stockActual != null
-            ? productToEdit.stockActual.toString()
-            : "",
-        unidadMedida: productToEdit.unidadMedida || "",
-        categoria: productToEdit.categoria || "",
-        imagenUrl: productToEdit.imagenUrl || "",
-        supplierId:
-          productToEdit.supplierId != null
-            ? productToEdit.supplierId.toString()
-            : "",
+        ...productToEdit,
+        precioCompra: productToEdit.precioCompra?.toString() || "",
+        precioVenta: productToEdit.precioVenta?.toString() || "",
+        stockActual: productToEdit.stockActual?.toString() || "",
+        supplierId: productToEdit.supplierId?.toString() || "",
       });
     } else {
-      setFormData({
-        nombre: "",
-        descripcion: "",
-        sku: "",
-        precioCompra: "",
-        precioVenta: "",
-        stockActual: "",
-        unidadMedida: "",
-        categoria: "",
-        imagenUrl: "",
-        supplierId: "",
-      });
+      setFormData(initialState);
     }
     setMessage("");
     setError("");
@@ -88,17 +54,7 @@ const ProductoForm = ({ onProductCreated, productToEdit, onEditComplete }) => {
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    if (
-      ["precioCompra", "precioVenta", "stockActual", "supplierId"].includes(
-        name
-      )
-    ) {
-      if (value === "" || !isNaN(Number(value))) {
-        setFormData((prev) => ({ ...prev, [name]: value }));
-      }
-    } else {
-      setFormData((prev) => ({ ...prev, [name]: value }));
-    }
+    setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
   const handleSubmit = async (e) => {
@@ -106,222 +62,125 @@ const ProductoForm = ({ onProductCreated, productToEdit, onEditComplete }) => {
     setMessage("");
     setError("");
 
-    if (
-      !formData.nombre ||
-      !formData.sku ||
-      formData.precioCompra === "" ||
-      formData.precioVenta === "" ||
-      formData.stockActual === "" ||
-      !formData.unidadMedida ||
-      !formData.categoria
-    ) {
-      setError("Por favor, completa todos los campos obligatorios.");
-      return;
-    }
-
     const dataToSend = {
       ...formData,
       precioCompra: Number(formData.precioCompra),
       precioVenta: Number(formData.precioVenta),
       stockActual: Number(formData.stockActual),
-      supplierId:
-        formData.supplierId === "" ? null : Number(formData.supplierId),
+      supplierId: formData.supplierId ? Number(formData.supplierId) : null,
     };
 
     try {
       if (productToEdit) {
         await updateProduct(productToEdit.id, dataToSend);
-        setMessage("Producto actualizado con éxito!");
-        onEditComplete();
+        setMessage("✅ Producto actualizado con éxito");
+        setTimeout(() => onEditComplete(), 1500);
       } else {
         await createProduct(dataToSend);
-        setMessage("Producto creado con éxito!");
-        setFormData({
-          nombre: "",
-          descripcion: "",
-          sku: "",
-          precioCompra: "",
-          precioVenta: "",
-          stockActual: "",
-          unidadMedida: "",
-          categoria: "",
-          imagenUrl: "",
-          supplierId: "",
-        });
+        setMessage("🚀 Producto creado con éxito");
+        setFormData(initialState);
         onProductCreated();
       }
     } catch (err) {
-      console.error("Error durante la operación del producto:", err);
-      setError(err.message || "Error en la operación del producto.");
+      setError(err.message || "Error en la operación.");
     }
   };
 
-  if (loadingSuppliers) return <p className="text-gray-500">Cargando proveedores...</p>;
+  if (loadingSuppliers) return <div className="p-10 text-center animate-pulse text-blue-600 font-medium">Cargando proveedores...</div>;
 
   return (
-    <div className="p-6 bg-white rounded-lg shadow-md">
-      <h2 className="text-xl font-semibold text-gray-800 mb-4">
-        {productToEdit ? "Editar Producto" : "Crear Nuevo Producto"}
-      </h2>
+    <div className="max-w-4xl mx-auto bg-gray-50 rounded-2xl shadow-xl overflow-hidden border border-gray-100">
+      {/* Header Dinámico */}
+      <div className={`p-6 text-white flex items-center gap-3 ${productToEdit ? 'bg-amber-500' : 'bg-blue-600'}`}>
+        {productToEdit ? <FaEdit size={24} /> : <FaSave size={24} />}
+        <h2 className="text-2xl font-bold">
+          {productToEdit ? "Modificar Producto" : "Registrar Nuevo Producto"}
+        </h2>
+      </div>
 
-      <form onSubmit={handleSubmit} className="space-y-4">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div>
-            <label className="block text-sm font-medium text-gray-700">
-              Nombre *
-            </label>
-            <input
-              type="text"
-              name="nombre"
-              value={formData.nombre}
-              onChange={handleChange}
-              className="mt-1 w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-200"
-              required
-            />
+      <form onSubmit={handleSubmit} className="p-6 md:p-8 space-y-8">
+        
+        {/* Sección 1: Identificación */}
+        <section>
+          <div className="flex items-center gap-2 mb-4 text-blue-700 border-b pb-2">
+            <FaTag /> <h3 className="font-bold uppercase tracking-wider text-sm">Información General</h3>
           </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700">
-              SKU *
-            </label>
-            <input
-              type="text"
-              name="sku"
-              value={formData.sku}
-              onChange={handleChange}
-              className="mt-1 w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-200"
-              required
-            />
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="space-y-1">
+              <label className="text-xs font-bold text-gray-500 uppercase">Nombre del Producto *</label>
+              <input type="text" name="nombre" value={formData.nombre} onChange={handleChange} required
+                className="w-full p-3 bg-white border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 transition-all outline-none" 
+                placeholder="Ej: Camiseta Algodón XL" />
+            </div>
+            <div className="space-y-1">
+              <label className="text-xs font-bold text-gray-500 uppercase flex items-center gap-1"><FaBarcode /> SKU / Código *</label>
+              <input type="text" name="sku" value={formData.sku} onChange={handleChange} required
+                className="w-full p-3 bg-white border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 transition-all outline-none" 
+                placeholder="PROD-001" />
+            </div>
           </div>
+        </section>
 
-          <div>
-            <label className="block text-sm font-medium text-gray-700">
-              Precio Compra *
-            </label>
-            <input
-              type="number"
-              name="precioCompra"
-              value={formData.precioCompra}
-              onChange={handleChange}
-              step="0.01"
-              className="mt-1 w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-200"
-              required
-            />
+        {/* Sección 2: Precios e Inventario */}
+        <section>
+          <div className="flex items-center gap-2 mb-4 text-green-700 border-b pb-2">
+            <FaBox /> <h3 className="font-bold uppercase tracking-wider text-sm">Precios e Inventario</h3>
           </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700">
-              Precio Venta *
-            </label>
-            <input
-              type="number"
-              name="precioVenta"
-              value={formData.precioVenta}
-              onChange={handleChange}
-              step="0.01"
-              className="mt-1 w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-200"
-              required
-            />
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
+            <div className="space-y-1">
+              <label className="text-xs font-bold text-gray-500 uppercase">Precio Compra ($) *</label>
+              <input type="number" name="precioCompra" value={formData.precioCompra} onChange={handleChange} required step="0.01"
+                className="w-full p-3 bg-white border border-gray-200 rounded-xl focus:ring-2 focus:ring-green-500 transition-all outline-none" />
+            </div>
+            <div className="space-y-1">
+              <label className="text-xs font-bold text-gray-500 uppercase">Precio Venta ($) *</label>
+              <input type="number" name="precioVenta" value={formData.precioVenta} onChange={handleChange} required step="0.01"
+                className="w-full p-3 bg-green-50 border border-green-200 rounded-xl focus:ring-2 focus:ring-green-500 transition-all outline-none font-bold text-green-700" />
+            </div>
+            <div className="space-y-1">
+              <label className="text-xs font-bold text-gray-500 uppercase">Stock Inicial *</label>
+              <input type="number" name="stockActual" value={formData.stockActual} onChange={handleChange} required min="0"
+                className="w-full p-3 bg-white border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 transition-all outline-none" />
+            </div>
           </div>
+        </section>
 
-          <div>
-            <label className="block text-sm font-medium text-gray-700">
-              Stock Actual *
-            </label>
-            <input
-              type="number"
-              name="stockActual"
-              value={formData.stockActual}
-              onChange={handleChange}
-              min="0"
-              className="mt-1 w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-200"
-              required
-            />
+        {/* Sección 3: Categorización */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div className="space-y-1">
+            <label className="text-xs font-bold text-gray-500 uppercase">Unidad (Kg, Unid, Par)</label>
+            <input type="text" name="unidadMedida" value={formData.unidadMedida} onChange={handleChange} required
+              className="w-full p-3 bg-white border border-gray-200 rounded-xl outline-none focus:ring-2 focus:ring-blue-500" placeholder="Ej: Unid" />
           </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700">
-              Unidad de Medida *
-            </label>
-            <input
-              type="text"
-              name="unidadMedida"
-              value={formData.unidadMedida}
-              onChange={handleChange}
-              className="mt-1 w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-200"
-              required
-            />
+          <div className="space-y-1">
+            <label className="text-xs font-bold text-gray-500 uppercase">Categoría</label>
+            <input type="text" name="categoria" value={formData.categoria} onChange={handleChange} required
+              className="w-full p-3 bg-white border border-gray-200 rounded-xl outline-none focus:ring-2 focus:ring-blue-500" placeholder="Ej: Ropa" />
           </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700">
-              Categoría *
-            </label>
-            <input
-              type="text"
-              name="categoria"
-              value={formData.categoria}
-              onChange={handleChange}
-              className="mt-1 w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-200"
-              required
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700">
-              Proveedor
-            </label>
-            <select
-              name="supplierId"
-              value={formData.supplierId}
-              onChange={handleChange}
-              className="mt-1 w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-200"
-            >
-              <option value="">Seleccione un proveedor (Opcional)</option>
-              {suppliers.map((supplier) => (
-                <option key={supplier.id} value={supplier.id}>
-                  {supplier.nombre}
-                </option>
-              ))}
+          <div className="space-y-1">
+            <label className="text-xs font-bold text-gray-500 uppercase">Proveedor</label>
+            <select name="supplierId" value={formData.supplierId} onChange={handleChange}
+              className="w-full p-3 bg-white border border-gray-200 rounded-xl outline-none focus:ring-2 focus:ring-blue-500">
+              <option value="">Ninguno</option>
+              {suppliers.map(s => <option key={s.id} value={s.id}>{s.nombre}</option>)}
             </select>
           </div>
         </div>
 
-        <div>
-          <label className="block text-sm font-medium text-gray-700">
-            Descripción
-          </label>
-          <textarea
-            name="descripcion"
-            value={formData.descripcion}
-            onChange={handleChange}
-            className="mt-1 w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-200"
-          ></textarea>
+        {/* Botón de Acción */}
+        <div className="pt-6">
+          <button type="submit"
+            className={`w-full py-4 rounded-xl text-lg font-bold shadow-lg transform transition active:scale-95 flex items-center justify-center gap-2 ${
+              productToEdit ? 'bg-amber-500 hover:bg-amber-600' : 'bg-blue-600 hover:bg-blue-700'
+            } text-white`}>
+            {productToEdit ? <><FaEdit /> Actualizar Producto</> : <><FaSave /> Guardar Producto</>}
+          </button>
         </div>
 
-        <div>
-          <label className="block text-sm font-medium text-gray-700">
-            URL Imagen
-          </label>
-          <input
-            type="text"
-            name="imagenUrl"
-            value={formData.imagenUrl}
-            onChange={handleChange}
-            className="mt-1 w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-200"
-          />
-        </div>
-
-        <button
-          type="submit"
-          className="w-full bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 transition"
-        >
-          {productToEdit ? "Actualizar Producto" : "Crear Producto"}
-        </button>
+        {/* Mensajes de Feedback */}
+        {message && <div className="p-4 bg-green-100 text-green-700 rounded-xl text-center font-bold animate-bounce">{message}</div>}
+        {error && <div className="p-4 bg-red-100 text-red-700 rounded-xl text-center font-bold">{error}</div>}
       </form>
-
-      {message && <p className="mt-4 text-green-600">{message}</p>}
-      {error && <p className="mt-4 text-red-600">{error}</p>}
     </div>
   );
 };

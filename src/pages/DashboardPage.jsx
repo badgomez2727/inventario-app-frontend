@@ -30,25 +30,39 @@ function DashboardPage() {
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
 
+
   const fetchData = async (start, end) => {
     try {
       setLoading(true);
       setError(null);
-      const [stats, inventory, monthlySales, topProducts, allProducts] = await Promise.all([
+      
+      // Llamamos a los servicios
+      // Nota: getProducts() ahora devuelve un objeto con la propiedad .products
+      const [stats, inventory, monthlySales, topProducts, productData] = await Promise.all([
         getGeneralStats(),
         getInventoryValue(),
         getMonthlySales(start, end),
         getTopSellingProducts(start, end),
-        getProducts(),
+        getProducts(1, 1000), // Traemos un límite alto para calcular alertas de stock
       ]);
+
       setGeneralStats(stats);
       setInventoryValue(inventory);
       setMonthlySalesData(monthlySales);
       setTopSellingProducts(topProducts);
-      setLowStockProducts(allProducts.filter(p => p.stockActual <= LOW_STOCK_THRESHOLD));
+
+      // --- CORRECCIÓN AQUÍ ---
+      // Extraemos el array de la propiedad .products
+      const productsArray = productData?.products || [];
+      
+      setLowStockProducts(
+        productsArray.filter(p => p.stockActual <= LOW_STOCK_THRESHOLD)
+      );
+      // -----------------------
+
     } catch (err) {
       setError('No se pudieron cargar los datos.');
-      console.error(err);
+      console.error("Error detallado en Dashboard:", err);
     } finally {
       setLoading(false);
     }

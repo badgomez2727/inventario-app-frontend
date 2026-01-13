@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { getSalesHistory, getSaleReceiptPdf } from '../services/apiService';
 import { formatCOP } from '../utils/formatters';
-import { FaDownload } from 'react-icons/fa';
+import { FaDownload, FaCheckCircle, FaClock } from 'react-icons/fa';
 
 function SalesHistoryPage() {
   const [sales, setSales] = useState([]);
@@ -34,76 +34,96 @@ function SalesHistoryPage() {
       const a = document.createElement('a');
       a.href = url;
       a.download = `recibo_venta_${saleId}.pdf`;
-      a.target = '_blank';
       document.body.appendChild(a);
       a.click();
       a.remove();
       window.URL.revokeObjectURL(url);
-      setMessage(`Recibo para la venta ${saleId} descargado con éxito.`);
+      setMessage(`✅ Recibo #${saleId} descargado con éxito.`);
     } catch (err) {
       console.error('Error al descargar el recibo:', err);
-      setMessage(err.message || `Error al descargar el recibo para la venta ${saleId}.`);
+      setMessage(`❌ Error al descargar el recibo.`);
     }
   };
 
+  // Función para renderizar el estado con colores
+  const renderStatusBadge = (status) => {
+    const isPagada = status === 'PAGADA';
+    return (
+      <span className={`flex items-center justify-center gap-1 px-2 py-1 rounded-full text-[10px] font-black uppercase ${
+        isPagada ? 'bg-green-100 text-green-700' : 'bg-amber-100 text-amber-700'
+      }`}>
+        {isPagada ? <FaCheckCircle /> : <FaClock />}
+        {status}
+      </span>
+    );
+  };
+
   if (loading)
-    return <p className="text-center text-gray-600">Cargando historial de ventas...</p>;
+    return <div className="p-10 text-center animate-pulse text-blue-600 font-bold">Cargando historial...</div>;
   if (error)
-    return <p className="text-center text-red-500 font-semibold">Error: {error}</p>;
-  if (sales.length === 0)
-    return <p className="text-center text-gray-500">No hay ventas registradas para esta compañía.</p>;
+    return <div className="p-10 text-center text-red-500 font-bold">Error: {error}</div>;
 
   return (
-    <div className="p-4 md:p-6 bg-white rounded-xl shadow-md">
-      <h2 className="text-2xl md:text-3xl font-bold text-gray-800 mb-6 text-center">
-        Historial de Ventas
+    <div className="p-4 md:p-6 bg-white rounded-[2rem] shadow-sm border border-gray-100">
+      <h2 className="text-2xl md:text-3xl font-black text-gray-900 mb-6 text-center tracking-tighter">
+        HISTORIAL DE <span className="text-blue-600">VENTAS</span>
       </h2>
 
       {message && (
-        <p
-          className={`mb-4 text-center font-medium ${
-            message.includes('Error') ? 'text-red-500' : 'text-green-600'
-          }`}
-        >
+        <div className={`mb-4 p-3 rounded-xl text-center text-sm font-bold animate-fade-in ${
+          message.includes('Error') || message.includes('❌') ? 'bg-red-50 text-red-600' : 'bg-green-50 text-green-600'
+        }`}>
           {message}
-        </p>
+        </div>
       )}
 
       <div className="overflow-x-auto">
-        <table className="min-w-full divide-y divide-gray-200 bg-white rounded-lg shadow text-xs sm:text-sm">
-          <thead className="bg-gray-100 text-gray-700">
-            <tr>
-              <th className="px-2 py-2 text-center">ID</th>
-              <th className="px-2 py-2 text-left">Usuario</th>
-              <th className="px-2 py-2 text-left hidden sm:table-cell">Cliente</th>
-              <th className="px-2 py-2 text-center">Fecha Venta</th>
-              <th className="px-2 py-2 text-right">Total</th>
-              <th className="px-2 py-2 text-center hidden lg:table-cell">Estado</th>
-              <th className="px-2 py-2 text-center">Acciones</th>
+        <table className="min-w-full bg-white text-xs sm:text-sm">
+          <thead>
+            <tr className="border-b border-gray-100">
+              <th className="px-4 py-4 text-center text-gray-400 font-black uppercase tracking-widest text-[10px]">ID</th>
+              <th className="px-4 py-4 text-left text-gray-400 font-black uppercase tracking-widest text-[10px]">Vendedor / Cliente</th>
+              <th className="px-4 py-4 text-center text-gray-400 font-black uppercase tracking-widest text-[10px]">Fecha</th>
+              <th className="px-4 py-4 text-center text-gray-400 font-black uppercase tracking-widest text-[10px]">Estado Pago</th>
+              <th className="px-4 py-4 text-right text-gray-400 font-black uppercase tracking-widest text-[10px]">Total</th>
+              <th className="px-4 py-4 text-center text-gray-400 font-black uppercase tracking-widest text-[10px]">Acciones</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-gray-200">
-            {sales.map((sale) => (
-              <tr key={sale.id} className="hover:bg-gray-50">
-                <td className="px-2 py-2 text-center">{sale.id}</td>
-                <td className="px-2 py-2">{sale.user?.nombreUsuario || 'N/A'}</td>
-                <td className="px-2 py-2 hidden sm:table-cell">{sale.client?.nombre || 'Consumidor Final'}</td>
-                <td className="px-2 py-2 text-center">
-                  {new Date(sale.fechaVenta).toLocaleDateString('es-CO')}
-                </td>
-                <td className="px-2 py-2 text-right">{formatCOP(sale.total)}</td>
-                <td className="px-2 py-2 text-center hidden lg:table-cell">{sale.estado}</td>
-                <td className="px-2 py-2 text-center">
-                  <button
-                    onClick={() => handleDownloadReceipt(sale.id)}
-                    className="flex items-center gap-1 sm:gap-2 px-2 sm:px-3 py-1 bg-blue-600 text-white text-xs sm:text-sm rounded-lg shadow hover:bg-blue-700 transition-colors"
-                    title="Descargar Recibo PDF"
-                  >
-                    <FaDownload /> <span className="hidden sm:inline">Descargar</span>
-                  </button>
-                </td>
+          <tbody className="divide-y divide-gray-50">
+            {sales.length === 0 ? (
+              <tr>
+                <td colSpan="6" className="py-10 text-center text-gray-400 font-medium">No hay ventas registradas.</td>
               </tr>
-            ))}
+            ) : (
+              sales.map((sale) => (
+                <tr key={sale.id} className="hover:bg-blue-50/30 transition-colors">
+                  <td className="px-4 py-4 text-center font-mono text-gray-400">#{sale.id}</td>
+                  <td className="px-4 py-4">
+                    <div className="font-bold text-gray-800">{sale.user?.nombreUsuario || 'Sistema'}</div>
+                    <div className="text-[10px] text-gray-400 uppercase font-medium">
+                      Cliente: {sale.client?.nombre || 'Consumidor Final'}
+                    </div>
+                  </td>
+                  <td className="px-4 py-4 text-center font-medium text-gray-600">
+                    {new Date(sale.fechaVenta).toLocaleDateString('es-CO')}
+                  </td>
+                  <td className="px-4 py-4 text-center">
+                    {renderStatusBadge(sale.estadoPago || sale.estado)}
+                  </td>
+                  <td className="px-4 py-4 text-right font-black text-gray-900">
+                    {formatCOP(sale.total)}
+                  </td>
+                  <td className="px-4 py-4 text-center">
+                    <button
+                      onClick={() => handleDownloadReceipt(sale.id)}
+                      className="inline-flex items-center gap-2 px-4 py-2 bg-gray-900 text-white text-[10px] font-black rounded-xl hover:bg-blue-600 transition-all shadow-sm active:scale-95"
+                    >
+                      <FaDownload /> PDF
+                    </button>
+                  </td>
+                </tr>
+              ))
+            )}
           </tbody>
         </table>
       </div>

@@ -82,10 +82,16 @@ export const registerCompanyAndAdmin = async (data) => {
   return response.json();
 };
 
-// --- Funciones de Productos ---
-export const getProducts = async () => {
-  return authenticatedFetch('productos');
+
+
+
+export const getProducts = async (page = 1, limit = 10) => {
+  // Aseguramos que siempre vayan números
+  const p = page || 1;
+  const l = limit || 10;
+  return authenticatedFetch(`productos?page=${p}&limit=${l}`);
 };
+
 
 export const createProduct = async (productData) => {
   return authenticatedFetch('productos', {
