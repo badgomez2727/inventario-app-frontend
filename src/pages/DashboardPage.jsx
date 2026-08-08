@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { getGeneralStats, getInventoryValue, getMonthlySales, getTopSellingProducts, getProducts, getPlanStatus } from '../services/apiService';
-import { BarChart, Bar, XAxis, YAxis, Tooltip, Legend, CartesianGrid, ResponsiveContainer, Cell } from 'recharts';
+import { BarChart, Bar, XAxis, YAxis, Tooltip, CartesianGrid, ResponsiveContainer, Cell } from 'recharts';
 import { formatCOP } from '../utils/formatters';
 import { FaBoxes, FaUsers, FaTruckLoading, FaMoneyBillWave, FaExclamationTriangle, FaCalendarAlt, FaTrashAlt, FaCrown } from 'react-icons/fa';
 
@@ -129,6 +129,10 @@ function DashboardPage() {
           <p className="text-gray-500 font-medium italic">"Mide lo que importa, mejora lo que mides"</p>
         </div>
       </div>
+
+      {error && (
+        <div className="bg-red-50 text-red-600 p-4 rounded-2xl text-center font-medium">{error}</div>
+      )}
 
       <PlanUsageBanner planStatus={planStatus} />
 

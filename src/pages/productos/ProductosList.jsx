@@ -84,6 +84,10 @@ function ProductosList({ onEditClick }) {
 
   return (
     <div className="space-y-6 animate-fadeIn">
+      {error && (
+        <div className="bg-red-50 text-red-600 p-4 rounded-2xl text-center font-medium">{error}</div>
+      )}
+
       {/* Header y Buscador */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
         <div>

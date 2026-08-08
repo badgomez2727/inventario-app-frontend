@@ -141,6 +141,16 @@ function RegisterCompanyPage() {
                     className="mt-1 w-full bg-gray-50 border-none rounded-xl px-4 py-3 focus:ring-2 focus:ring-emerald-500 focus:bg-white transition-all outline-none"
                   />
                 </div>
+                <div>
+                  <label className="text-xs font-bold uppercase tracking-wider text-gray-400 ml-1">Dirección</label>
+                  <input
+                    type="text"
+                    placeholder="Calle 123 #45-67"
+                    value={companyAddress}
+                    onChange={(e) => setCompanyAddress(e.target.value)}
+                    className="mt-1 w-full bg-gray-50 border-none rounded-xl px-4 py-3 focus:ring-2 focus:ring-emerald-500 focus:bg-white transition-all outline-none"
+                  />
+                </div>
               </div>
             </section>
 

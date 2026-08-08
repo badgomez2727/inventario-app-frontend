@@ -2,20 +2,23 @@ import React, { useState, useEffect } from "react";
 import { createProduct, updateProduct, getSuppliers } from "../../services/apiService";
 import { FaSave, FaEdit, FaBarcode, FaTag, FaBox } from "react-icons/fa";
 
-const ProductoForm = ({ onProductCreated, productToEdit, onEditComplete }) => {
-  const initialState = {
-    nombre: "",
-    descripcion: "",
-    sku: "",
-    precioCompra: "",
-    precioVenta: "",
-    stockActual: "",
-    unidadMedida: "",
-    categoria: "",
-    imagenUrl: "",
-    supplierId: "",
-  };
+// Fuera del componente para que tenga una referencia estable entre renders
+// (si viviera dentro, cada render crearía un objeto nuevo y no podríamos
+// declararlo como dependencia del useEffect de abajo sin dispararlo siempre).
+const initialState = {
+  nombre: "",
+  descripcion: "",
+  sku: "",
+  precioCompra: "",
+  precioVenta: "",
+  stockActual: "",
+  unidadMedida: "",
+  categoria: "",
+  imagenUrl: "",
+  supplierId: "",
+};
 
+const ProductoForm = ({ onProductCreated, productToEdit, onEditComplete }) => {
   const [formData, setFormData] = useState(initialState);
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
@@ -52,7 +55,7 @@ const ProductoForm = ({ onProductCreated, productToEdit, onEditComplete }) => {
     }
     setMessage("");
     setError("");
-  }, [productToEdit]);
+  }, [productToEdit]); // eslint-disable-line react-hooks/exhaustive-deps -- initialState es un objeto constante fuera del componente, no cambia entre renders
 
   const handleChange = (e) => {
     const { name, value } = e.target;

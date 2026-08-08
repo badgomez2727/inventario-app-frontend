@@ -11,8 +11,7 @@ export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null); // Almacena info del user logueado
   const [token, setToken] = useState(null); // Almacena el token JWT
   const [loading, setLoading] = useState(true); // Para manejar el estado de carga inicial
-  const [message, setMessage] = useState(null); // <-- ¡AÑADE ESTA LÍNEA!
-  const [error, setError] = useState(null); // Aunque no lo usaremos en este archivo, es buena práctica tenerlo si se manejan errores aquí.
+  const [, setMessage] = useState(null); // El valor no se consume aquí; RegisterCompanyPage maneja su propio mensaje local.
 
   // Efecto para cargar el token y usuario desde localStorage al iniciar
   useEffect(() => {
@@ -53,7 +52,7 @@ export const AuthProvider = ({ children }) => {
   const registerCompanyAndAdmin = async (companyData, userData) => {
     setLoading(true);
     try {
-      const response = await apiRegisterCompanyAndAdmin(companyData, userData);
+      await apiRegisterCompanyAndAdmin(companyData, userData);
       setMessage("Registro exitoso. Ya puedes iniciar sesión.");
       return { success: true };
     } catch (error) {

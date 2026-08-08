@@ -130,6 +130,7 @@ const ProveedoresPage = () => {
           </div>
         </form>
         {message && <p className="text-emerald-600 mt-3 text-center font-medium animate-bounce">{message}</p>}
+        {error && <p className="text-red-500 mt-3 text-center font-medium">{error}</p>}
       </div>
 
       {/* Lista de Proveedores en Cards Modernas */}

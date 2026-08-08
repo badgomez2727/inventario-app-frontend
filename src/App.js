@@ -28,7 +28,6 @@ import TermsPage from './pages/TermsPage';
 // Componentes
 import PrivateRoute from './components/PrivateRoute';
 import Layout from './components/Layout';
-import Footer from './components/Footer';
 import BottomNavbar from './components/BottomNavbar';
 
 function AppContent() {

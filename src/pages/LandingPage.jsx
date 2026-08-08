@@ -1,8 +1,8 @@
 import React from "react";
 import { Link } from "react-router-dom";
-import { 
-  FaMobileAlt, FaFileInvoiceDollar, FaHistory, 
-  FaBolt, FaCheckCircle, FaChartBar, FaRocket
+import {
+  FaMobileAlt, FaFileInvoiceDollar, FaHistory,
+  FaCheckCircle, FaRocket
 } from "react-icons/fa";
 
 const Logo = () => (

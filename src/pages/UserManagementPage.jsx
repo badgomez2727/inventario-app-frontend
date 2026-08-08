@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { getUsers, createUser } from '../services/apiService';
-import { FaUserPlus, FaUserShield, FaUsers } from 'react-icons/fa';
+import { FaUserPlus, FaUsers } from 'react-icons/fa';
 
 const UserManagementPage = () => {
   const [users, setUsers] = useState([]);
@@ -65,6 +65,7 @@ const UserManagementPage = () => {
         <div>
           <h2 className="text-3xl font-black text-gray-800 tracking-tight">Control de <span className="text-emerald-500">Accesos</span></h2>
           <p className="text-gray-500 text-sm">Gestiona quién tiene permiso para operar en tu negocio.</p>
+          {error && <p className="text-red-500 text-sm font-medium mt-1">{error}</p>}
         </div>
         <div className="bg-white px-4 py-2 rounded-2xl shadow-sm border border-gray-100 flex items-center gap-3">
           <FaUsers className="text-emerald-500 text-xl" />
