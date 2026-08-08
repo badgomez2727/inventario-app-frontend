@@ -1,8 +1,46 @@
 import React, { useEffect, useState } from 'react';
-import { getGeneralStats, getInventoryValue, getMonthlySales, getTopSellingProducts, getProducts } from '../services/apiService';
+import { Link } from 'react-router-dom';
+import { getGeneralStats, getInventoryValue, getMonthlySales, getTopSellingProducts, getProducts, getPlanStatus } from '../services/apiService';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, Legend, CartesianGrid, ResponsiveContainer, Cell } from 'recharts';
 import { formatCOP } from '../utils/formatters';
-import { FaBoxes, FaUsers, FaTruckLoading, FaMoneyBillWave, FaExclamationTriangle, FaCalendarAlt, FaTrashAlt } from 'react-icons/fa';
+import { FaBoxes, FaUsers, FaTruckLoading, FaMoneyBillWave, FaExclamationTriangle, FaCalendarAlt, FaTrashAlt, FaCrown } from 'react-icons/fa';
+
+// Banner de uso del plan: avisa cuando la compañía se está acercando (o ya
+// llegó) al techo de su plan gratuito.
+const PlanUsageBanner = ({ planStatus }) => {
+  if (!planStatus || planStatus.plan !== 'FREE') return null;
+
+  const { products, salesThisMonth } = planStatus;
+  const productsPct = products.limit ? (products.used / products.limit) * 100 : 0;
+  const salesPct = salesThisMonth.limit ? (salesThisMonth.used / salesThisMonth.limit) * 100 : 0;
+  const nearLimit = productsPct >= 80 || salesPct >= 80;
+
+  if (!nearLimit) return null;
+
+  const atLimit = productsPct >= 100 || salesPct >= 100;
+
+  return (
+    <div className={`rounded-2xl p-5 flex items-center gap-4 border ${atLimit ? 'bg-red-50 border-red-100' : 'bg-amber-50 border-amber-100'}`}>
+      <div className={`w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 ${atLimit ? 'bg-red-500' : 'bg-amber-500'} text-white`}>
+        <FaCrown />
+      </div>
+      <div className="flex-1">
+        <p className={`font-bold ${atLimit ? 'text-red-700' : 'text-amber-700'}`}>
+          {atLimit ? 'Alcanzaste el límite del plan gratuito' : 'Te estás acercando al límite del plan gratuito'}
+        </p>
+        <p className="text-sm text-gray-500">
+          Productos: {products.used}/{products.limit} · Ventas este mes: {salesThisMonth.used}/{salesThisMonth.limit}
+        </p>
+      </div>
+      <Link
+        to="/apoyar"
+        className={`flex-shrink-0 px-5 py-2.5 rounded-xl text-sm font-black text-white transition-all active:scale-95 ${atLimit ? 'bg-red-500 hover:bg-red-600' : 'bg-amber-500 hover:bg-amber-600'}`}
+      >
+        Actualizar a PRO
+      </Link>
+    </div>
+  );
+};
 
 const LOW_STOCK_THRESHOLD = 10;
 
@@ -29,27 +67,30 @@ function DashboardPage() {
   const [error, setError] = useState(null);
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
+  const [planStatus, setPlanStatus] = useState(null);
 
 
   const fetchData = async (start, end) => {
     try {
       setLoading(true);
       setError(null);
-      
+
       // Llamamos a los servicios
       // Nota: getProducts() ahora devuelve un objeto con la propiedad .products
-      const [stats, inventory, monthlySales, topProducts, productData] = await Promise.all([
+      const [stats, inventory, monthlySales, topProducts, productData, plan] = await Promise.all([
         getGeneralStats(),
         getInventoryValue(),
         getMonthlySales(start, end),
         getTopSellingProducts(start, end),
         getProducts(1, 1000), // Traemos un límite alto para calcular alertas de stock
+        getPlanStatus().catch(() => null), // No bloquear el dashboard si esto falla
       ]);
 
       setGeneralStats(stats);
       setInventoryValue(inventory);
       setMonthlySalesData(monthlySales);
       setTopSellingProducts(topProducts);
+      setPlanStatus(plan);
 
       // --- CORRECCIÓN AQUÍ ---
       // Extraemos el array de la propiedad .products
@@ -88,6 +129,8 @@ function DashboardPage() {
           <p className="text-gray-500 font-medium italic">"Mide lo que importa, mejora lo que mides"</p>
         </div>
       </div>
+
+      <PlanUsageBanner planStatus={planStatus} />
 
       {/* --- MÉTRICAS PRINCIPALES --- */}
       {generalStats && inventoryValue && (

@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { getClients, createClient, updateClient, deleteClient } from '../services/apiService';
-import { FaEdit, FaTrashAlt, FaRocket } from 'react-icons/fa';
+import { FaEdit, FaTrashAlt, FaChevronLeft, FaChevronRight } from 'react-icons/fa';
 
 const ClientesPage = () => {
   // 1. Definición de todos los estados (Esto corrige los errores de 'no-undef')
@@ -11,10 +11,36 @@ const ClientesPage = () => {
   const [editingClient, setEditingClient] = useState(null);
   const [formData, setFormData] = useState({ nombre: '', email: '', telefono: '', direccion: '' });
 
-  // 2. Cargar clientes al iniciar
-  useEffect(() => { 
-    fetchClients(); 
-  }, []);
+  // Paginación
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [totalCount, setTotalCount] = useState(0);
+
+  const fetchClients = useCallback(async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      const data = await getClients(currentPage, 10);
+      if (data && data.clients) {
+        setClientes(data.clients);
+        setTotalPages(data.totalPages || 1);
+        setTotalCount(data.totalCount || 0);
+      } else {
+        // Por si el backend aún devuelve el formato antiguo (array plano)
+        setClientes(Array.isArray(data) ? data : []);
+      }
+    } catch (err) {
+      console.error('Error al cargar clientes:', err);
+      setError(err.message || 'No se pudieron cargar los clientes.');
+    } finally {
+      setLoading(false);
+    }
+  }, [currentPage]);
+
+  // 2. Cargar clientes al iniciar y cuando cambia de página
+  useEffect(() => {
+    fetchClients();
+  }, [fetchClients]);
 
   // 3. Auto-ocultar mensajes de éxito (Mejora de UX)
   useEffect(() => {
@@ -23,20 +49,6 @@ const ClientesPage = () => {
       return () => clearTimeout(timer);
     }
   }, [message]);
-
-  const fetchClients = async () => {
-    try { 
-      setLoading(true); 
-      setError(null); 
-      const data = await getClients(); 
-      setClientes(data); 
-    } catch (err) { 
-      console.error('Error al cargar clientes:', err); 
-      setError(err.message || 'No se pudieron cargar los clientes.'); 
-    } finally { 
-      setLoading(false); 
-    }
-  };
 
   const handleChange = (e) => setFormData(prev => ({ ...prev, [e.target.name]: e.target.value }));
 
@@ -120,7 +132,7 @@ const ClientesPage = () => {
       <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
         <div className="p-6 border-b border-gray-50 flex justify-between items-center">
           <h3 className="font-bold text-gray-700">Lista de Clientes</h3>
-          <span className="text-sm text-gray-400">{clientes.length} registrados</span>
+          <span className="text-sm text-gray-400">{totalCount} registrados</span>
         </div>
         
         <div className="overflow-x-auto">
@@ -147,6 +159,30 @@ const ClientesPage = () => {
               ))}
             </tbody>
           </table>
+        </div>
+
+        {/* --- CONTROLES DE PAGINACIÓN --- */}
+        <div className="bg-gray-50/50 px-6 py-4 flex items-center justify-between border-t border-gray-100">
+          <p className="text-xs font-bold text-gray-400 uppercase tracking-tighter">
+            Página <span className="text-emerald-600">{currentPage}</span> de {totalPages}
+          </p>
+
+          <div className="flex gap-2">
+            <button
+              disabled={currentPage === 1}
+              onClick={() => setCurrentPage(prev => prev - 1)}
+              className="flex items-center gap-2 px-4 py-2 bg-white border border-gray-200 rounded-xl text-xs font-black text-gray-600 hover:bg-gray-50 disabled:opacity-30 disabled:cursor-not-allowed transition-all"
+            >
+              <FaChevronLeft /> Anterior
+            </button>
+            <button
+              disabled={currentPage === totalPages}
+              onClick={() => setCurrentPage(prev => prev + 1)}
+              className="flex items-center gap-2 px-4 py-2 bg-emerald-500 text-white rounded-xl text-xs font-black hover:bg-emerald-600 shadow-lg shadow-emerald-500/20 disabled:opacity-30 disabled:cursor-not-allowed transition-all"
+            >
+              Siguiente <FaChevronRight />
+            </button>
+          </div>
         </div>
       </div>
     </div>

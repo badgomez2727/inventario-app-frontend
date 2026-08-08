@@ -24,6 +24,7 @@ function RegisterCompanyPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
+  const [acceptedTerms, setAcceptedTerms] = useState(false);
   const [error, setError] = useState(null);
   const [message, setMessage] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -38,6 +39,12 @@ function RegisterCompanyPage() {
 
     if (password !== confirmPassword) {
       setError('Las contraseñas no coinciden.');
+      setLoading(false);
+      return;
+    }
+
+    if (!acceptedTerms) {
+      setError('Debes aceptar los Términos y la Política de Tratamiento de Datos para continuar.');
       setLoading(false);
       return;
     }
@@ -190,6 +197,27 @@ function RegisterCompanyPage() {
               </div>
             </section>
 
+            {/* Aceptación de Términos y Tratamiento de Datos */}
+            <label className="flex items-start gap-3 text-sm text-gray-600 cursor-pointer select-none">
+              <input
+                type="checkbox"
+                checked={acceptedTerms}
+                onChange={(e) => setAcceptedTerms(e.target.checked)}
+                className="mt-1 w-4 h-4 accent-emerald-500 flex-shrink-0"
+              />
+              <span>
+                Acepto los{' '}
+                <Link to="/terminos#terminos" target="_blank" className="text-emerald-600 font-bold hover:underline">
+                  Términos y Condiciones
+                </Link>{' '}
+                y la{' '}
+                <Link to="/terminos#privacidad" target="_blank" className="text-emerald-600 font-bold hover:underline">
+                  Política de Tratamiento de Datos
+                </Link>
+                .
+              </span>
+            </label>
+
             {/* Mensajes de Feedback */}
             {message && <div className="bg-emerald-50 text-emerald-700 p-4 rounded-xl text-sm font-bold text-center">{message}</div>}
             {error && <div className="bg-red-50 text-red-700 p-4 rounded-xl text-sm font-bold text-center">{error}</div>}
@@ -197,7 +225,7 @@ function RegisterCompanyPage() {
             <div className="pt-4">
               <button
                 type="submit"
-                disabled={loading}
+                disabled={loading || !acceptedTerms}
                 className="w-full bg-gray-900 text-white font-black py-4 rounded-2xl shadow-xl hover:bg-emerald-600 hover:-translate-y-1 transition-all disabled:opacity-50 disabled:transform-none"
               >
                 {loading ? 'Creando Universo Vendita...' : 'Crear mi Empresa'}

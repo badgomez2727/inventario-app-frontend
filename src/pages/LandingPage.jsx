@@ -26,6 +26,7 @@ const LandingPage = () => {
         <div className="hidden md:flex gap-8 font-medium text-gray-600">
           <a href="#features" className="hover:text-emerald-500 transition-colors">Funciones</a>
           <a href="#about" className="hover:text-emerald-500 transition-colors">Nosotros</a>
+          <Link to="/apoyar" className="hover:text-emerald-500 transition-colors">Apóyanos</Link>
         </div>
         <Link 
           to="/login" 

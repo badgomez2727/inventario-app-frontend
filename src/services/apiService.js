@@ -177,14 +177,18 @@ export const createSale = async (saleData) => {
 };
 
 // Función para obtener el historial de ventas
-export const getSalesHistory = async () => {
-  return authenticatedFetch('sales/history'); 
+export const getSalesHistory = async (page = 1, limit = 10) => {
+  const p = page || 1;
+  const l = limit || 10;
+  return authenticatedFetch(`sales/history?page=${p}&limit=${l}`);
 };
 
 
 // --- Funciones de Clientes ---
-export const getClients = async () => {
-  return authenticatedFetch('clientes');
+export const getClients = async (page = 1, limit = 10) => {
+  const p = page || 1;
+  const l = limit || 10;
+  return authenticatedFetch(`clientes?page=${p}&limit=${l}`);
 };
 
 export const createClient = async (clientData) => {
@@ -208,8 +212,10 @@ export const deleteClient = async (clientId) => {
 };
 
 // --- Funciones de Proveedores ---
-export const getSuppliers = async () => {
-  return authenticatedFetch('proveedores');
+export const getSuppliers = async (page = 1, limit = 10) => {
+  const p = page || 1;
+  const l = limit || 10;
+  return authenticatedFetch(`proveedores?page=${p}&limit=${l}`);
 };
 
 export const createSupplier = async (supplierData) => {
@@ -235,6 +241,23 @@ export const deleteSupplier = async (supplierId) => {
 // --- Funciones de Reportes (ahora aceptan fechas opcionales) ---
 export const getGeneralStats = async () => {
   return authenticatedFetch('reports/general-stats');
+};
+
+// Uso actual de la compañía vs los límites de su plan (FREE/PRO)
+export const getPlanStatus = async () => {
+  return authenticatedFetch('reports/plan-status');
+};
+
+// --- Funciones de Admin (solo super_admin_sistema) ---
+export const getAdminCompanies = async (page = 1, limit = 20) => {
+  return authenticatedFetch(`admin/companies?page=${page}&limit=${limit}`);
+};
+
+export const updateCompanyPlan = async (companyId, plan) => {
+  return authenticatedFetch(`admin/companies/${companyId}/plan`, {
+    method: 'PATCH',
+    body: JSON.stringify({ plan }),
+  });
 };
 
 export const getInventoryValue = async () => {

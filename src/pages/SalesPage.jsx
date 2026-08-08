@@ -26,15 +26,16 @@ function SalesPage() {
         setLoading(true);
         setError(null);
         
-        // getProducts(1, 1000) asegura que tengamos el catálogo completo para buscar localmente
+        // (1, 1000) asegura que tengamos el catálogo/lista completa para buscar localmente,
+        // en vez de solo la primera página de 10 que trae el backend paginado.
         const [productsData, clientsData] = await Promise.all([
-          getProducts(1, 1000), 
-          getClients()
+          getProducts(1, 1000),
+          getClients(1, 1000)
         ]);
-        
-        // CORRECCIÓN: Accedemos a .products porque el backend ahora es paginado
+
+        // Accedemos a .products / .clients porque el backend ahora es paginado
         setProducts(productsData.products || []);
-        setClients(clientsData || []);
+        setClients(clientsData.clients || []);
       } catch (err) {
         setError('No se pudieron cargar los datos de productos o clientes.');
         console.error("Error fetching data:", err);

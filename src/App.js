@@ -21,6 +21,9 @@ import DashboardPage from './pages/DashboardPage';
 import ClientesPage from './pages/ClientesPage';
 import ProveedoresPage from './pages/ProveedoresPage';
 import UserManagementPage from './pages/UserManagementPage';
+import AdminCompaniesPage from './pages/AdminCompaniesPage';
+import SupportPage from './pages/SupportPage';
+import TermsPage from './pages/TermsPage';
 
 // Componentes
 import PrivateRoute from './components/PrivateRoute';
@@ -58,6 +61,8 @@ function AppContent() {
           <Route path="/" element={<LandingPage />} />
           <Route path="/login" element={<LoginPage />} />
           <Route path="/register-company" element={<RegisterCompanyPage />} />
+          <Route path="/apoyar" element={<SupportPage />} />
+          <Route path="/terminos" element={<TermsPage />} />
           <Route path="*" element={<Navigate to="/" />} />
           <Route path="/forgot-password" element={<ForgotPasswordPage />} /> 
           <Route path="/reset-password" element={<ResetPasswordPage />} />
@@ -102,6 +107,9 @@ function AppContent() {
           <Route path="/proveedores" element={<PrivateRoute><ProveedoresPage /></PrivateRoute>} />
           <Route path="/dashboard" element={<PrivateRoute><DashboardPage /></PrivateRoute>} />
           <Route path="/gestion-usuarios" element={<PrivateRoute requiredRole="admin_compania"><UserManagementPage /></PrivateRoute>} />
+          <Route path="/admin/companias" element={<PrivateRoute requiredRole="super_admin_sistema"><AdminCompaniesPage /></PrivateRoute>} />
+          <Route path="/apoyar" element={<PrivateRoute><SupportPage /></PrivateRoute>} />
+          <Route path="/terminos" element={<PrivateRoute><TermsPage /></PrivateRoute>} />
           <Route path="*" element={<p className="text-center text-red-500 font-semibold">404: Página no encontrada</p>} />
           
         </Routes>

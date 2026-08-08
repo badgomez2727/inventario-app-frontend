@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { getSuppliers, createSupplier, updateSupplier, deleteSupplier } from "../services/apiService";
-import { FaEdit, FaTrashAlt, FaTruck, FaPhone, FaMapMarkerAlt, FaUser } from "react-icons/fa";
+import { FaEdit, FaTrashAlt, FaTruck, FaPhone, FaMapMarkerAlt, FaUser, FaChevronLeft, FaChevronRight } from "react-icons/fa";
 
 const ProveedoresPage = () => {
   const [proveedores, setProveedores] = useState([]);
@@ -10,7 +10,30 @@ const ProveedoresPage = () => {
   const [editingSupplier, setEditingSupplier] = useState(null);
   const [formData, setFormData] = useState({ nombre: "", contacto: "", telefono: "", direccion: "" });
 
-  useEffect(() => { fetchSuppliers(); }, []);
+  // Paginación
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [totalCount, setTotalCount] = useState(0);
+
+  const fetchSuppliers = useCallback(async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      const data = await getSuppliers(currentPage, 10);
+      if (data && data.suppliers) {
+        setProveedores(data.suppliers);
+        setTotalPages(data.totalPages || 1);
+        setTotalCount(data.totalCount || 0);
+      } else {
+        // Por si el backend aún devuelve el formato antiguo (array plano)
+        setProveedores(Array.isArray(data) ? data : []);
+      }
+    } catch (err) {
+      setError(err.message || "No se pudieron cargar los proveedores.");
+    } finally { setLoading(false); }
+  }, [currentPage]);
+
+  useEffect(() => { fetchSuppliers(); }, [fetchSuppliers]);
 
   // Auto-ocultar mensajes
   useEffect(() => {
@@ -19,17 +42,6 @@ const ProveedoresPage = () => {
       return () => clearTimeout(timer);
     }
   }, [message]);
-
-  const fetchSuppliers = async () => {
-    try {
-      setLoading(true);
-      setError(null);
-      const data = await getSuppliers();
-      setProveedores(data);
-    } catch (err) {
-      setError(err.message || "No se pudieron cargar los proveedores.");
-    } finally { setLoading(false); }
-  };
 
   const handleChange = (e) => setFormData(prev => ({ ...prev, [e.target.name]: e.target.value }));
 
@@ -82,9 +94,12 @@ const ProveedoresPage = () => {
         <div className="p-3 bg-gray-900 rounded-2xl text-emerald-500 shadow-lg">
           <FaTruck size={24} />
         </div>
-        <h2 className="text-2xl md:text-3xl font-black text-gray-800 tracking-tight">
-          Gestión de <span className="text-emerald-500">Proveedores</span>
-        </h2>
+        <div>
+          <h2 className="text-2xl md:text-3xl font-black text-gray-800 tracking-tight">
+            Gestión de <span className="text-emerald-500">Proveedores</span>
+          </h2>
+          <p className="text-gray-400 text-xs font-bold uppercase tracking-tighter">Total registrados: {totalCount}</p>
+        </div>
       </div>
 
       {/* Formulario Estilizado */}
@@ -145,6 +160,30 @@ const ProveedoresPage = () => {
             </div>
           </div>
         ))}
+      </div>
+
+      {/* --- CONTROLES DE PAGINACIÓN --- */}
+      <div className="bg-white rounded-2xl shadow-sm border border-gray-100 px-6 py-4 flex items-center justify-between">
+        <p className="text-xs font-bold text-gray-400 uppercase tracking-tighter">
+          Página <span className="text-emerald-600">{currentPage}</span> de {totalPages}
+        </p>
+
+        <div className="flex gap-2">
+          <button
+            disabled={currentPage === 1}
+            onClick={() => setCurrentPage(prev => prev - 1)}
+            className="flex items-center gap-2 px-4 py-2 bg-white border border-gray-200 rounded-xl text-xs font-black text-gray-600 hover:bg-gray-50 disabled:opacity-30 disabled:cursor-not-allowed transition-all"
+          >
+            <FaChevronLeft /> Anterior
+          </button>
+          <button
+            disabled={currentPage === totalPages}
+            onClick={() => setCurrentPage(prev => prev + 1)}
+            className="flex items-center gap-2 px-4 py-2 bg-emerald-500 text-white rounded-xl text-xs font-black hover:bg-emerald-600 shadow-lg shadow-emerald-500/20 disabled:opacity-30 disabled:cursor-not-allowed transition-all"
+          >
+            Siguiente <FaChevronRight />
+          </button>
+        </div>
       </div>
     </div>
   );

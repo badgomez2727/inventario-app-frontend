@@ -4,7 +4,7 @@ import { useAuth } from '../contexts/AuthContext';
 import {
   FaTachometerAlt, FaBox, FaHistory, FaShoppingCart,
   FaChartBar, FaUsers, FaTruck, FaUserCog,
-  FaFileUpload, FaTimes, FaBars,
+  FaFileUpload, FaTimes, FaBars, FaBuilding,
 } from 'react-icons/fa';
 
 const LogoVendita = ({ collapsed }) => (
@@ -19,6 +19,7 @@ const LogoVendita = ({ collapsed }) => (
 const Sidebar = ({ isSidebarOpen, toggleSidebar }) => {
   const { user } = useAuth();
   const isAdmin = user && (user.rol === 'admin_compania' || user.rol === 'super_admin_sistema');
+  const isSuperAdmin = user && user.rol === 'super_admin_sistema';
   const [collapsed, setCollapsed] = useState(false);
 
   const baseLink = 'flex items-center gap-3 px-4 py-3 rounded-xl transition-all relative group mx-2 mb-1';
@@ -74,6 +75,20 @@ const Sidebar = ({ isSidebarOpen, toggleSidebar }) => {
 
         {/* Links: Agregamos pointer-events-auto para que los links sí funcionen cuando el nav se ve */}
         <div className="flex-1 overflow-y-auto overflow-x-hidden scrollbar-hide py-2 pointer-events-auto">
+          {isSuperAdmin && (
+            <div className="mb-4">
+              {!collapsed && <p className="px-6 text-[10px] font-black text-gray-600 uppercase mb-2">Sistema</p>}
+              <ul>
+                <li>
+                  <NavLink to="/admin/companias" className={({ isActive }) => `${baseLink} ${collapsed ? 'justify-center px-0' : ''} ${isActive ? activeLink : inactiveLink}`} onClick={() => window.innerWidth < 768 && toggleSidebar()}>
+                    <span className="text-lg flex-shrink-0"><FaBuilding /></span>
+                    {!collapsed && <span className="text-sm tracking-tight whitespace-nowrap">Compañías</span>}
+                  </NavLink>
+                </li>
+              </ul>
+            </div>
+          )}
+
           {isAdmin && (
             <div className="mb-4">
               {!collapsed && <p className="px-6 text-[10px] font-black text-gray-600 uppercase mb-2">Admin</p>}

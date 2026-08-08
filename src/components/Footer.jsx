@@ -1,4 +1,5 @@
 import React from 'react';
+import { Link } from 'react-router-dom';
 import { FaFacebook, FaTwitter, FaInstagram, FaRocket } from 'react-icons/fa';
 
 const Footer = () => {
@@ -61,8 +62,8 @@ const Footer = () => {
         <div className="max-w-7xl mx-auto px-6 flex flex-col md:flex-row justify-between items-center gap-4 text-xs font-medium">
           <p>&copy; {currentYear} <strong>Vendita</strong>. Todos los derechos reservados.</p>
           <div className="flex gap-6 uppercase tracking-widest">
-            <a href="#" className="hover:text-white transition">Términos</a>
-            <a href="#" className="hover:text-white transition">Privacidad</a>
+            <Link to="/terminos#terminos" className="hover:text-white transition">Términos</Link>
+            <Link to="/terminos#privacidad" className="hover:text-white transition">Privacidad</Link>
           </div>
         </div>
       </div>

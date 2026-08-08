@@ -25,8 +25,10 @@ const ProductoForm = ({ onProductCreated, productToEdit, onEditComplete }) => {
   useEffect(() => {
     const fetchSuppliers = async () => {
       try {
-        const data = await getSuppliers();
-        setSuppliers(data);
+        // (1, 1000) para traer todos los proveedores del combo, no solo la
+        // primera página de 10 que trae el backend paginado.
+        const data = await getSuppliers(1, 1000);
+        setSuppliers(data.suppliers || []);
       } catch (err) {
         setError("No se pudieron cargar los proveedores.");
       } finally {

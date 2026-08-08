@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { getSalesHistory, getSaleReceiptPdf } from '../services/apiService';
 import { formatCOP } from '../utils/formatters';
-import { FaDownload, FaCheckCircle, FaClock } from 'react-icons/fa';
+import { FaDownload, FaCheckCircle, FaClock, FaChevronLeft, FaChevronRight } from 'react-icons/fa';
 
 function SalesHistoryPage() {
   const [sales, setSales] = useState([]);
@@ -9,13 +9,25 @@ function SalesHistoryPage() {
   const [error, setError] = useState(null);
   const [message, setMessage] = useState('');
 
+  // Paginación
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [totalCount, setTotalCount] = useState(0);
+
   useEffect(() => {
     const fetchSales = async () => {
       try {
         setLoading(true);
         setError(null);
-        const data = await getSalesHistory();
-        setSales(data);
+        const data = await getSalesHistory(currentPage, 10);
+        if (data && data.sales) {
+          setSales(data.sales);
+          setTotalPages(data.totalPages || 1);
+          setTotalCount(data.totalCount || 0);
+        } else {
+          // Por si el backend aún devuelve el formato antiguo (array plano)
+          setSales(Array.isArray(data) ? data : []);
+        }
       } catch (err) {
         console.error('Error fetching sales history:', err);
         setError(err.message || 'No se pudo cargar el historial de ventas.');
@@ -24,7 +36,7 @@ function SalesHistoryPage() {
       }
     };
     fetchSales();
-  }, []);
+  }, [currentPage]);
 
   const handleDownloadReceipt = async (saleId) => {
     setMessage('');
@@ -65,9 +77,12 @@ function SalesHistoryPage() {
 
   return (
     <div className="p-4 md:p-6 bg-white rounded-[2rem] shadow-sm border border-gray-100">
-      <h2 className="text-2xl md:text-3xl font-black text-gray-900 mb-6 text-center tracking-tighter">
+      <h2 className="text-2xl md:text-3xl font-black text-gray-900 mb-1 text-center tracking-tighter">
         HISTORIAL DE <span className="text-blue-600">VENTAS</span>
       </h2>
+      <p className="text-center text-gray-400 text-xs font-bold uppercase tracking-tighter mb-6">
+        Total registradas: {totalCount}
+      </p>
 
       {message && (
         <div className={`mb-4 p-3 rounded-xl text-center text-sm font-bold animate-fade-in ${
@@ -126,6 +141,30 @@ function SalesHistoryPage() {
             )}
           </tbody>
         </table>
+      </div>
+
+      {/* --- CONTROLES DE PAGINACIÓN --- */}
+      <div className="mt-4 px-2 py-4 flex items-center justify-between border-t border-gray-100">
+        <p className="text-xs font-bold text-gray-400 uppercase tracking-tighter">
+          Página <span className="text-blue-600">{currentPage}</span> de {totalPages}
+        </p>
+
+        <div className="flex gap-2">
+          <button
+            disabled={currentPage === 1}
+            onClick={() => setCurrentPage(prev => prev - 1)}
+            className="flex items-center gap-2 px-4 py-2 bg-white border border-gray-200 rounded-xl text-xs font-black text-gray-600 hover:bg-gray-50 disabled:opacity-30 disabled:cursor-not-allowed transition-all"
+          >
+            <FaChevronLeft /> Anterior
+          </button>
+          <button
+            disabled={currentPage === totalPages}
+            onClick={() => setCurrentPage(prev => prev + 1)}
+            className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-xl text-xs font-black hover:bg-blue-700 shadow-lg shadow-blue-500/20 disabled:opacity-30 disabled:cursor-not-allowed transition-all"
+          >
+            Siguiente <FaChevronRight />
+          </button>
+        </div>
       </div>
     </div>
   );
