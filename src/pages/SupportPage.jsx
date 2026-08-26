@@ -11,6 +11,15 @@ const NEQUI_NUMBER = "3148520270";
 const DAVIPLATA_NUMBER = "3148520270";
 const BREB_KEY = "3148520270";
 
+// Planes pagos — deben coincidir con backend/src/config/plans.js. Si cambias
+// un número allá, cámbialo aquí también (no se leen del backend a propósito:
+// esta pantalla es pública y no requiere sesión, así que no hay de dónde
+// pedirlos con auth).
+const PAID_PLANS = {
+  BASICO: { label: "Básico", priceCOP: 10000, durationDays: 180, maxProducts: 150 },
+  PRO: { label: "Pro", priceCOP: 20000, durationDays: 180, maxProducts: 500 },
+};
+
 const Logo = () => (
   <div className="flex items-center gap-2 flex-shrink-0">
     <div className="w-10 h-10 bg-gradient-to-br from-emerald-400 to-blue-600 rounded-xl flex items-center justify-center shadow-lg transform rotate-2">
@@ -60,10 +69,11 @@ const CopyableRow = ({ icon, label, value }) => {
 const SupportPage = () => {
   const [companyName, setCompanyName] = useState("");
   const [qrError, setQrError] = useState(false);
+  const [selectedPlan, setSelectedPlan] = useState("BASICO");
 
-  const waMessage = companyName.trim()
-    ? `Hola, soy de la compañía "${companyName.trim()}" en Vendita. Ya hice el aporte, les comparto el comprobante para activar el plan PRO 🚀`
-    : `Hola, ya hice un aporte a Vendita. Les comparto el comprobante para activar el plan PRO 🚀`;
+  const plan = PAID_PLANS[selectedPlan];
+  const empresaTexto = companyName.trim() ? `de la compañía "${companyName.trim()}" ` : "";
+  const waMessage = `Hola, soy ${empresaTexto}en Vendita. Ya hice el pago de ${plan.priceCOP.toLocaleString("es-CO")} COP, les comparto el comprobante para activar el plan ${plan.label} 🚀`;
 
   const waLink = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(waMessage)}`;
 
@@ -83,14 +93,39 @@ const SupportPage = () => {
             <FaHeart />
           </div>
           <h1 className="text-3xl md:text-4xl font-black tracking-tight text-gray-900 mb-3">
-            Apoya a <span className="text-emerald-500">Vendita</span>
+            Actualiza tu plan en <span className="text-emerald-500">Vendita</span>
           </h1>
           <p className="text-gray-500 max-w-md mx-auto leading-relaxed">
-            Vendita es gratis y lo va a seguir siendo. Si te ha servido para tu negocio,
-            tu aporte nos ayuda a mantenerlo funcionando y seguir mejorándolo — y de paso
-            te activamos el <span className="font-bold text-gray-700">plan PRO sin límites</span>.
+            Vendita es gratis hasta 50 productos. Si tu catálogo creció, elige uno
+            de estos planes — el pago activa el plan por 6 meses, renovable.
           </p>
         </div>
+
+        {/* Selector de plan */}
+        <div className="grid grid-cols-2 gap-3 mb-8">
+          {Object.entries(PAID_PLANS).map(([key, p]) => (
+            <button
+              key={key}
+              onClick={() => setSelectedPlan(key)}
+              className={`text-left rounded-2xl border-2 p-5 transition-all ${
+                selectedPlan === key
+                  ? "border-emerald-500 bg-emerald-50/50 shadow-sm"
+                  : "border-gray-100 bg-white hover:border-gray-200"
+              }`}
+            >
+              <p className="text-[10px] font-black uppercase tracking-widest text-gray-400 mb-1">Plan {p.label}</p>
+              <p className="text-2xl font-black text-gray-900 mb-1">
+                ${p.priceCOP.toLocaleString("es-CO")} <span className="text-xs font-bold text-gray-400">COP</span>
+              </p>
+              <p className="text-xs text-gray-500 font-medium">
+                Hasta {p.maxProducts} productos · {p.durationDays / 30} meses
+              </p>
+            </button>
+          ))}
+        </div>
+        <p className="text-center text-xs text-gray-400 -mt-5 mb-8">
+          Precio de lanzamiento — puede ajustarse más adelante, avisando antes a quienes ya pagaron.
+        </p>
 
         {/* Métodos de pago */}
         <div className="space-y-3 mb-8">
@@ -123,10 +158,10 @@ const SupportPage = () => {
           <div className="w-12 h-12 mx-auto mb-4 rounded-2xl bg-emerald-500/10 flex items-center justify-center text-emerald-400 text-xl">
             <FaCrown />
           </div>
-          <h3 className="text-white font-black text-xl mb-2">¿Ya hiciste el aporte?</h3>
+          <h3 className="text-white font-black text-xl mb-2">¿Ya hiciste el pago?</h3>
           <p className="text-gray-400 text-sm mb-6 max-w-sm mx-auto">
             Escríbenos por WhatsApp con el comprobante y el nombre de tu compañía
-            registrada en Vendita, y te activamos el plan PRO al toque.
+            registrada en Vendita, y te activamos el plan {plan.label} al toque.
           </p>
 
           <input
@@ -148,7 +183,7 @@ const SupportPage = () => {
         </div>
 
         <p className="text-center text-xs text-gray-400 mt-8">
-          Cualquier aporte ayuda, no hay un monto mínimo. Gracias por usar Vendita 💚
+          Gracias por confiar en Vendita para tu negocio 💚
         </p>
       </div>
     </div>

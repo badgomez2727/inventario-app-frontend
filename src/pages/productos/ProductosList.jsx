@@ -1,14 +1,16 @@
 import React, { useEffect, useState } from "react";
 import { getProducts, deleteProduct } from "../../services/apiService";
 import StockFormModal from "../../components/StockFormModal";
+import ProductHistoryModal from "../../components/ProductHistoryModal";
 import { formatCOP } from "../../utils/formatters";
-import { FaEdit, FaTrashAlt, FaBoxes, FaSearch, FaTag, FaChevronLeft, FaChevronRight } from "react-icons/fa";
+import { FaEdit, FaTrashAlt, FaBoxes, FaSearch, FaTag, FaChevronLeft, FaChevronRight, FaHistory } from "react-icons/fa";
 
 function ProductosList({ onEditClick }) {
   const [productos, setProductos] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [selectedProduct, setSelectedProduct] = useState(null);
+  const [historyProduct, setHistoryProduct] = useState(null);
   const [refreshList, setRefreshList] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
 
@@ -152,6 +154,9 @@ function ProductosList({ onEditClick }) {
                       <button onClick={() => onEditClick(p)} className="p-2.5 bg-gray-100 text-gray-600 rounded-xl hover:bg-gray-200 transition">
                         <FaEdit />
                       </button>
+                      <button onClick={() => setHistoryProduct(p)} title="Ver historial de cambios" className="p-2.5 bg-gray-100 text-gray-600 rounded-xl hover:bg-gray-200 transition">
+                        <FaHistory />
+                      </button>
                       <button onClick={() => handleDelete(p.id)} className="p-2.5 bg-white text-red-400 border border-red-50 rounded-xl hover:bg-red-50 transition">
                         <FaTrashAlt />
                       </button>
@@ -193,6 +198,13 @@ function ProductosList({ onEditClick }) {
           product={selectedProduct}
           onClose={handleCloseStockModal}
           onStockUpdated={handleCloseStockModal}
+        />
+      )}
+
+      {historyProduct && (
+        <ProductHistoryModal
+          product={historyProduct}
+          onClose={() => setHistoryProduct(null)}
         />
       )}
     </div>

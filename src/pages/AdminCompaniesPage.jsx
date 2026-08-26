@@ -4,8 +4,12 @@ import { FaCrown, FaChevronLeft, FaChevronRight, FaBuilding } from 'react-icons/
 
 const PLAN_BADGE = {
   FREE: 'bg-gray-100 text-gray-600',
+  BASICO: 'bg-blue-100 text-blue-700',
   PRO: 'bg-amber-100 text-amber-700',
 };
+
+// Orden en que se ofrecen los planes en el selector (de menor a mayor)
+const PLAN_ORDER = ['FREE', 'BASICO', 'PRO'];
 
 const AdminCompaniesPage = () => {
   const [companies, setCompanies] = useState([]);
@@ -45,8 +49,12 @@ const AdminCompaniesPage = () => {
     }
   }, [message]);
 
-  const handleTogglePlan = async (company) => {
-    const newPlan = company.plan === 'PRO' ? 'FREE' : 'PRO';
+  const handleChangePlan = async (company, newPlan) => {
+    if (newPlan === company.plan) return;
+    if (newPlan !== 'FREE') {
+      const confirmMsg = `¿Pasar a "${company.nombre}" al plan ${newPlan}? Vence en 180 días desde hoy (renovable).`;
+      if (!window.confirm(confirmMsg)) return;
+    }
     setUpdatingId(company.id);
     try {
       await updateCompanyPlan(company.id, newPlan);
@@ -88,8 +96,8 @@ const AdminCompaniesPage = () => {
                 <th className="px-6 py-4">Compañía</th>
                 <th className="px-6 py-4 hidden md:table-cell">Contacto</th>
                 <th className="px-6 py-4 text-center">Plan</th>
+                <th className="px-6 py-4 text-center">Vence</th>
                 <th className="px-6 py-4 text-center">Productos</th>
-                <th className="px-6 py-4 text-center">Ventas (mes)</th>
                 <th className="px-6 py-4 text-center">Usuarios</th>
                 <th className="px-6 py-4 text-center">Acciones</th>
               </tr>
@@ -103,30 +111,32 @@ const AdminCompaniesPage = () => {
                   </td>
                   <td className="px-6 py-4 hidden md:table-cell text-gray-500">{c.emailContacto}</td>
                   <td className="px-6 py-4 text-center">
-                    <span className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-black ${PLAN_BADGE[c.plan] || PLAN_BADGE.FREE}`}>
-                      {c.plan === 'PRO' && <FaCrown className="text-amber-500" />}
-                      {c.plan}
+                    <span className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-black ${PLAN_BADGE[c.effectivePlan] || PLAN_BADGE.FREE}`}>
+                      {c.effectivePlan === 'PRO' && <FaCrown className="text-amber-500" />}
+                      {c.effectivePlan}
                     </span>
+                    {c.effectivePlan !== c.plan && (
+                      <p className="text-[9px] text-red-400 font-bold mt-1">venció (era {c.plan})</p>
+                    )}
+                  </td>
+                  <td className="px-6 py-4 text-center text-gray-500 text-xs font-medium">
+                    {c.planExpiresAt ? new Date(c.planExpiresAt).toLocaleDateString('es-CO') : '—'}
                   </td>
                   <td className="px-6 py-4 text-center font-bold text-gray-700">
                     {c.productCount} / {fmtLimit(c.limits?.maxProducts)}
                   </td>
-                  <td className="px-6 py-4 text-center font-bold text-gray-700">
-                    {c.salesThisMonth} / {fmtLimit(c.limits?.maxSalesPerMonth)}
-                  </td>
                   <td className="px-6 py-4 text-center text-gray-500">{c.userCount}</td>
                   <td className="px-6 py-4 text-center">
-                    <button
-                      onClick={() => handleTogglePlan(c)}
+                    <select
+                      value={c.plan}
                       disabled={updatingId === c.id}
-                      className={`px-4 py-2 rounded-xl text-[11px] font-black transition-all disabled:opacity-40 ${
-                        c.plan === 'PRO'
-                          ? 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-                          : 'bg-amber-500 text-white hover:bg-amber-600 shadow-lg shadow-amber-500/20'
-                      }`}
+                      onChange={(e) => handleChangePlan(c, e.target.value)}
+                      className="px-3 py-2 rounded-xl text-[11px] font-black border border-gray-200 bg-white text-gray-700 disabled:opacity-40 outline-none focus:ring-2 focus:ring-emerald-500 transition-all"
                     >
-                      {updatingId === c.id ? '...' : c.plan === 'PRO' ? 'Pasar a FREE' : 'Pasar a PRO'}
-                    </button>
+                      {PLAN_ORDER.map((p) => (
+                        <option key={p} value={p}>{p}</option>
+                      ))}
+                    </select>
                   </td>
                 </tr>
               ))}

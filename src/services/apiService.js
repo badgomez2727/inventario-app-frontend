@@ -113,6 +113,11 @@ export const deleteProduct = async (id) => {
   });
 };
 
+// Historial de cambios de un producto (precios, stock manual, etc.), más reciente primero
+export const getProductHistory = async (id) => {
+  return authenticatedFetch(`productos/${id}/history`);
+};
+
 export const uploadProducts = async (productsDataArray) => {
   // `authenticatedFetch` ahora maneja el 207 Multi-Status, así que podemos llamarlo directamente
   try {

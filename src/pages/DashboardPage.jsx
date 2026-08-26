@@ -6,37 +6,54 @@ import { formatCOP } from '../utils/formatters';
 import { FaBoxes, FaUsers, FaTruckLoading, FaMoneyBillWave, FaExclamationTriangle, FaCalendarAlt, FaTrashAlt, FaCrown } from 'react-icons/fa';
 
 // Banner de uso del plan: avisa cuando la compañía se está acercando (o ya
-// llegó) al techo de su plan gratuito.
+// llegó) al techo de productos de su plan, o cuando su plan pago está por
+// vencer / ya venció. Ventas/mes no se limita (ver backend/src/config/plans.js),
+// así que solo se mira el catálogo de productos.
 const PlanUsageBanner = ({ planStatus }) => {
-  if (!planStatus || planStatus.plan !== 'FREE') return null;
+  if (!planStatus) return null;
 
-  const { products, salesThisMonth } = planStatus;
-  const productsPct = products.limit ? (products.used / products.limit) * 100 : 0;
-  const salesPct = salesThisMonth.limit ? (salesThisMonth.used / salesThisMonth.limit) * 100 : 0;
-  const nearLimit = productsPct >= 80 || salesPct >= 80;
+  const { products, plan, planExpiresAt } = planStatus;
+  const productsPct = products.limit && products.limit !== Infinity ? (products.used / products.limit) * 100 : 0;
+  const nearProductLimit = productsPct >= 80;
+  const atProductLimit = productsPct >= 100;
 
-  if (!nearLimit) return null;
+  const daysToExpire = planExpiresAt
+    ? Math.ceil((new Date(planExpiresAt) - new Date()) / (1000 * 60 * 60 * 24))
+    : null;
+  const expiringSoon = plan !== 'FREE' && daysToExpire !== null && daysToExpire <= 15 && daysToExpire > 0;
+  const expired = plan !== 'FREE' && daysToExpire !== null && daysToExpire <= 0;
 
-  const atLimit = productsPct >= 100 || salesPct >= 100;
+  if (!nearProductLimit && !expiringSoon && !expired) return null;
+
+  const urgent = atProductLimit || expired;
+
+  let mensaje;
+  if (expired) {
+    mensaje = 'Tu plan pago venció y volviste al plan Gratis.';
+  } else if (expiringSoon) {
+    mensaje = `Tu plan ${plan} vence en ${daysToExpire} día${daysToExpire === 1 ? '' : 's'}.`;
+  } else if (atProductLimit) {
+    mensaje = `Alcanzaste el límite de productos del plan ${plan}.`;
+  } else {
+    mensaje = `Te estás acercando al límite de productos del plan ${plan}.`;
+  }
 
   return (
-    <div className={`rounded-2xl p-5 flex items-center gap-4 border ${atLimit ? 'bg-red-50 border-red-100' : 'bg-amber-50 border-amber-100'}`}>
-      <div className={`w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 ${atLimit ? 'bg-red-500' : 'bg-amber-500'} text-white`}>
+    <div className={`rounded-2xl p-5 flex items-center gap-4 border ${urgent ? 'bg-red-50 border-red-100' : 'bg-amber-50 border-amber-100'}`}>
+      <div className={`w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 ${urgent ? 'bg-red-500' : 'bg-amber-500'} text-white`}>
         <FaCrown />
       </div>
       <div className="flex-1">
-        <p className={`font-bold ${atLimit ? 'text-red-700' : 'text-amber-700'}`}>
-          {atLimit ? 'Alcanzaste el límite del plan gratuito' : 'Te estás acercando al límite del plan gratuito'}
-        </p>
+        <p className={`font-bold ${urgent ? 'text-red-700' : 'text-amber-700'}`}>{mensaje}</p>
         <p className="text-sm text-gray-500">
-          Productos: {products.used}/{products.limit} · Ventas este mes: {salesThisMonth.used}/{salesThisMonth.limit}
+          Productos: {products.used}/{products.limit === Infinity ? '∞' : products.limit}
         </p>
       </div>
       <Link
         to="/apoyar"
-        className={`flex-shrink-0 px-5 py-2.5 rounded-xl text-sm font-black text-white transition-all active:scale-95 ${atLimit ? 'bg-red-500 hover:bg-red-600' : 'bg-amber-500 hover:bg-amber-600'}`}
+        className={`flex-shrink-0 px-5 py-2.5 rounded-xl text-sm font-black text-white transition-all active:scale-95 ${urgent ? 'bg-red-500 hover:bg-red-600' : 'bg-amber-500 hover:bg-amber-600'}`}
       >
-        Actualizar a PRO
+        {expired ? 'Renovar plan' : 'Actualizar plan'}
       </Link>
     </div>
   );
