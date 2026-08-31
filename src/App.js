@@ -15,6 +15,7 @@ import ProductoForm from './pages/productos/ProductoForm';
 import ProductUploadPage from './pages/productos/ProductUploadPage';
 import StockHistoryPage from './pages/StockHistoryPage';
 import SalesPage from './pages/SalesPage';
+import WhatsappOrderPage from './pages/WhatsappOrderPage';
 import SalesHistoryPage from './pages/SalesHistoryPage';
 import InventoryReportPage from './pages/InventoryReportPage';
 import DashboardPage from './pages/DashboardPage';
@@ -100,6 +101,7 @@ function AppContent() {
           <Route path="/productos/upload" element={<PrivateRoute requiredRole="admin_compania"><ProductUploadPage /></PrivateRoute>} />
           <Route path="/historial-stock" element={<PrivateRoute><StockHistoryPage /></PrivateRoute>} />
           <Route path="/ventas" element={<PrivateRoute><SalesPage /></PrivateRoute>} />
+          <Route path="/pedido-whatsapp" element={<PrivateRoute><WhatsappOrderPage /></PrivateRoute>} />
           <Route path="/historial-ventas" element={<PrivateRoute><SalesHistoryPage /></PrivateRoute>} />
           <Route path="/reporte-inventario" element={<PrivateRoute requiredRole="admin_compania"><InventoryReportPage /></PrivateRoute>} />
           <Route path="/clientes" element={<PrivateRoute><ClientesPage /></PrivateRoute>} />

@@ -189,6 +189,14 @@ export const getSalesHistory = async (page = 1, limit = 10) => {
 };
 
 
+// --- Pedido por WhatsApp asistido por IA (función PRO) ---
+export const parseWhatsappOrder = async (texto) => {
+  return authenticatedFetch('pedidos-ia/parse', {
+    method: 'POST',
+    body: JSON.stringify({ texto }),
+  });
+};
+
 // --- Funciones de Clientes ---
 export const getClients = async (page = 1, limit = 10) => {
   const p = page || 1;

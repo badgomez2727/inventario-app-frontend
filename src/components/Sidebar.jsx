@@ -4,7 +4,7 @@ import { useAuth } from '../contexts/AuthContext';
 import {
   FaTachometerAlt, FaBox, FaHistory, FaShoppingCart,
   FaChartBar, FaUsers, FaTruck, FaUserCog,
-  FaFileUpload, FaTimes, FaBars, FaBuilding,
+  FaFileUpload, FaTimes, FaBars, FaBuilding, FaWhatsapp,
 } from 'react-icons/fa';
 
 const LogoVendita = ({ collapsed }) => (
@@ -29,6 +29,7 @@ const Sidebar = ({ isSidebarOpen, toggleSidebar }) => {
   const menuLinks = [
     { to: '/productos', icon: <FaBox />, label: 'Inventario' },
     { to: '/ventas', icon: <FaShoppingCart />, label: 'Vender (POS)' },
+    { to: '/pedido-whatsapp', icon: <FaWhatsapp />, label: 'Pedido WhatsApp' },
     { to: '/historial-ventas', icon: <FaChartBar />, label: 'Reporte Ventas' },
     { to: '/clientes', icon: <FaUsers />, label: 'Clientes' },
     { to: '/proveedores', icon: <FaTruck />, label: 'Proveedores' },
