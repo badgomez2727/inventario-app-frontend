@@ -16,8 +16,8 @@ const BREB_KEY = "3148520270";
 // esta pantalla es pública y no requiere sesión, así que no hay de dónde
 // pedirlos con auth).
 const PAID_PLANS = {
-  BASICO: { label: "Básico", priceCOP: 10000, durationDays: 180, maxProducts: 150 },
-  PRO: { label: "Pro", priceCOP: 20000, durationDays: 180, maxProducts: 500 },
+  BASICO: { label: "Básico", priceCOP: 30000, priceLifetimeCOP: 250000, durationDays: 180, maxProducts: 150 },
+  PRO: { label: "Pro", priceCOP: 60000, priceLifetimeCOP: 500000, durationDays: 180, maxProducts: 500 },
 };
 
 const Logo = () => (
@@ -70,10 +70,14 @@ const SupportPage = () => {
   const [companyName, setCompanyName] = useState("");
   const [qrError, setQrError] = useState(false);
   const [selectedPlan, setSelectedPlan] = useState("BASICO");
+  const [billingCycle, setBillingCycle] = useState("semestral"); // "semestral" | "lifetime"
 
   const plan = PAID_PLANS[selectedPlan];
+  const isLifetime = billingCycle === "lifetime";
+  const price = isLifetime ? plan.priceLifetimeCOP : plan.priceCOP;
+  const cicloTexto = isLifetime ? "de por vida (pago único)" : "por 6 meses";
   const empresaTexto = companyName.trim() ? `de la compañía "${companyName.trim()}" ` : "";
-  const waMessage = `Hola, soy ${empresaTexto}en Vendita. Ya hice el pago de ${plan.priceCOP.toLocaleString("es-CO")} COP, les comparto el comprobante para activar el plan ${plan.label} 🚀`;
+  const waMessage = `Hola, soy ${empresaTexto}en Vendita. Ya hice el pago de ${price.toLocaleString("es-CO")} COP (plan ${plan.label}, ${cicloTexto}), les comparto el comprobante para activarlo 🚀`;
 
   const waLink = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(waMessage)}`;
 
@@ -97,8 +101,30 @@ const SupportPage = () => {
           </h1>
           <p className="text-gray-500 max-w-md mx-auto leading-relaxed">
             Vendita es gratis hasta 50 productos. Si tu catálogo creció, elige uno
-            de estos planes — el pago activa el plan por 6 meses, renovable.
+            de estos planes.
           </p>
+        </div>
+
+        {/* Ciclo de pago */}
+        <div className="flex justify-center mb-6">
+          <div className="inline-flex bg-gray-100 rounded-full p-1">
+            {[
+              { key: "semestral", label: "6 meses" },
+              { key: "lifetime", label: "De por vida" },
+            ].map((c) => (
+              <button
+                key={c.key}
+                onClick={() => setBillingCycle(c.key)}
+                className={`px-5 py-2 rounded-full text-xs font-black uppercase tracking-widest transition-all ${
+                  billingCycle === c.key
+                    ? "bg-white text-gray-900 shadow-sm"
+                    : "text-gray-400 hover:text-gray-600"
+                }`}
+              >
+                {c.label}
+              </button>
+            ))}
+          </div>
         </div>
 
         {/* Selector de plan */}
@@ -115,10 +141,12 @@ const SupportPage = () => {
             >
               <p className="text-[10px] font-black uppercase tracking-widest text-gray-400 mb-1">Plan {p.label}</p>
               <p className="text-2xl font-black text-gray-900 mb-1">
-                ${p.priceCOP.toLocaleString("es-CO")} <span className="text-xs font-bold text-gray-400">COP</span>
+                ${(billingCycle === "lifetime" ? p.priceLifetimeCOP : p.priceCOP).toLocaleString("es-CO")}{" "}
+                <span className="text-xs font-bold text-gray-400">COP</span>
               </p>
               <p className="text-xs text-gray-500 font-medium">
-                Hasta {p.maxProducts} productos · {p.durationDays / 30} meses
+                Hasta {p.maxProducts} productos ·{" "}
+                {billingCycle === "lifetime" ? "sin vencimiento" : `${p.durationDays / 30} meses`}
               </p>
             </button>
           ))}
