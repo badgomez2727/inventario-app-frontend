@@ -4,6 +4,30 @@
 // y 'http://localhost:3001' para desarrollo.
 const BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:3001';
 
+// Backend (Render free) y base de datos (Neon free) se "duermen" tras un
+// rato sin uso — la primera petición después de eso puede tardar 20-40s en
+// vez de los ~200ms normales. Si una petición se demora más de este umbral,
+// avisamos a <ColdStartOverlay> (vía evento global) para que el usuario vea
+// un mensaje de "despertando el servidor" en vez de pensar que algo se dañó.
+const COLD_START_THRESHOLD_MS = 2500;
+
+const fetchWithColdStartNotice = async (url, options) => {
+  let timedOut = false;
+  const timer = setTimeout(() => {
+    timedOut = true;
+    window.dispatchEvent(new CustomEvent('vendita:coldstart', { detail: true }));
+  }, COLD_START_THRESHOLD_MS);
+
+  try {
+    return await fetch(url, options);
+  } finally {
+    clearTimeout(timer);
+    if (timedOut) {
+      window.dispatchEvent(new CustomEvent('vendita:coldstart', { detail: false }));
+    }
+  }
+};
+
 // Función genérica para hacer peticiones autenticadas
 const authenticatedFetch = async (endpoint, options = {}) => {
   const token = localStorage.getItem('token'); // Obtiene el token del localStorage
@@ -17,7 +41,7 @@ const authenticatedFetch = async (endpoint, options = {}) => {
     headers['Authorization'] = `Bearer ${token}`; // Añade el token al encabezado
   }
 
-  const response = await fetch(`${BASE_URL}/api/${endpoint}`, {
+  const response = await fetchWithColdStartNotice(`${BASE_URL}/api/${endpoint}`, {
     ...options,
     headers,
   });
@@ -57,7 +81,7 @@ const authenticatedFetch = async (endpoint, options = {}) => {
 
 // --- Funciones de Autenticación ---
 export const login = async (credentials) => {
-  const response = await fetch(`${BASE_URL}/auth/login`, {
+  const response = await fetchWithColdStartNotice(`${BASE_URL}/auth/login`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(credentials),
@@ -70,7 +94,7 @@ export const login = async (credentials) => {
 };
 
 export const registerCompanyAndAdmin = async (data) => {
-  const response = await fetch(`${BASE_URL}/auth/register-company-admin`, {
+  const response = await fetchWithColdStartNotice(`${BASE_URL}/auth/register-company-admin`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(data),
@@ -305,7 +329,7 @@ export const getSaleReceiptPdf = async (saleId) => {
     headers['Authorization'] = `Bearer ${token}`;
   }
 
-  const response = await fetch(`${BASE_URL}/api/receipts/${saleId}/pdf`, { 
+  const response = await fetchWithColdStartNotice(`${BASE_URL}/api/receipts/${saleId}/pdf`, { 
     headers,
   });
 
@@ -335,7 +359,7 @@ export const getSaleReceiptPdf = async (saleId) => {
 // Al final de tu archivo apiService.js, reemplaza la función resetPassword por esta:
 
 export const resetPassword = async (token, data) => {
-  const response = await fetch(`${BASE_URL}/auth/reset-password`, {
+  const response = await fetchWithColdStartNotice(`${BASE_URL}/auth/reset-password`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
@@ -353,7 +377,7 @@ export const resetPassword = async (token, data) => {
 };
 
 export const forgotPassword = async (email) => {
-  const response = await fetch(`${BASE_URL}/auth/forgot-password`, {
+  const response = await fetchWithColdStartNotice(`${BASE_URL}/auth/forgot-password`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ email }),

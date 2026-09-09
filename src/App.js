@@ -30,6 +30,7 @@ import TermsPage from './pages/TermsPage';
 import PrivateRoute from './components/PrivateRoute';
 import Layout from './components/Layout';
 import BottomNavbar from './components/BottomNavbar';
+import ColdStartOverlay from './components/ColdStartOverlay';
 
 function AppContent() {
   const { isAuthenticated } = useAuth();
@@ -125,6 +126,7 @@ function App() {
   return (
     <Router>
       <AuthProvider>
+        <ColdStartOverlay />
         <AppContent />
       </AuthProvider>
     </Router>
