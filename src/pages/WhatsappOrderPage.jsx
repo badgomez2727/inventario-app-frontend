@@ -129,6 +129,18 @@ function WhatsappOrderPage() {
       setMessage('No hay ítems válidos para crear la venta. Asigna un producto a cada línea.');
       return;
     }
+    // El backend rechaza TODA la venta si un solo ítem no alcanza en stock
+    // (transacción atómica) — mejor avisar aquí cuál ítem sobra, en vez de
+    // que el tendero pierda el borrador completo por un error genérico.
+    const sinStock = validItems.filter(
+      (item) => item.stockDisponible != null && Number(item.cantidad) > item.stockDisponible
+    );
+    if (sinStock.length > 0) {
+      setMessage(
+        `No hay stock suficiente para: ${sinStock.map((i) => `${i.nombreProducto} (pediste ${i.cantidad}, hay ${i.stockDisponible})`).join(', ')}.`
+      );
+      return;
+    }
     setSaving(true);
     setMessage('');
     try {
@@ -151,6 +163,11 @@ function WhatsappOrderPage() {
       setSaving(false);
     }
   };
+
+  const hasStockIssue = Boolean(
+    draft &&
+      draft.items.some((item) => item.stockDisponible != null && Number(item.cantidad) > item.stockDisponible)
+  );
 
   if (loadingCatalog) return <div className="p-10 text-center animate-pulse text-blue-600">Cargando catálogo...</div>;
 
@@ -225,8 +242,10 @@ function WhatsappOrderPage() {
             </div>
 
             <div className="space-y-3 mb-4">
-              {draft.items.map((item, index) => (
-                <div key={index} className={`p-3 rounded-xl border ${item.sinCoincidencia ? 'bg-red-50 border-red-200' : 'bg-gray-50 border-gray-100'}`}>
+              {draft.items.map((item, index) => {
+                const sinStock = item.stockDisponible != null && Number(item.cantidad) > item.stockDisponible;
+                return (
+                <div key={index} className={`p-3 rounded-xl border ${item.sinCoincidencia || sinStock ? 'bg-red-50 border-red-200' : 'bg-gray-50 border-gray-100'}`}>
                   <p className="text-xs text-gray-400 italic mb-2">"{item.textoOriginal}"</p>
                   <div className="flex flex-wrap items-center gap-2">
                     <select
@@ -243,7 +262,7 @@ function WhatsappOrderPage() {
                       value={item.cantidad}
                       onChange={(e) => handleQuantityChange(index, e.target.value)}
                       onBlur={() => (item.cantidad === '' || item.cantidad <= 0) && handleQuantityChange(index, 1)}
-                      className="w-14 h-9 bg-white border border-gray-200 rounded-lg text-center font-bold text-emerald-600 text-sm"
+                      className={`w-14 h-9 bg-white border rounded-lg text-center font-bold text-sm ${sinStock ? 'border-red-400 text-red-600' : 'border-gray-200 text-emerald-600'}`}
                     />
                     <span className="text-sm font-bold text-gray-700 w-28 text-right">{formatCOP(item.subtotal)}</span>
                     <button onClick={() => handleRemoveItem(index)} className="text-red-400 hover:text-red-600 p-2">
@@ -253,8 +272,17 @@ function WhatsappOrderPage() {
                   {item.sinCoincidencia && (
                     <p className="text-[11px] text-red-500 mt-1 flex items-center gap-1"><FaExclamationTriangle size={10} /> No encontramos coincidencia clara en tu catálogo, elige el producto correcto.</p>
                   )}
+                  {!item.sinCoincidencia && item.stockDisponible != null && (
+                    <p className={`text-[11px] mt-1 flex items-center gap-1 ${sinStock ? 'text-red-500 font-bold' : 'text-gray-400'}`}>
+                      {sinStock && <FaExclamationTriangle size={10} />}
+                      {sinStock
+                        ? `Solo hay ${item.stockDisponible} en stock, pediste ${item.cantidad}.`
+                        : `Disponible: ${item.stockDisponible}`}
+                    </p>
+                  )}
                 </div>
-              ))}
+                );
+              })}
             </div>
 
             <button
@@ -272,10 +300,10 @@ function WhatsappOrderPage() {
 
               <button
                 onClick={handleCreateSale}
-                disabled={saving || draft.items.length === 0}
+                disabled={saving || draft.items.length === 0 || hasStockIssue}
                 className="w-full bg-emerald-600 hover:bg-emerald-700 text-white py-4 rounded-2xl font-black text-lg shadow-lg shadow-emerald-200 transition-all transform active:scale-95 disabled:bg-gray-200 disabled:shadow-none uppercase tracking-tighter"
               >
-                {saving ? 'Creando venta...' : 'Confirmar y Crear Venta'}
+                {saving ? 'Creando venta...' : hasStockIssue ? 'Corrige el stock antes de confirmar' : 'Confirmar y Crear Venta'}
               </button>
 
               {message && (
