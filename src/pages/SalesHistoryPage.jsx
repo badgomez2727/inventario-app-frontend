@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { getSalesHistory, getSaleReceiptPdf } from '../services/apiService';
 import { formatCOP } from '../utils/formatters';
-import { FaDownload, FaCheckCircle, FaClock, FaChevronLeft, FaChevronRight } from 'react-icons/fa';
+import { FaDownload, FaCheckCircle, FaClock, FaHourglassHalf, FaChevronLeft, FaChevronRight } from 'react-icons/fa';
 import SaleDetailModal from '../components/SaleDetailModal';
 
 function SalesHistoryPage() {
@@ -16,28 +16,41 @@ function SalesHistoryPage() {
   const [totalPages, setTotalPages] = useState(1);
   const [totalCount, setTotalCount] = useState(0);
 
-  useEffect(() => {
-    const fetchSales = async () => {
-      try {
+  // silent=true se usa para refrescar en segundo plano (ej. tras registrar/anular
+  // un pago desde el modal de detalle) sin mostrar la pantalla de carga ni
+  // cerrar el modal que está abierto encima de la tabla.
+  const fetchSales = async (page, { silent = false } = {}) => {
+    try {
+      if (!silent) {
         setLoading(true);
         setError(null);
-        const data = await getSalesHistory(currentPage, 10);
-        if (data && data.sales) {
-          setSales(data.sales);
-          setTotalPages(data.totalPages || 1);
-          setTotalCount(data.totalCount || 0);
-        } else {
-          // Por si el backend aún devuelve el formato antiguo (array plano)
-          setSales(Array.isArray(data) ? data : []);
-        }
-      } catch (err) {
-        console.error('Error fetching sales history:', err);
-        setError(err.message || 'No se pudo cargar el historial de ventas.');
-      } finally {
-        setLoading(false);
       }
-    };
-    fetchSales();
+      const data = await getSalesHistory(page, 10);
+      let list = [];
+      if (data && data.sales) {
+        list = data.sales;
+        setTotalPages(data.totalPages || 1);
+        setTotalCount(data.totalCount || 0);
+      } else {
+        // Por si el backend aún devuelve el formato antiguo (array plano)
+        list = Array.isArray(data) ? data : [];
+      }
+      setSales(list);
+      setSelectedSale((prev) => {
+        if (!prev) return prev;
+        return list.find((s) => s.id === prev.id) || prev;
+      });
+    } catch (err) {
+      console.error('Error fetching sales history:', err);
+      if (!silent) setError(err.message || 'No se pudo cargar el historial de ventas.');
+    } finally {
+      if (!silent) setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchSales(currentPage);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentPage]);
 
   const handleDownloadReceipt = async (saleId) => {
@@ -60,16 +73,26 @@ function SalesHistoryPage() {
   };
 
   // Función para renderizar el estado con colores
+  const STATUS_STYLES = {
+    PAGADA: { cls: 'bg-green-100 text-green-700', icon: <FaCheckCircle /> },
+    PARCIAL: { cls: 'bg-amber-100 text-amber-700', icon: <FaHourglassHalf /> },
+    PENDIENTE: { cls: 'bg-red-100 text-red-600', icon: <FaClock /> },
+  };
   const renderStatusBadge = (status) => {
-    const isPagada = status === 'PAGADA';
+    const style = STATUS_STYLES[status] || STATUS_STYLES.PENDIENTE;
     return (
-      <span className={`flex items-center justify-center gap-1 px-2 py-1 rounded-full text-[10px] font-black uppercase ${
-        isPagada ? 'bg-green-100 text-green-700' : 'bg-amber-100 text-amber-700'
-      }`}>
-        {isPagada ? <FaCheckCircle /> : <FaClock />}
+      <span className={`flex items-center justify-center gap-1 px-2 py-1 rounded-full text-[10px] font-black uppercase ${style.cls}`}>
+        {style.icon}
         {status}
       </span>
     );
+  };
+
+  // Saldo pendiente de una venta = total menos la suma de sus pagos activos
+  // (getSalesHistory ya trae solo los pagos NO anulados en `sale.payments`).
+  const calcularSaldo = (sale) => {
+    const pagado = (sale.payments || []).reduce((sum, p) => sum + Number(p.monto), 0);
+    return Number(sale.total) - pagado;
   };
 
   const pageTotal = sales.reduce((sum, sale) => sum + Number(sale.total), 0);
@@ -132,6 +155,11 @@ function SalesHistoryPage() {
                   </td>
                   <td className="px-4 py-4 text-center">
                     {renderStatusBadge(sale.estadoPago || sale.estado)}
+                    {sale.estadoPago && sale.estadoPago !== 'PAGADA' && (
+                      <div className="text-[10px] text-gray-400 font-bold mt-1 whitespace-nowrap">
+                        Saldo: {formatCOP(calcularSaldo(sale))}
+                      </div>
+                    )}
                   </td>
                   <td className="px-4 py-4 text-right font-black text-gray-900">
                     {formatCOP(sale.total)}
@@ -192,6 +220,7 @@ function SalesHistoryPage() {
           onClose={() => setSelectedSale(null)}
           onDownloadPdf={handleDownloadReceipt}
           renderStatusBadge={renderStatusBadge}
+          onPaymentsChanged={() => fetchSales(currentPage, { silent: true })}
         />
       )}
     </div>

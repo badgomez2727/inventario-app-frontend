@@ -212,6 +212,25 @@ export const getSalesHistory = async (page = 1, limit = 10) => {
   return authenticatedFetch(`sales/history?page=${p}&limit=${l}`);
 };
 
+// --- Pagos/abonos de una venta ---
+export const getSalePayments = async (saleId) => {
+  return authenticatedFetch(`sales/${saleId}/payments`);
+};
+
+export const registerSalePayment = async (saleId, paymentData) => {
+  return authenticatedFetch(`sales/${saleId}/payments`, {
+    method: 'POST',
+    body: JSON.stringify(paymentData),
+  });
+};
+
+export const voidSalePayment = async (saleId, paymentId, motivo) => {
+  return authenticatedFetch(`sales/${saleId}/payments/${paymentId}/anular`, {
+    method: 'PATCH',
+    body: JSON.stringify({ motivo }),
+  });
+};
+
 
 // --- Pedido por WhatsApp asistido por IA (función PRO) ---
 export const parseWhatsappOrder = async (texto) => {
