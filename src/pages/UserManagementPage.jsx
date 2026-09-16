@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { getUsers, createUser } from '../services/apiService';
 import { FaUserPlus, FaUsers } from 'react-icons/fa';
+import { ASSIGNABLE_ROLES, ROLE_DISPLAY } from '../constants/roles';
 
 const UserManagementPage = () => {
   const [users, setUsers] = useState([]);
@@ -49,13 +50,6 @@ const UserManagementPage = () => {
     }
   };
 
-  // Mapeo de roles para vista amigable
-  const roleDisplay = {
-    'ADMIN_COMPANIA': { label: 'Administrador', color: 'bg-purple-100 text-purple-700' },
-    'OPERARIO': { label: 'Operario', color: 'bg-blue-100 text-blue-700' },
-    'VENDEDOR': { label: 'Vendedor', color: 'bg-emerald-100 text-emerald-700' }
-  };
-
   if (loading) return <div className="p-10 text-center text-emerald-600 animate-pulse font-bold">Cargando sistema de usuarios...</div>;
 
   return (
@@ -99,9 +93,9 @@ const UserManagementPage = () => {
                 <label className="text-xs font-bold text-gray-400 uppercase ml-1">Rol de Acceso</label>
                 <select name="rol" value={form.rol} onChange={handleChange} required className="w-full border border-gray-200 rounded-xl p-2.5 bg-gray-50 focus:ring-2 focus:ring-emerald-500 outline-none transition-all cursor-pointer">
                   <option value="">Seleccionar...</option>
-                  <option value="ADMIN_COMPANIA">Administrador</option>
-                  <option value="OPERARIO">Operario</option>
-                  <option value="VENDEDOR">Vendedor</option>
+                  {ASSIGNABLE_ROLES.map((r) => (
+                    <option key={r.value} value={r.value}>{r.label}</option>
+                  ))}
                 </select>
               </div>
               <button type="submit" className="w-full bg-gray-900 text-white font-bold py-3 rounded-xl hover:bg-emerald-600 transition-all shadow-lg hover:shadow-emerald-500/20 mt-2">
@@ -138,8 +132,8 @@ const UserManagementPage = () => {
                       </div>
                     </td>
                     <td className="px-6 py-4">
-                      <span className={`text-[10px] font-black px-2.5 py-1 rounded-full uppercase tracking-tighter ${roleDisplay[user.rol]?.color || 'bg-gray-100'}`}>
-                        {roleDisplay[user.rol]?.label || user.rol}
+                      <span className={`text-[10px] font-black px-2.5 py-1 rounded-full uppercase tracking-tighter ${ROLE_DISPLAY[user.rol]?.color || 'bg-gray-100'}`}>
+                        {ROLE_DISPLAY[user.rol]?.label || user.rol}
                       </span>
                     </td>
                   </tr>

@@ -7,7 +7,10 @@ import { FaTachometerAlt, FaBox, FaShoppingCart, FaUsers } from 'react-icons/fa'
 
 const BottomNavbar = () => {
   const { user } = useAuth();
-  const isAdmin = user && (user.rol === 'ADMIN_COMPANIA' || user.rol === 'SUPER_ADMIN_SISTEMA');
+  // Los valores reales de rol son minúsculas (ver constants/roles.js) — esta
+  // comparación estaba en mayúsculas y nunca coincidía con ningún usuario
+  // real, así que ningún admin veía "Usuarios" en el menú móvil.
+  const isAdmin = user && (user.rol === 'admin_compania' || user.rol === 'super_admin_sistema');
 
   return (
     <nav className="fixed bottom-0 left-0 w-full bg-white border-t border-gray-200 shadow-md md:hidden z-50">
