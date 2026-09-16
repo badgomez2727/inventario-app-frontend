@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { NavLink } from 'react-router-dom';
+import { NavLink, Link } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import {
   FaTachometerAlt, FaBox, FaHistory, FaShoppingCart,
@@ -65,7 +65,9 @@ const Sidebar = ({ isSidebarOpen, toggleSidebar }) => {
         
         {/* Header */}
         <div className={`flex ${collapsed ? 'flex-col gap-4' : 'justify-between'} items-center px-4 py-6 flex-shrink-0 pointer-events-auto`}>
-          <LogoVendita collapsed={collapsed} />
+          <Link to="/productos" className={collapsed ? '' : 'flex-1 min-w-0'}>
+            <LogoVendita collapsed={collapsed} />
+          </Link>
           <button onClick={() => setCollapsed(!collapsed)} className="text-gray-500 hover:text-emerald-500 md:block hidden ml-2">
             <FaBars size={18} />
           </button>

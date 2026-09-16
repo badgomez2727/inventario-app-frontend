@@ -70,6 +70,8 @@ function SalesHistoryPage() {
     );
   };
 
+  const pageTotal = sales.reduce((sum, sale) => sum + Number(sale.total), 0);
+
   if (loading)
     return <div className="p-10 text-center animate-pulse text-blue-600 font-bold">Cargando historial...</div>;
   if (error)
@@ -140,6 +142,17 @@ function SalesHistoryPage() {
               ))
             )}
           </tbody>
+          {sales.length > 0 && (
+            <tfoot>
+              <tr className="border-t-2 border-gray-200 bg-gray-50/50">
+                <td colSpan="4" className="px-4 py-4 text-right font-black text-gray-500 uppercase text-[10px] tracking-widest">
+                  Total de esta página
+                </td>
+                <td className="px-4 py-4 text-right font-black text-blue-600">{formatCOP(pageTotal)}</td>
+                <td></td>
+              </tr>
+            </tfoot>
+          )}
         </table>
       </div>
 

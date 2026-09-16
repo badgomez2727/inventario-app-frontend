@@ -22,7 +22,9 @@ const LandingPage = () => {
       
       {/* --- NAVBAR --- */}
       <nav className="flex items-center justify-between px-6 py-6 max-w-7xl mx-auto w-full relative z-50">
-        <Logo />
+        <Link to="/">
+          <Logo />
+        </Link>
         <div className="hidden md:flex gap-8 font-medium text-gray-600">
           <a href="#features" className="hover:text-emerald-500 transition-colors">Funciones</a>
           <a href="#about" className="hover:text-emerald-500 transition-colors">Nosotros</a>
