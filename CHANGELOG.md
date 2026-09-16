@@ -15,3 +15,4 @@
 ### Corregido
 
 - Scroll horizontal roto en el listado de usuarios (`UserManagementPage`): la tabla no tenía contenedor con `overflow-x-auto`, lo que en pantallas angostas generaba desplazamiento lateral. Se agregó el mismo patrón de contenedor de scroll usado en las demás tablas del sistema.
+- Al expirar el token (1h) o quedar inválido, `apiService` mandaba de vuelta al login sin ninguna explicación — la navegación (`window.location.href`) desmontaba el componente antes de que pudiera mostrar el error, así que se sentía como una desconexión random en medio de cualquier acción (ej. registrando un pago). Ahora se guarda un mensaje en `sessionStorage` antes de redirigir y `LoginPage` lo muestra ("Tu sesión expiró. Por favor, inicia sesión de nuevo.").

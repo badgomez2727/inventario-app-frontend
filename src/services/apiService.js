@@ -28,6 +28,25 @@ const fetchWithColdStartNotice = async (url, options) => {
   }
 };
 
+// Cuando el token expira o es inválido (401), forzamos vuelta al login —
+// pero window.location.href navega de inmediato y desmonta el componente
+// actual antes de que pueda mostrar el throw de abajo, así que sin esto el
+// usuario simplemente "desaparece" de vuelta al login sin ninguna
+// explicación (se ve como una desconexión random, no como una sesión
+// vencida). Guardamos el mensaje en sessionStorage para que LoginPage lo
+// lea y lo muestre después de la navegación.
+export const SESSION_EXPIRED_KEY = 'vendita:sessionExpiredMessage';
+const redirectToLoginBySessionExpired = () => {
+  localStorage.removeItem('token');
+  localStorage.removeItem('user');
+  try {
+    sessionStorage.setItem(SESSION_EXPIRED_KEY, 'Tu sesión expiró. Por favor, inicia sesión de nuevo.');
+  } catch (e) {
+    // sessionStorage puede fallar en navegación privada; no bloquea el redirect.
+  }
+  window.location.href = '/login';
+};
+
 // Función genérica para hacer peticiones autenticadas
 const authenticatedFetch = async (endpoint, options = {}) => {
   const token = localStorage.getItem('token'); // Obtiene el token del localStorage
@@ -48,9 +67,7 @@ const authenticatedFetch = async (endpoint, options = {}) => {
 
   // Manejo de error de autenticación (401)
   if (response.status === 401) {
-    localStorage.removeItem('token');
-    localStorage.removeItem('user');
-    window.location.href = '/login'; // Redirige a la página de login
+    redirectToLoginBySessionExpired();
     throw new Error('Sesión expirada o no autorizada. Por favor, inicie sesión de nuevo.');
   }
 
@@ -354,13 +371,11 @@ export const getSaleReceiptPdf = async (saleId) => {
 
   if (!response.ok) {
     if (response.status === 401) {
-      localStorage.removeItem('token');
-      localStorage.removeItem('user');
-      window.location.href = '/login';
+      redirectToLoginBySessionExpired();
       throw new Error('Sesión expirada o no autorizada. Por favor, inicie sesión de nuevo.');
     }
 
-    let errorMessage = `Error al generar el recibo para la venta ${saleId}.`; 
+    let errorMessage = `Error al generar el recibo para la venta ${saleId}.`;
     try {
       const errorData = await response.json();
       errorMessage = errorData.error || errorMessage;

@@ -1,8 +1,9 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContext";
 import { FaArrowLeft, FaLock, FaUser } from "react-icons/fa";
 import PasswordInput from "../components/PasswordInput";
+import { SESSION_EXPIRED_KEY } from "../services/apiService";
 
 // Logo consistente
 const Logo = () => (
@@ -20,9 +21,25 @@ function LoginPage() {
   const [nombreUsuario, setNombreUsuario] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState(null);
+  const [notice, setNotice] = useState(null);
   const [loading, setLoading] = useState(false);
   const { login } = useAuth();
   const navigate = useNavigate();
+
+  // Si venimos de una redirección forzada por token expirado/inválido
+  // (ver redirectToLoginBySessionExpired en apiService), mostramos el motivo
+  // en vez de dejar al usuario preguntándose por qué "lo devolvieron" al login.
+  useEffect(() => {
+    try {
+      const msg = sessionStorage.getItem(SESSION_EXPIRED_KEY);
+      if (msg) {
+        setNotice(msg);
+        sessionStorage.removeItem(SESSION_EXPIRED_KEY);
+      }
+    } catch (e) {
+      // sessionStorage puede fallar en navegación privada; no es crítico.
+    }
+  }, []);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -61,6 +78,11 @@ function LoginPage() {
 
         {/* Card del Formulario */}
         <div className="bg-white shadow-[0_20px_50px_rgba(0,0,0,0.04)] rounded-[2.5rem] p-8 md:p-10 border border-gray-100">
+          {notice && (
+            <div className="bg-amber-50 text-amber-700 text-sm font-bold p-4 rounded-xl text-center mb-6">
+              {notice}
+            </div>
+          )}
           <form onSubmit={handleSubmit} className="space-y-6">
             
             {/* Input Usuario */}
