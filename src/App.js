@@ -31,6 +31,7 @@ import PrivateRoute from './components/PrivateRoute';
 import Layout from './components/Layout';
 import BottomNavbar from './components/BottomNavbar';
 import ColdStartOverlay from './components/ColdStartOverlay';
+import StagingBanner from './components/StagingBanner';
 
 function AppContent() {
   const { isAuthenticated } = useAuth();
@@ -126,6 +127,7 @@ function App() {
   return (
     <Router>
       <AuthProvider>
+        <StagingBanner />
         <ColdStartOverlay />
         <AppContent />
       </AuthProvider>
