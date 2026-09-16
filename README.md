@@ -5,7 +5,7 @@
 | Entorno | Rama git | Deploy en Vercel | Variables |
 |---|---|---|---|
 | Producción | `main` | Production (`vendita.tyndallcore.com`) | `REACT_APP_API_URL` -> backend de producción en Render |
-| Staging | `develop` | Preview (URL tipo `inventario-app-frontend-git-develop-<team>.vercel.app`) | `REACT_APP_API_URL` -> backend de staging en Render, `REACT_APP_ENVIRONMENT=staging` |
+| Staging | `develop` | Preview (`vendita-git-develop-badgomez2727s-projects.vercel.app`, estable entre pushes) | `REACT_APP_API_URL` -> backend de staging en Render, `REACT_APP_ENVIRONMENT=staging` |
 
 `REACT_APP_ENVIRONMENT=staging` activa un banner visible ("Entorno de STAGING") en toda la app — ver `src/components/StagingBanner.jsx`. Solo está configurada en el entorno Preview de Vercel, nunca en Production.
 
