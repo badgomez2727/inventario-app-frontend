@@ -1,3 +1,18 @@
+# Vendita — frontend
+
+## Entornos
+
+| Entorno | Rama git | Deploy en Vercel | Variables |
+|---|---|---|---|
+| Producción | `main` | Production (`vendita.tyndallcore.com`) | `REACT_APP_API_URL` -> backend de producción en Render |
+| Staging | `develop` | Preview (URL tipo `inventario-app-frontend-git-develop-<team>.vercel.app`) | `REACT_APP_API_URL` -> backend de staging en Render, `REACT_APP_ENVIRONMENT=staging` |
+
+`REACT_APP_ENVIRONMENT=staging` activa un banner visible ("Entorno de STAGING") en toda la app — ver `src/components/StagingBanner.jsx`. Solo está configurada en el entorno Preview de Vercel, nunca en Production.
+
+Ver el README del backend (`inventario-app-backend`) para cómo provisionar el servicio de staging en Render y cómo reiniciar los datos de la rama `staging` de Neon desde producción.
+
+---
+
 # Getting Started with Create React App
 
 This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
