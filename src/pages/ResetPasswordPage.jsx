@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom'; 
 import { resetPassword } from '../services/apiService';
+import PasswordInput from '../components/PasswordInput';
 import '../styles/AuthPages.css';
 
 const Logo = () => (
@@ -60,24 +61,24 @@ function ResetPasswordPage() {
           <form onSubmit={handleSubmit} className="space-y-6">
             <div className="auth-form-group">
               <label className="auth-label">Nueva Contraseña</label>
-              <input
-                type="password"
+              <PasswordInput
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 className="auth-input"
                 required
                 placeholder="••••••••"
+                autoComplete="new-password"
               />
             </div>
             <div className="auth-form-group">
               <label className="auth-label">Confirmar Contraseña</label>
-              <input
-                type="password"
+              <PasswordInput
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
                 className="auth-input"
                 required
                 placeholder="••••••••"
+                autoComplete="new-password"
               />
             </div>
             <button type="submit" disabled={loading} className="auth-button">

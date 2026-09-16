@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { FaBuilding, FaUserShield, FaArrowLeft } from 'react-icons/fa';
+import PasswordInput from '../components/PasswordInput';
 
 // Componente de Logo (Consistente con la Landing)
 const Logo = () => (
@@ -186,21 +187,21 @@ function RegisterCompanyPage() {
                 </div>
                 <div>
                   <label className="text-xs font-bold uppercase tracking-wider text-gray-400 ml-1">Contraseña</label>
-                  <input
-                    type="password"
+                  <PasswordInput
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     required
+                    autoComplete="new-password"
                     className="mt-1 w-full bg-gray-50 border-none rounded-xl px-4 py-3 focus:ring-2 focus:ring-emerald-500 focus:bg-white transition-all outline-none"
                   />
                 </div>
                 <div>
                   <label className="text-xs font-bold uppercase tracking-wider text-gray-400 ml-1">Confirmar</label>
-                  <input
-                    type="password"
+                  <PasswordInput
                     value={confirmPassword}
                     onChange={(e) => setConfirmPassword(e.target.value)}
                     required
+                    autoComplete="new-password"
                     className="mt-1 w-full bg-gray-50 border-none rounded-xl px-4 py-3 focus:ring-2 focus:ring-emerald-500 focus:bg-white transition-all outline-none"
                   />
                 </div>

@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContext";
 import { FaArrowLeft, FaLock, FaUser } from "react-icons/fa";
+import PasswordInput from "../components/PasswordInput";
 
 // Logo consistente
 const Logo = () => (
@@ -88,19 +89,15 @@ function LoginPage() {
               <label className="text-xs font-bold uppercase tracking-widest text-gray-400 ml-1 mb-2 block">
                 Contraseña
               </label>
-              <div className="relative">
-                <span className="absolute inset-y-0 left-0 pl-4 flex items-center text-gray-400">
-                  <FaLock size={14} />
-                </span>
-                <input
-                  type="password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  required
-                  placeholder="••••••••"
-                  className="w-full bg-gray-50 border-none rounded-2xl pl-11 pr-4 py-4 focus:ring-2 focus:ring-emerald-500 focus:bg-white transition-all outline-none font-medium"
-                />
-              </div>
+              <PasswordInput
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required
+                placeholder="••••••••"
+                autoComplete="current-password"
+                leftIcon={<FaLock size={14} />}
+                className="w-full bg-gray-50 border-none rounded-2xl pl-11 pr-4 py-4 focus:ring-2 focus:ring-emerald-500 focus:bg-white transition-all outline-none font-medium"
+              />
             </div>
 
             <div className="flex justify-end mt-2">

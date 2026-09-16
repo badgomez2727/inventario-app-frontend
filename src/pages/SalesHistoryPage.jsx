@@ -2,12 +2,14 @@ import React, { useEffect, useState } from 'react';
 import { getSalesHistory, getSaleReceiptPdf } from '../services/apiService';
 import { formatCOP } from '../utils/formatters';
 import { FaDownload, FaCheckCircle, FaClock, FaChevronLeft, FaChevronRight } from 'react-icons/fa';
+import SaleDetailModal from '../components/SaleDetailModal';
 
 function SalesHistoryPage() {
   const [sales, setSales] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [message, setMessage] = useState('');
+  const [selectedSale, setSelectedSale] = useState(null);
 
   // Paginación
   const [currentPage, setCurrentPage] = useState(1);
@@ -113,7 +115,11 @@ function SalesHistoryPage() {
               </tr>
             ) : (
               sales.map((sale) => (
-                <tr key={sale.id} className="hover:bg-blue-50/30 transition-colors">
+                <tr
+                  key={sale.id}
+                  onClick={() => setSelectedSale(sale)}
+                  className="hover:bg-blue-50/30 transition-colors cursor-pointer"
+                >
                   <td className="px-4 py-4 text-center font-mono text-gray-400">#{sale.id}</td>
                   <td className="px-4 py-4">
                     <div className="font-bold text-gray-800">{sale.user?.nombreUsuario || 'Sistema'}</div>
@@ -132,7 +138,7 @@ function SalesHistoryPage() {
                   </td>
                   <td className="px-4 py-4 text-center">
                     <button
-                      onClick={() => handleDownloadReceipt(sale.id)}
+                      onClick={(e) => { e.stopPropagation(); handleDownloadReceipt(sale.id); }}
                       className="inline-flex items-center gap-2 px-4 py-2 bg-gray-900 text-white text-[10px] font-black rounded-xl hover:bg-blue-600 transition-all shadow-sm active:scale-95"
                     >
                       <FaDownload /> PDF
@@ -179,6 +185,15 @@ function SalesHistoryPage() {
           </button>
         </div>
       </div>
+
+      {selectedSale && (
+        <SaleDetailModal
+          sale={selectedSale}
+          onClose={() => setSelectedSale(null)}
+          onDownloadPdf={handleDownloadReceipt}
+          renderStatusBadge={renderStatusBadge}
+        />
+      )}
     </div>
   );
 }

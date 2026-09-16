@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { getUsers, createUser } from '../services/apiService';
 import { FaUserPlus, FaUsers } from 'react-icons/fa';
 import { ASSIGNABLE_ROLES, ROLE_DISPLAY } from '../constants/roles';
+import PasswordInput from '../components/PasswordInput';
 
 const UserManagementPage = () => {
   const [users, setUsers] = useState([]);
@@ -87,7 +88,7 @@ const UserManagementPage = () => {
               </div>
               <div>
                 <label className="text-xs font-bold text-gray-400 uppercase ml-1">Contraseña</label>
-                <input type="password" name="password" value={form.password} onChange={handleChange} required className="w-full border border-gray-200 rounded-xl p-2.5 focus:ring-2 focus:ring-emerald-500 outline-none transition-all" placeholder="••••••••" />
+                <PasswordInput name="password" value={form.password} onChange={handleChange} required autoComplete="new-password" className="w-full border border-gray-200 rounded-xl p-2.5 focus:ring-2 focus:ring-emerald-500 outline-none transition-all" placeholder="••••••••" />
               </div>
               <div>
                 <label className="text-xs font-bold text-gray-400 uppercase ml-1">Rol de Acceso</label>
@@ -110,36 +111,38 @@ const UserManagementPage = () => {
         {/* Tabla Principal */}
         <div className="lg:col-span-2">
           <div className="bg-white shadow-sm border border-gray-100 rounded-2xl overflow-hidden">
-            <table className="w-full text-left border-collapse">
-              <thead>
-                <tr className="bg-gray-50/50 text-gray-400 text-xs font-black uppercase tracking-widest">
-                  <th className="px-6 py-4">Usuario</th>
-                  <th className="px-6 py-4">Acceso</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-gray-50">
-                {users.map((user) => (
-                  <tr key={user.id} className="hover:bg-gray-50/50 transition-colors">
-                    <td className="px-6 py-4">
-                      <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center font-bold">
-                          {user.nombreUsuario.charAt(0).toUpperCase()}
-                        </div>
-                        <div>
-                          <p className="font-bold text-gray-800">{user.nombreUsuario}</p>
-                          <p className="text-xs text-gray-400">{user.email}</p>
-                        </div>
-                      </div>
-                    </td>
-                    <td className="px-6 py-4">
-                      <span className={`text-[10px] font-black px-2.5 py-1 rounded-full uppercase tracking-tighter ${ROLE_DISPLAY[user.rol]?.color || 'bg-gray-100'}`}>
-                        {ROLE_DISPLAY[user.rol]?.label || user.rol}
-                      </span>
-                    </td>
+            <div className="overflow-x-auto">
+              <table className="w-full text-left border-collapse">
+                <thead>
+                  <tr className="bg-gray-50/50 text-gray-400 text-xs font-black uppercase tracking-widest">
+                    <th className="px-6 py-4">Usuario</th>
+                    <th className="px-6 py-4">Acceso</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
+                </thead>
+                <tbody className="divide-y divide-gray-50">
+                  {users.map((user) => (
+                    <tr key={user.id} className="hover:bg-gray-50/50 transition-colors">
+                      <td className="px-6 py-4">
+                        <div className="flex items-center gap-3">
+                          <div className="w-10 h-10 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center font-bold">
+                            {user.nombreUsuario.charAt(0).toUpperCase()}
+                          </div>
+                          <div>
+                            <p className="font-bold text-gray-800">{user.nombreUsuario}</p>
+                            <p className="text-xs text-gray-400">{user.email}</p>
+                          </div>
+                        </div>
+                      </td>
+                      <td className="px-6 py-4">
+                        <span className={`text-[10px] font-black px-2.5 py-1 rounded-full uppercase tracking-tighter ${ROLE_DISPLAY[user.rol]?.color || 'bg-gray-100'}`}>
+                          {ROLE_DISPLAY[user.rol]?.label || user.rol}
+                        </span>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           </div>
         </div>
       </div>
