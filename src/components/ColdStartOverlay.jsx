@@ -19,7 +19,7 @@ function ColdStartOverlay() {
     <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-white/90 backdrop-blur-sm">
       <div className="text-center px-6 max-w-xs">
         <div className="w-12 h-12 border-4 border-emerald-200 border-t-emerald-600 rounded-full animate-spin mx-auto mb-4" />
-        <p className="text-gray-700 font-black">Despertando el servidor...</p>
+        <p className="text-gray-700 font-black">Trabajando en tus datos...</p>
         <p className="text-xs text-gray-400 mt-2">
           Puede tardar hasta 30-40 segundos si nadie ha usado la app en un rato. No cierres ni recargues, ya casi está.
         </p>
