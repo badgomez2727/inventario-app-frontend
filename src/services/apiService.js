@@ -342,6 +342,13 @@ export const updateCompanyPlan = async (companyId, plan) => {
   });
 };
 
+export const updateCompanyActivo = async (companyId, activo) => {
+  return authenticatedFetch(`admin/companies/${companyId}/activo`, {
+    method: 'PATCH',
+    body: JSON.stringify({ activo }),
+  });
+};
+
 export const getInventoryValue = async () => {
   return authenticatedFetch('reports/inventory-value');
 };

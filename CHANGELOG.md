@@ -8,6 +8,7 @@
 - Detalle de venta en modal (`SaleDetailModal`) desde el historial de ventas: fecha, cliente, vendedor, productos (cantidad, precio unitario, subtotal), total y estado de pago, sin necesidad de descargar el PDF. El botón de descarga de PDF se mantiene dentro del modal.
 - Pagos/abonos de una venta: dentro del detalle de venta, botón "Registrar pago" (visible en ventas `PENDIENTE`/`PARCIAL`, con el monto por defecto igual al saldo pendiente) y lista de pagos registrados con opción de anular (motivo obligatorio). El historial de ventas ahora muestra el badge `PARCIAL` (además de `PAGADA`/`PENDIENTE`) y el saldo pendiente de cada venta.
 - Anulación de ventas: dentro del detalle de venta, botón "Anular venta" (visible para `admin_compania` y `super_admin_sistema`) con confirmación y motivo obligatorio. Una venta anulada muestra un banner con el motivo, bloquea el registro de nuevos pagos, y se sigue viendo en el historial con el badge `ANULADA` (fila atenuada, excluida del total de la página).
+- Panel de sistema (`AdminCompaniesPage`): columna "Estado" y botón para activar/desactivar cada compañía (con confirmación), oculto para la compañía interna. Si una compañía queda inactiva, sus usuarios ven el mensaje claro del backend tanto al iniciar sesión como en cualquier acción posterior.
 
 ### Cambiado
 

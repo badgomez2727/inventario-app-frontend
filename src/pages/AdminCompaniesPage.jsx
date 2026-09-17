@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { getAdminCompanies, updateCompanyPlan } from '../services/apiService';
-import { FaCrown, FaChevronLeft, FaChevronRight, FaBuilding } from 'react-icons/fa';
+import { getAdminCompanies, updateCompanyPlan, updateCompanyActivo } from '../services/apiService';
+import { FaCrown, FaChevronLeft, FaChevronRight, FaBuilding, FaBan, FaCheckCircle } from 'react-icons/fa';
 
 const PLAN_BADGE = {
   FREE: 'bg-gray-100 text-gray-600',
@@ -67,6 +67,25 @@ const AdminCompaniesPage = () => {
     }
   };
 
+  const handleToggleActivo = async (company) => {
+    const accion = company.activo ? 'desactivar' : 'reactivar';
+    const confirmMsg = company.activo
+      ? `¿Desactivar "${company.nombre}"? Sus usuarios no van a poder iniciar sesión ni seguir operando hasta que la reactives.`
+      : `¿Reactivar "${company.nombre}"? Sus usuarios van a poder volver a iniciar sesión.`;
+    if (!window.confirm(confirmMsg)) return;
+
+    setUpdatingId(company.id);
+    try {
+      await updateCompanyActivo(company.id, !company.activo);
+      setMessage(`✅ ${company.nombre} fue ${company.activo ? 'desactivada' : 'reactivada'}.`);
+      fetchCompanies();
+    } catch (err) {
+      setError(err.message || `No se pudo ${accion} la compañía.`);
+    } finally {
+      setUpdatingId(null);
+    }
+  };
+
   const fmtLimit = (limit) => (limit === null || limit === Infinity ? '∞' : limit);
 
   if (loading) return <div className="p-10 text-center text-emerald-600 font-bold animate-pulse">Cargando compañías...</div>;
@@ -99,6 +118,7 @@ const AdminCompaniesPage = () => {
                 <th className="px-6 py-4 text-center">Vence</th>
                 <th className="px-6 py-4 text-center">Productos</th>
                 <th className="px-6 py-4 text-center">Usuarios</th>
+                <th className="px-6 py-4 text-center">Estado</th>
                 <th className="px-6 py-4 text-center">Acciones</th>
               </tr>
             </thead>
@@ -127,6 +147,18 @@ const AdminCompaniesPage = () => {
                   </td>
                   <td className="px-6 py-4 text-center text-gray-500">{c.userCount}</td>
                   <td className="px-6 py-4 text-center">
+                    {c.activo ? (
+                      <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-black bg-emerald-100 text-emerald-700">
+                        <FaCheckCircle /> Activa
+                      </span>
+                    ) : (
+                      <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-black bg-red-100 text-red-600">
+                        <FaBan /> Inactiva
+                      </span>
+                    )}
+                  </td>
+                  <td className="px-6 py-4 text-center">
+                    <div className="flex items-center justify-center gap-2">
                     <select
                       value={c.plan}
                       disabled={updatingId === c.id}
@@ -137,6 +169,21 @@ const AdminCompaniesPage = () => {
                         <option key={p} value={p}>{p}</option>
                       ))}
                     </select>
+                    {!c.esInterna && (
+                      <button
+                        onClick={() => handleToggleActivo(c)}
+                        disabled={updatingId === c.id}
+                        title={c.activo ? 'Desactivar compañía' : 'Reactivar compañía'}
+                        className={`p-2 rounded-xl text-xs font-black disabled:opacity-40 transition-all ${
+                          c.activo
+                            ? 'bg-red-50 text-red-500 hover:bg-red-100'
+                            : 'bg-emerald-50 text-emerald-600 hover:bg-emerald-100'
+                        }`}
+                      >
+                        {c.activo ? <FaBan /> : <FaCheckCircle />}
+                      </button>
+                    )}
+                    </div>
                   </td>
                 </tr>
               ))}
