@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { getSalesHistory, getSaleReceiptPdf } from '../services/apiService';
 import { formatCOP } from '../utils/formatters';
-import { FaDownload, FaCheckCircle, FaClock, FaHourglassHalf, FaChevronLeft, FaChevronRight } from 'react-icons/fa';
+import { FaDownload, FaCheckCircle, FaClock, FaHourglassHalf, FaChevronLeft, FaChevronRight, FaBan } from 'react-icons/fa';
 import SaleDetailModal from '../components/SaleDetailModal';
 
 function SalesHistoryPage() {
@@ -77,6 +77,7 @@ function SalesHistoryPage() {
     PAGADA: { cls: 'bg-green-100 text-green-700', icon: <FaCheckCircle /> },
     PARCIAL: { cls: 'bg-amber-100 text-amber-700', icon: <FaHourglassHalf /> },
     PENDIENTE: { cls: 'bg-red-100 text-red-600', icon: <FaClock /> },
+    ANULADA: { cls: 'bg-gray-200 text-gray-600', icon: <FaBan /> },
   };
   const renderStatusBadge = (status) => {
     const style = STATUS_STYLES[status] || STATUS_STYLES.PENDIENTE;
@@ -95,7 +96,11 @@ function SalesHistoryPage() {
     return Number(sale.total) - pagado;
   };
 
-  const pageTotal = sales.reduce((sum, sale) => sum + Number(sale.total), 0);
+  // Las ventas anuladas se excluyen de los totales (siguen visibles en la
+  // tabla con su badge, pero no cuentan como valor de ventas).
+  const pageTotal = sales
+    .filter((sale) => sale.estado !== 'ANULADA')
+    .reduce((sum, sale) => sum + Number(sale.total), 0);
 
   if (loading)
     return <div className="p-10 text-center animate-pulse text-blue-600 font-bold">Cargando historial...</div>;
@@ -141,7 +146,7 @@ function SalesHistoryPage() {
                 <tr
                   key={sale.id}
                   onClick={() => setSelectedSale(sale)}
-                  className="hover:bg-blue-50/30 transition-colors cursor-pointer"
+                  className={`hover:bg-blue-50/30 transition-colors cursor-pointer ${sale.estado === 'ANULADA' ? 'opacity-60' : ''}`}
                 >
                   <td className="px-4 py-4 text-center font-mono text-gray-400">#{sale.id}</td>
                   <td className="px-4 py-4">
@@ -154,8 +159,8 @@ function SalesHistoryPage() {
                     {new Date(sale.fechaVenta).toLocaleDateString('es-CO')}
                   </td>
                   <td className="px-4 py-4 text-center">
-                    {renderStatusBadge(sale.estadoPago || sale.estado)}
-                    {sale.estadoPago && sale.estadoPago !== 'PAGADA' && (
+                    {sale.estado === 'ANULADA' ? renderStatusBadge('ANULADA') : renderStatusBadge(sale.estadoPago || sale.estado)}
+                    {sale.estado !== 'ANULADA' && sale.estadoPago && sale.estadoPago !== 'PAGADA' && (
                       <div className="text-[10px] text-gray-400 font-bold mt-1 whitespace-nowrap">
                         Saldo: {formatCOP(calcularSaldo(sale))}
                       </div>

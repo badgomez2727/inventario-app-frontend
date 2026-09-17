@@ -4,8 +4,9 @@
 
 import React, { useEffect, useState } from 'react';
 import { formatCOP } from '../utils/formatters';
-import { getSalePayments, registerSalePayment, voidSalePayment } from '../services/apiService';
-import { FaTimes, FaDownload, FaReceipt, FaPlus, FaBan } from 'react-icons/fa';
+import { getSalePayments, registerSalePayment, voidSalePayment, voidSale } from '../services/apiService';
+import { useAuth } from '../contexts/AuthContext';
+import { FaTimes, FaDownload, FaReceipt, FaPlus, FaBan, FaExclamationTriangle } from 'react-icons/fa';
 
 const METODOS = [
   { value: 'EFECTIVO', label: 'Efectivo' },
@@ -18,10 +19,15 @@ const METODOS = [
 const METODO_LABELS = METODOS.reduce((acc, m) => ({ ...acc, [m.value]: m.label }), {});
 
 const SaleDetailModal = ({ sale, onClose, onDownloadPdf, renderStatusBadge, onPaymentsChanged }) => {
+  const { user } = useAuth();
+  const isAdmin = user?.rol === 'admin_compania';
+
   const [payments, setPayments] = useState([]);
   const [loadingPayments, setLoadingPayments] = useState(true);
   const [paymentsError, setPaymentsError] = useState(null);
   const [estadoPago, setEstadoPago] = useState(sale?.estadoPago);
+  const [estadoVenta, setEstadoVenta] = useState(sale?.estado);
+  const [motivoAnulacion, setMotivoAnulacion] = useState(sale?.motivoAnulacion);
 
   const [showForm, setShowForm] = useState(false);
   const [formMonto, setFormMonto] = useState('');
@@ -35,13 +41,23 @@ const SaleDetailModal = ({ sale, onClose, onDownloadPdf, renderStatusBadge, onPa
   const [voidError, setVoidError] = useState(null);
   const [voidLoading, setVoidLoading] = useState(false);
 
+  const [showVoidSaleForm, setShowVoidSaleForm] = useState(false);
+  const [voidSaleMotivo, setVoidSaleMotivo] = useState('');
+  const [voidSaleError, setVoidSaleError] = useState(null);
+  const [voidSaleLoading, setVoidSaleLoading] = useState(false);
+
   useEffect(() => {
     if (!sale) return;
     setEstadoPago(sale.estadoPago);
+    setEstadoVenta(sale.estado);
+    setMotivoAnulacion(sale.motivoAnulacion);
     setShowForm(false);
     setVoidingId(null);
     setFormError(null);
     setVoidError(null);
+    setShowVoidSaleForm(false);
+    setVoidSaleMotivo('');
+    setVoidSaleError(null);
 
     const fetchPayments = async () => {
       try {
@@ -121,6 +137,29 @@ const SaleDetailModal = ({ sale, onClose, onDownloadPdf, renderStatusBadge, onPa
     }
   };
 
+  const handleAnularVenta = async () => {
+    if (!voidSaleMotivo.trim()) {
+      setVoidSaleError('El motivo de anulación es obligatorio.');
+      return;
+    }
+    setVoidSaleLoading(true);
+    setVoidSaleError(null);
+    try {
+      const result = await voidSale(sale.id, voidSaleMotivo.trim());
+      setEstadoVenta(result.sale.estado);
+      setMotivoAnulacion(result.sale.motivoAnulacion);
+      setShowVoidSaleForm(false);
+      setVoidSaleMotivo('');
+      onPaymentsChanged?.();
+    } catch (err) {
+      setVoidSaleError(err.message || 'No se pudo anular la venta.');
+    } finally {
+      setVoidSaleLoading(false);
+    }
+  };
+
+  const ventaAnulada = estadoVenta === 'ANULADA';
+
   return (
     <div className="fixed inset-0 bg-black/40 backdrop-blur-sm z-50 flex items-center justify-center p-4 animate-fadeIn">
       <div className="bg-white rounded-[2rem] shadow-2xl w-full max-w-lg max-h-[85vh] flex flex-col overflow-hidden">
@@ -147,6 +186,16 @@ const SaleDetailModal = ({ sale, onClose, onDownloadPdf, renderStatusBadge, onPa
 
         {/* Contenido */}
         <div className="flex-1 overflow-y-auto px-6 py-4 space-y-5">
+          {ventaAnulada && (
+            <div className="flex items-start gap-3 bg-red-50 border border-red-100 rounded-xl px-4 py-3">
+              <FaExclamationTriangle className="text-red-500 mt-0.5 flex-shrink-0" />
+              <div>
+                <p className="text-xs font-black text-red-600 uppercase tracking-widest">Venta anulada</p>
+                {motivoAnulacion && <p className="text-xs text-red-500 mt-1">Motivo: {motivoAnulacion}</p>}
+              </div>
+            </div>
+          )}
+
           {/* Datos generales */}
           <div className="grid grid-cols-2 gap-3">
             <div className="bg-gray-50 rounded-xl px-4 py-3">
@@ -207,7 +256,7 @@ const SaleDetailModal = ({ sale, onClose, onDownloadPdf, renderStatusBadge, onPa
           <div>
             <div className="flex items-center justify-between mb-2 px-1">
               <p className="text-[10px] font-black uppercase tracking-widest text-gray-400">Pagos registrados</p>
-              {estadoPago !== 'PAGADA' && !showForm && (
+              {!ventaAnulada && estadoPago !== 'PAGADA' && !showForm && (
                 <button
                   onClick={abrirFormulario}
                   className="inline-flex items-center gap-1 text-[10px] font-black text-blue-600 hover:underline uppercase"
@@ -348,7 +397,48 @@ const SaleDetailModal = ({ sale, onClose, onDownloadPdf, renderStatusBadge, onPa
         </div>
 
         {/* Footer */}
-        <div className="px-6 py-4 border-t border-gray-100">
+        <div className="px-6 py-4 border-t border-gray-100 space-y-3">
+          {isAdmin && !ventaAnulada && (
+            <>
+              {!showVoidSaleForm ? (
+                <button
+                  onClick={() => { setShowVoidSaleForm(true); setVoidSaleMotivo(''); setVoidSaleError(null); }}
+                  className="w-full inline-flex items-center justify-center gap-2 px-4 py-3 bg-white border-2 border-red-200 text-red-500 text-sm font-black rounded-xl hover:bg-red-50 transition-all active:scale-95"
+                >
+                  <FaBan /> Anular venta
+                </button>
+              ) : (
+                <div className="bg-red-50 border border-red-100 rounded-xl p-3 space-y-2">
+                  <p className="text-xs font-bold text-red-600">
+                    Esta acción devuelve el stock de cada producto y no se puede deshacer.
+                  </p>
+                  <input
+                    type="text"
+                    value={voidSaleMotivo}
+                    onChange={(e) => setVoidSaleMotivo(e.target.value)}
+                    placeholder="Motivo de anulación (obligatorio)"
+                    className="w-full bg-white border border-gray-200 rounded-lg px-3 py-2 text-xs outline-none focus:ring-2 focus:ring-red-400"
+                  />
+                  {voidSaleError && <p className="text-red-500 text-[10px] font-bold">{voidSaleError}</p>}
+                  <div className="flex gap-2">
+                    <button
+                      onClick={handleAnularVenta}
+                      disabled={voidSaleLoading}
+                      className="flex-1 bg-red-500 text-white text-xs font-black py-2 rounded-lg hover:bg-red-600 disabled:opacity-50 transition-all"
+                    >
+                      {voidSaleLoading ? 'Anulando...' : 'Confirmar anulación de venta'}
+                    </button>
+                    <button
+                      onClick={() => setShowVoidSaleForm(false)}
+                      className="px-4 bg-white border border-gray-200 text-gray-500 text-xs font-black py-2 rounded-lg hover:bg-gray-50 transition-all"
+                    >
+                      Cancelar
+                    </button>
+                  </div>
+                </div>
+              )}
+            </>
+          )}
           <button
             onClick={() => onDownloadPdf(sale.id)}
             className="w-full inline-flex items-center justify-center gap-2 px-4 py-3 bg-gray-900 text-white text-sm font-black rounded-xl hover:bg-blue-600 transition-all shadow-sm active:scale-95"

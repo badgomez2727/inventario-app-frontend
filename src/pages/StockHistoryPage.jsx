@@ -24,7 +24,7 @@ function StockHistoryPage() {
 
   // Función para dar estilo al tipo de movimiento
   const renderTipoBadge = (tipo) => {
-    const esEntrada = tipo.toLowerCase().includes('entrada') || tipo.toLowerCase().includes('compra');
+    const esEntrada = tipo.toLowerCase().includes('entrada') || tipo.toLowerCase().includes('compra') || tipo.toLowerCase().includes('devolucion');
     return (
       <span className={`flex items-center justify-center gap-1 px-2 py-1 rounded-full text-[10px] font-bold uppercase ${
         esEntrada ? 'bg-emerald-100 text-emerald-700' : 'bg-orange-100 text-orange-700'

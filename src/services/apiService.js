@@ -248,6 +248,15 @@ export const voidSalePayment = async (saleId, paymentId, motivo) => {
   });
 };
 
+// Anula la venta completa (no un pago individual): solo admin_compania,
+// motivo obligatorio, y solo si la venta no tiene pagos activos.
+export const voidSale = async (saleId, motivo) => {
+  return authenticatedFetch(`sales/${saleId}/anular`, {
+    method: 'PATCH',
+    body: JSON.stringify({ motivo }),
+  });
+};
+
 
 // --- Pedido por WhatsApp asistido por IA (función PRO) ---
 export const parseWhatsappOrder = async (texto) => {
