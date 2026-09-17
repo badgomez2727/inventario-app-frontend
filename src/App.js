@@ -34,7 +34,7 @@ import ColdStartOverlay from './components/ColdStartOverlay';
 import StagingBanner from './components/StagingBanner';
 
 function AppContent() {
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, loading: authLoading } = useAuth();
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
   const [refreshProducts, setRefreshProducts] = useState(false);
@@ -54,6 +54,23 @@ function AppContent() {
     setProductToEdit(null);
     setRefreshProducts(prev => !prev);
   };
+
+  // AuthProvider lee el token de localStorage en un useEffect (async): en el
+  // primer render de un recargo de página todavía no corrió, así que
+  // isAuthenticated es "false" un instante aunque sí haya sesión. Sin este
+  // guard, ese instante alcanza a montar las rutas PÚBLICAS con la URL
+  // privada que se estaba recargando (ej. /admin/companias), su comodín "*"
+  // manda a "/", y para cuando el token ya cargó y isAuthenticated pasa a
+  // true, "/" bajo las rutas privadas redirige a /dashboard — por eso
+  // cualquier recarga terminaba siempre en el dashboard sin importar en qué
+  // página estuvieras.
+  if (authLoading) {
+    return (
+      <div className="w-full min-h-screen flex items-center justify-center bg-white">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-emerald-500"></div>
+      </div>
+    );
+  }
 
   // 🔹 Rutas públicas (sin autenticación)
   if (!isAuthenticated) {
