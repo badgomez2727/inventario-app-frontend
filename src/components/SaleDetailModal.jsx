@@ -20,7 +20,7 @@ const METODO_LABELS = METODOS.reduce((acc, m) => ({ ...acc, [m.value]: m.label }
 
 const SaleDetailModal = ({ sale, onClose, onDownloadPdf, renderStatusBadge, onPaymentsChanged }) => {
   const { user } = useAuth();
-  const isAdmin = user?.rol === 'admin_compania';
+  const isAdmin = user?.rol === 'admin_compania' || user?.rol === 'super_admin_sistema';
 
   const [payments, setPayments] = useState([]);
   const [loadingPayments, setLoadingPayments] = useState(true);
