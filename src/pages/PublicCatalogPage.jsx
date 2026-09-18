@@ -3,17 +3,28 @@
 // WhatsApp/redes: arma un carrito, deja sus datos, y al enviar el pedido se
 // guarda en el sistema y se abre WhatsApp con el mensaje ya armado.
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { getCatalogoPublico, crearPedidoPublico } from '../services/apiService';
 import { formatCOP } from '../utils/formatters';
-import { FaStore, FaBoxOpen, FaExternalLinkAlt, FaShoppingCart, FaPlus, FaMinus, FaTimes, FaWhatsapp } from 'react-icons/fa';
+import { matchesSearch } from '../utils/normalize';
+import { FaStore, FaBoxOpen, FaExternalLinkAlt, FaShoppingCart, FaPlus, FaMinus, FaTimes, FaWhatsapp, FaSearch, FaTimesCircle } from 'react-icons/fa';
+
+// Bucket para productos sin categoría: nunca deben quedar fuera del
+// filtro, así que en vez de excluirlos caen todos acá.
+const OTROS_LABEL = 'Otros';
+
+// En staging hay un banner fijo arriba (~28px, ver StagingBanner) que taparía
+// la barra pegada; en producción no existe, así que ahí se pega al borde.
+const STICKY_TOP = process.env.REACT_APP_ENVIRONMENT === 'staging' ? 'top-7' : 'top-0';
 
 const PublicCatalogPage = () => {
   const { slug } = useParams();
   const [catalogo, setCatalogo] = useState(null);
   const [loading, setLoading] = useState(true);
   const [notFound, setNotFound] = useState(false);
+  const [search, setSearch] = useState('');
+  const [selectedCategoria, setSelectedCategoria] = useState(null); // null = "Todas"
 
   const [cart, setCart] = useState([]); // [{ productId, nombre, precioVenta, cantidad, imagen }]
   const [showCart, setShowCart] = useState(false);
@@ -42,6 +53,41 @@ const PublicCatalogPage = () => {
     };
     fetchCatalogo();
   }, [slug]);
+
+  // Categorías presentes en el catálogo ya cargado (todo del lado del
+  // cliente: el endpoint público no pagina — ver nota en el README del
+  // backend). Los productos sin categoría se agrupan en "Otros" en vez de
+  // quedar fuera del filtro.
+  const categorias = useMemo(() => {
+    if (!catalogo) return [];
+    const set = new Set();
+    let hayOtros = false;
+    catalogo.products.forEach((p) => {
+      const cat = (p.categoria || '').trim();
+      if (cat) set.add(cat);
+      else hayOtros = true;
+    });
+    const lista = Array.from(set).sort((a, b) => a.localeCompare(b, 'es'));
+    if (hayOtros) lista.push(OTROS_LABEL);
+    return lista;
+  }, [catalogo]);
+
+  // Buscador (por nombre, tolerante a mayúsculas/tildes/plurales) y filtro
+  // de categoría combinados — puramente visual, no toca el carrito.
+  const productosFiltrados = useMemo(() => {
+    if (!catalogo) return [];
+    return catalogo.products.filter((p) => {
+      const cat = (p.categoria || '').trim() || OTROS_LABEL;
+      const categoriaMatch = !selectedCategoria || cat === selectedCategoria;
+      const searchMatch = !search.trim() || matchesSearch(p.nombre, search);
+      return categoriaMatch && searchMatch;
+    });
+  }, [catalogo, search, selectedCategoria]);
+
+  const handleClearFilters = () => {
+    setSearch('');
+    setSelectedCategoria(null);
+  };
 
   const addToCart = (product) => {
     setCart((prev) => {
@@ -143,6 +189,59 @@ const PublicCatalogPage = () => {
         </div>
       </header>
 
+      {/* Buscador + filtro de categoría: pegado arriba (sticky) para que no
+          haya que volver a subir a buscar después de hacer scroll, y el
+          scroll horizontal de los chips es propio (no mueve la página). */}
+      {products.length > 0 && (
+        <div className={`sticky ${STICKY_TOP} z-30 bg-gray-50/95 backdrop-blur-sm border-b border-gray-100 px-4 py-3`}>
+          <div className="max-w-5xl mx-auto w-full space-y-2">
+            <div className="relative">
+              <FaSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-300" size={12} />
+              <input
+                type="text"
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                placeholder="Buscar producto..."
+                className="w-full pl-9 pr-9 py-2.5 bg-white border border-gray-200 rounded-xl text-sm outline-none focus:ring-2 focus:ring-purple-500"
+              />
+              {search && (
+                <button
+                  onClick={() => setSearch('')}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-300 hover:text-gray-500"
+                  aria-label="Limpiar búsqueda"
+                >
+                  <FaTimesCircle size={14} />
+                </button>
+              )}
+            </div>
+
+            {categorias.length > 0 && (
+              <div className="flex gap-2 overflow-x-auto pb-0.5" style={{ scrollbarWidth: 'none' }}>
+                <button
+                  onClick={() => setSelectedCategoria(null)}
+                  className={`flex-shrink-0 px-3.5 py-1.5 rounded-full text-xs font-black whitespace-nowrap transition-all ${
+                    !selectedCategoria ? 'bg-purple-600 text-white' : 'bg-white text-gray-500 border border-gray-200'
+                  }`}
+                >
+                  Todas
+                </button>
+                {categorias.map((cat) => (
+                  <button
+                    key={cat}
+                    onClick={() => setSelectedCategoria(cat)}
+                    className={`flex-shrink-0 px-3.5 py-1.5 rounded-full text-xs font-black whitespace-nowrap transition-all ${
+                      selectedCategoria === cat ? 'bg-purple-600 text-white' : 'bg-white text-gray-500 border border-gray-200'
+                    }`}
+                  >
+                    {cat}
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
       {/* Productos */}
       <main className="flex-1 max-w-5xl mx-auto w-full px-4 py-8">
         {products.length === 0 ? (
@@ -150,9 +249,17 @@ const PublicCatalogPage = () => {
             <FaBoxOpen size={40} className="mx-auto mb-3" />
             <p className="font-bold">Todavía no hay productos publicados.</p>
           </div>
+        ) : productosFiltrados.length === 0 ? (
+          <div className="text-center py-20 text-gray-400">
+            <FaSearch size={40} className="mx-auto mb-3 opacity-40" />
+            <p className="font-bold">Ningún producto coincide con tu búsqueda.</p>
+            <button onClick={handleClearFilters} className="mt-3 text-xs font-black text-purple-600 hover:underline">
+              Limpiar filtros
+            </button>
+          </div>
         ) : (
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-            {products.map((p) => {
+            {productosFiltrados.map((p) => {
               const enCarrito = cart.find((item) => item.productId === p.id);
               return (
                 <div key={p.id} className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden flex flex-col">

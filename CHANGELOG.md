@@ -14,6 +14,13 @@
 - Botón "Enviar por WhatsApp" en el detalle del cliente: abre WhatsApp con un mensaje corto y respetuoso (saludo, saldo total, resumen de las ventas pendientes y una línea para coordinar el pago) ya escrito pero sin enviar, para que lo revises antes. Se deshabilita, con una explicación, si el cliente no tiene celular registrado.
 - Botón "Exportar CSV" en Cartera: descarga todos los clientes con saldo (o solo los que coinciden con el buscador, si hay texto escrito) con su celular, saldo, cantidad de ventas pendientes y la antigüedad de la deuda más vieja.
 
+### Agregado — v1.3, Bloque 2: buscador y filtro por categoría en el catálogo público
+
+- Buscador por nombre de producto en `/catalogo/:slug`, tolerante a mayúsculas, tildes y singular/plural (buscar "camisa" encuentra "Camisas"), y a varias palabras en cualquier orden.
+- Chips de categoría (derivadas de los productos publicados) con scroll horizontal propio; los productos sin categoría van al grupo "Otros" y nunca quedan fuera. Se combinan con el buscador.
+- Mensaje "Ningún producto coincide con tu búsqueda" con botón "Limpiar filtros".
+- La barra de buscador y chips queda pegada arriba al hacer scroll. Todo del lado del cliente: no toca el endpoint público, el carrito ni el checkout.
+
 ## 1.2.0
 
 ### En palabras simples (para contarle a los clientes)
