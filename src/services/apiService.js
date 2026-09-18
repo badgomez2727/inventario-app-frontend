@@ -301,6 +301,10 @@ export const getSalesHistory = async (page = 1, limit = 10) => {
   return authenticatedFetch(`sales/history?page=${p}&limit=${l}`);
 };
 
+export const getSaleById = async (saleId) => {
+  return authenticatedFetch(`sales/${saleId}`);
+};
+
 // --- Pagos/abonos de una venta ---
 export const getSalePayments = async (saleId) => {
   return authenticatedFetch(`sales/${saleId}/payments`);
@@ -348,10 +352,16 @@ export const parseWhatsappOrder = async (texto) => {
 };
 
 // --- Funciones de Clientes ---
-export const getClients = async (page = 1, limit = 10) => {
+export const getClients = async (page = 1, limit = 10, search = '') => {
   const p = page || 1;
   const l = limit || 10;
-  return authenticatedFetch(`clientes?page=${p}&limit=${l}`);
+  const params = new URLSearchParams({ page: p, limit: l });
+  if (search) params.set('search', search);
+  return authenticatedFetch(`clientes?${params.toString()}`);
+};
+
+export const getEstadoCuentaCliente = async (clientId) => {
+  return authenticatedFetch(`clientes/${clientId}/estado-cuenta`);
 };
 
 export const createClient = async (clientData) => {

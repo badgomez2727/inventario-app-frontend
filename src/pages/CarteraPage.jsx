@@ -1,16 +1,20 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { getCartera } from '../services/apiService';
 import { formatCOP } from '../utils/formatters';
-import { FaWallet, FaExclamationTriangle, FaChevronDown, FaChevronUp } from 'react-icons/fa';
+import { normalizeText, onlyDigits } from '../utils/normalize';
+import { FaWallet, FaExclamationTriangle, FaChevronDown, FaChevronUp, FaSearch, FaExternalLinkAlt } from 'react-icons/fa';
 
 // A partir de qué tan vieja es una deuda la resaltamos como urgente.
 const DIAS_URGENTE = 30;
 
 function CarteraPage() {
+  const navigate = useNavigate();
   const [cartera, setCartera] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [expandedId, setExpandedId] = useState(null);
+  const [search, setSearch] = useState('');
 
   useEffect(() => {
     const fetchCartera = async () => {
@@ -28,7 +32,21 @@ function CarteraPage() {
     fetchCartera();
   }, []);
 
-  const totalGeneral = cartera.reduce((sum, c) => sum + c.totalAdeudado, 0);
+  // Ya está todo cargado (la cartera no es una lista paginada), así que el
+  // buscador filtra en el navegador — tolerante a mayúsculas/tildes en el
+  // nombre y al formato del celular (con o sin +57, espacios o guiones).
+  const carteraFiltrada = useMemo(() => {
+    if (!search.trim()) return cartera;
+    const searchNorm = normalizeText(search);
+    const searchDigits = onlyDigits(search);
+    return cartera.filter((c) => {
+      const nombreMatch = normalizeText(c.nombre).includes(searchNorm);
+      const telefonoMatch = searchDigits.length > 0 && onlyDigits(c.telefono).includes(searchDigits);
+      return nombreMatch || telefonoMatch;
+    });
+  }, [cartera, search]);
+
+  const totalGeneral = carteraFiltrada.reduce((sum, c) => sum + c.totalAdeudado, 0);
   const antiguedadMaxima = (cliente) =>
     cliente.ventasPendientes.reduce((max, v) => Math.max(max, v.diasAntiguedad), 0);
 
@@ -51,14 +69,31 @@ function CarteraPage() {
         </div>
       </div>
 
+      {cartera.length > 0 && (
+        <div className="relative max-w-sm">
+          <FaSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-300" size={12} />
+          <input
+            type="text"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            placeholder="Buscar por nombre o celular..."
+            className="w-full pl-9 pr-4 py-2.5 bg-white border border-gray-200 rounded-xl text-sm outline-none focus:ring-2 focus:ring-blue-500 shadow-sm"
+          />
+        </div>
+      )}
+
       <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 flex items-center justify-between">
-        <p className="font-black text-gray-500 uppercase text-xs tracking-widest">Total adeudado</p>
+        <p className="font-black text-gray-500 uppercase text-xs tracking-widest">Total {search ? 'filtrado' : 'adeudado'}</p>
         <p className="text-2xl font-black text-blue-600">{formatCOP(totalGeneral)}</p>
       </div>
 
       {cartera.length === 0 ? (
         <div className="bg-white p-12 rounded-2xl border border-dashed border-gray-200 text-center">
           <p className="text-gray-400 font-medium">Ningún cliente tiene ventas pendientes o parciales. Cartera limpia.</p>
+        </div>
+      ) : carteraFiltrada.length === 0 ? (
+        <div className="bg-white p-12 rounded-2xl border border-dashed border-gray-200 text-center">
+          <p className="text-gray-400 font-medium">Ningún cliente coincide con "{search}".</p>
         </div>
       ) : (
         <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
@@ -74,7 +109,7 @@ function CarteraPage() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-50 text-sm">
-                {cartera.map((c) => {
+                {carteraFiltrada.map((c) => {
                   const antiguedad = antiguedadMaxima(c);
                   const urgente = antiguedad >= DIAS_URGENTE;
                   const expandido = expandedId === c.clienteId;
@@ -85,7 +120,12 @@ function CarteraPage() {
                         className="hover:bg-blue-50/30 transition-colors cursor-pointer"
                       >
                         <td className="px-6 py-4">
-                          <p className="font-bold text-gray-800">{c.nombre}</p>
+                          <button
+                            onClick={(e) => { e.stopPropagation(); navigate(`/clientes/${c.clienteId}`); }}
+                            className="font-bold text-gray-800 hover:text-blue-600 inline-flex items-center gap-1.5 text-left"
+                          >
+                            {c.nombre} <FaExternalLinkAlt size={9} className="text-gray-300" />
+                          </button>
                           <p className="text-[10px] text-gray-400">{c.telefono || 'Sin celular'}</p>
                         </td>
                         <td className="px-6 py-4 text-center font-bold text-gray-600">

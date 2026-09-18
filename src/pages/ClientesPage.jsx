@@ -1,8 +1,10 @@
 import React, { useState, useEffect, useCallback } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { getClients, createClient, updateClient, deleteClient, setClientActivo } from '../services/apiService';
-import { FaEdit, FaTrashAlt, FaChevronLeft, FaChevronRight, FaBan, FaCheckCircle } from 'react-icons/fa';
+import { FaEdit, FaTrashAlt, FaChevronLeft, FaChevronRight, FaBan, FaCheckCircle, FaSearch } from 'react-icons/fa';
 
 const ClientesPage = () => {
+  const navigate = useNavigate();
   // 1. Definición de todos los estados (Esto corrige los errores de 'no-undef')
   const [clientes, setClientes] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -10,6 +12,7 @@ const ClientesPage = () => {
   const [message, setMessage] = useState('');
   const [editingClient, setEditingClient] = useState(null);
   const [formData, setFormData] = useState({ nombre: '', email: '', telefono: '', direccion: '' });
+  const [search, setSearch] = useState('');
 
   // Paginación
   const [currentPage, setCurrentPage] = useState(1);
@@ -20,7 +23,7 @@ const ClientesPage = () => {
     try {
       setLoading(true);
       setError(null);
-      const data = await getClients(currentPage, 10);
+      const data = await getClients(currentPage, 10, search);
       if (data && data.clients) {
         setClientes(data.clients);
         setTotalPages(data.totalPages || 1);
@@ -35,12 +38,20 @@ const ClientesPage = () => {
     } finally {
       setLoading(false);
     }
-  }, [currentPage]);
+  }, [currentPage, search]);
 
-  // 2. Cargar clientes al iniciar y cuando cambia de página
+  // 2. Cargar clientes al iniciar, al cambiar de página, y (con un pequeño
+  //    debounce) al buscar.
   useEffect(() => {
-    fetchClients();
-  }, [fetchClients]);
+    const timer = setTimeout(() => fetchClients(), search ? 350 : 0);
+    return () => clearTimeout(timer);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currentPage, search]);
+
+  const handleSearchChange = (e) => {
+    setSearch(e.target.value);
+    setCurrentPage(1); // cualquier búsqueda nueva vuelve a la página 1
+  };
 
   // 3. Auto-ocultar mensajes de éxito (Mejora de UX)
   useEffect(() => {
@@ -145,11 +156,23 @@ const ClientesPage = () => {
 
       {/* Tabla / Lista */}
       <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
-        <div className="p-6 border-b border-gray-50 flex justify-between items-center">
+        <div className="p-6 border-b border-gray-50 flex flex-col md:flex-row md:items-center justify-between gap-3">
           <h3 className="font-bold text-gray-700">Lista de Clientes</h3>
-          <span className="text-sm text-gray-400">{totalCount} registrados</span>
+          <div className="flex items-center gap-3">
+            <div className="relative">
+              <FaSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-300" size={12} />
+              <input
+                type="text"
+                value={search}
+                onChange={handleSearchChange}
+                placeholder="Buscar por nombre o celular..."
+                className="pl-9 pr-4 py-2 bg-gray-50 border border-gray-200 rounded-xl text-sm outline-none focus:ring-2 focus:ring-emerald-500 w-64"
+              />
+            </div>
+            <span className="text-sm text-gray-400 whitespace-nowrap">{totalCount} registrados</span>
+          </div>
         </div>
-        
+
         <div className="overflow-x-auto">
           <table className="w-full">
             <thead className="bg-gray-50">
@@ -162,7 +185,11 @@ const ClientesPage = () => {
             </thead>
             <tbody className="divide-y divide-gray-50">
               {clientes.map(client => (
-                <tr key={client.id} className={`hover:bg-gray-50/50 transition-colors ${!client.activo ? 'opacity-60' : ''}`}>
+                <tr
+                  key={client.id}
+                  onClick={() => navigate(`/clientes/${client.id}`)}
+                  className={`hover:bg-blue-50/30 transition-colors cursor-pointer ${!client.activo ? 'opacity-60' : ''}`}
+                >
                   <td className="px-6 py-4 font-medium text-gray-800">{client.nombre}</td>
                   <td className="px-6 py-4 text-sm text-gray-500">{client.email || 'Sin correo'}<br/>{client.telefono}</td>
                   <td className="px-6 py-4 text-center">
@@ -178,15 +205,15 @@ const ClientesPage = () => {
                   </td>
                   <td className="px-6 py-4">
                     <div className="flex justify-center gap-2">
-                      <button onClick={() => handleEdit(client)} className="p-2 text-blue-500 hover:bg-blue-50 rounded-lg" title="Editar"><FaEdit /></button>
+                      <button onClick={(e) => { e.stopPropagation(); handleEdit(client); }} className="p-2 text-blue-500 hover:bg-blue-50 rounded-lg" title="Editar"><FaEdit /></button>
                       <button
-                        onClick={() => handleToggleActivo(client)}
+                        onClick={(e) => { e.stopPropagation(); handleToggleActivo(client); }}
                         title={client.activo ? 'Desactivar' : 'Reactivar'}
                         className={`p-2 rounded-lg ${client.activo ? 'text-amber-500 hover:bg-amber-50' : 'text-emerald-600 hover:bg-emerald-50'}`}
                       >
                         {client.activo ? <FaBan /> : <FaCheckCircle />}
                       </button>
-                      <button onClick={() => handleDelete(client.id)} className="p-2 text-red-500 hover:bg-red-50 rounded-lg" title="Eliminar"><FaTrashAlt /></button>
+                      <button onClick={(e) => { e.stopPropagation(); handleDelete(client.id); }} className="p-2 text-red-500 hover:bg-red-50 rounded-lg" title="Eliminar"><FaTrashAlt /></button>
                     </div>
                   </td>
                 </tr>

@@ -1,5 +1,13 @@
 # Changelog
 
+## Sin publicar
+
+### Agregado — v1.3, Parte 1: buscador y detalle del cliente
+
+- Buscador por nombre o celular en las pantallas de Cartera y de Clientes (tolerante a mayúsculas, tildes y al formato del número).
+- Página nueva `/clientes/:id`: datos del cliente, saldo total adeudado, total histórico comprado, sus ventas pendientes o parciales y su historial de ventas pagadas. Se llega haciendo clic en un cliente desde Clientes o Cartera.
+- Desde esa página se abre el detalle de cualquier venta (y se puede registrar un abono) sin ir al historial de ventas.
+
 ## 1.2.0
 
 ### En palabras simples (para contarle a los clientes)
