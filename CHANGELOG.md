@@ -1,6 +1,12 @@
 # Changelog
 
-## Sin publicar
+## 1.1.0
+
+### En palabras simples (para contarle a los clientes)
+
+- **Fiar ya no es a ciegas.** Toda venta pendiente o parcial ahora te pide un cliente — lo creas ahí mismo con nombre y celular si no lo tenías, sin salir de la venta, y si el celular ya estaba registrado se reutiliza el cliente en vez de duplicarlo.
+- **Cartera de clientes** nueva (menú → Cartera): cuánto te debe cada cliente, cuántas ventas pendientes tiene y hace cuántos días.
+- **Clientes con estado**: puedes desactivar un cliente sin borrar su historial, y ya no se puede eliminar por accidente a uno que tiene ventas registradas.
 
 ### Agregado
 
