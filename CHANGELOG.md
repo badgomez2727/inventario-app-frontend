@@ -1,6 +1,12 @@
 # Changelog
 
-## Sin publicar
+## 1.0.1
+
+### En palabras simples (para contarle a los clientes)
+
+- **Los correos ya llegan de verdad**, ahora salen desde nuestro propio dominio verificado.
+- **Gestión de tu equipo completa**: edita nombre/correo/rol de cualquier integrante y desactiva/reactiva su acceso sin borrarlo.
+- El mensaje de "Olvidé mi contraseña" ahora te da instrucciones más claras (revisar spam, confirmar el correo correcto).
 
 ### Agregado
 
