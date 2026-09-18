@@ -585,3 +585,18 @@ export const getCatalogoPublico = async (slug) => {
 
   return response.json();
 };
+
+export const crearPedidoPublico = async (slug, pedidoData) => {
+  const response = await fetchWithColdStartNotice(`${BASE_URL}/public/catalogo/${slug}/pedido`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(pedidoData),
+  });
+
+  if (!response.ok) {
+    const errorData = await response.json().catch(() => ({}));
+    throw new Error(errorData.error || 'No se pudo enviar el pedido.');
+  }
+
+  return response.json();
+};

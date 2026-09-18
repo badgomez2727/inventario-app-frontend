@@ -16,6 +16,11 @@
 - Página pública `/catalogo/:slug` (sin login, sin el panel de administración alrededor — funciona igual si hay una sesión iniciada o no): portada, nombre, descripción, y la cuadrícula de productos publicados con foto, precio y "Agotado" cuando no hay stock. Pie de página "Hecho con Vendita" enlazando al inicio.
 - Metadatos Open Graph (para que el link se vea bien al compartirlo por WhatsApp/redes): como Create React App no puede generarlos por ruta (es 100% del lado del cliente y los crawlers no ejecutan JS), se agregó una función serverless de Vercel (`api/og-catalogo.js`) que le sirve un HTML mínimo con `og:title`/`og:description`/`og:image` a los bots conocidos — un rewrite en `vercel.json` (nuevo) solo la activa cuando el User-Agent es de un crawler (WhatsApp, Facebook, Twitter, etc.); los visitantes reales siguen viendo la app normal.
 
+### Agregado — v1.2, Bloque 1 parte 4: carrito y pedido en el catálogo público
+
+- Carrito en `PublicCatalogPage`: botón "Agregar" por producto disponible, contador +/- una vez agregado, botón flotante con el total que abre el panel del pedido.
+- Checkout: nombre, celular, tipo de entrega (Recoger/Domicilio — Domicilio deshabilitado si la tienda no lo ofrece) y dirección cuando aplica. Al enviar, se crea el pedido y el navegador redirige directo a WhatsApp con el mensaje ya armado por el backend.
+
 ### En palabras simples (para contarle a los clientes)
 
 - **Fiar ya no es a ciegas.** Toda venta pendiente o parcial ahora te pide un cliente — lo creas ahí mismo con nombre y celular si no lo tenías, sin salir de la venta, y si el celular ya estaba registrado se reutiliza el cliente en vez de duplicarlo.
