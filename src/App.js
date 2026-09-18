@@ -21,6 +21,7 @@ import InventoryReportPage from './pages/InventoryReportPage';
 import DashboardPage from './pages/DashboardPage';
 import ClientesPage from './pages/ClientesPage';
 import CarteraPage from './pages/CarteraPage';
+import CatalogoConfigPage from './pages/CatalogoConfigPage';
 import ProveedoresPage from './pages/ProveedoresPage';
 import UserManagementPage from './pages/UserManagementPage';
 import AdminCompaniesPage from './pages/AdminCompaniesPage';
@@ -129,6 +130,7 @@ function AppContent() {
           <Route path="/proveedores" element={<PrivateRoute><ProveedoresPage /></PrivateRoute>} />
           <Route path="/dashboard" element={<PrivateRoute><DashboardPage /></PrivateRoute>} />
           <Route path="/gestion-usuarios" element={<PrivateRoute requiredRole="admin_compania"><UserManagementPage /></PrivateRoute>} />
+          <Route path="/catalogo-config" element={<PrivateRoute requiredRole="admin_compania"><CatalogoConfigPage /></PrivateRoute>} />
           <Route path="/admin/companias" element={<PrivateRoute requiredRole="super_admin_sistema"><AdminCompaniesPage /></PrivateRoute>} />
           <Route path="/apoyar" element={<PrivateRoute><SupportPage /></PrivateRoute>} />
           <Route path="/terminos" element={<PrivateRoute><TermsPage /></PrivateRoute>} />

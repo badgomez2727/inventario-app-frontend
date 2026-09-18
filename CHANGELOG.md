@@ -7,6 +7,10 @@
 - Editor de producto: subir fotos (varias, con soporte de cámara del celular vía `accept="image/*" capture="environment"`), reordenarlas (la primera queda de portada) y eliminarlas — solo disponible al editar un producto ya guardado.
 - Checkbox "Mostrar este producto en el catálogo público" en el editor.
 
+### Agregado — v1.2, Bloque 1 parte 2: configuración de empresa para el catálogo
+
+- Página nueva `Catálogo Público` (`/catalogo-config`, solo admin, link en el menú): identificador del catálogo (slug, con la URL pública en vivo), descripción, foto de portada, números de WhatsApp de ventas (agregar/quitar), si ofrece domicilio y su valor por defecto, y el botón para activar/desactivar la vitrina.
+
 ## 1.1.0
 
 ### En palabras simples (para contarle a los clientes)

@@ -414,6 +414,43 @@ export const deleteSupplier = async (supplierId) => {
   });
 };
 
+// --- Configuración del catálogo público (mi propia compañía) ---
+export const getMiCompania = async () => {
+  return authenticatedFetch('mi-compania');
+};
+
+export const updateMiCompania = async (data) => {
+  return authenticatedFetch('mi-compania', {
+    method: 'PATCH',
+    body: JSON.stringify(data),
+  });
+};
+
+// Igual que uploadProductImage, pero para la foto de portada del catálogo
+// (no queda asociada a un producto, así que no hay un "registro" aparte —
+// la URL resultante se guarda directo con updateMiCompania).
+export const uploadPortadaCatalogo = async (file) => {
+  const { signature, timestamp, apiKey, cloudName, folder } = await authenticatedFetch('mi-compania/portada/firma', { method: 'POST' });
+
+  const form = new FormData();
+  form.append('file', file);
+  form.append('api_key', apiKey);
+  form.append('timestamp', timestamp);
+  form.append('signature', signature);
+  form.append('folder', folder);
+
+  const uploadRes = await fetch(`https://api.cloudinary.com/v1_1/${cloudName}/image/upload`, {
+    method: 'POST',
+    body: form,
+  });
+  if (!uploadRes.ok) {
+    const detalle = await uploadRes.json().catch(() => null);
+    throw new Error(detalle?.error?.message || 'No se pudo subir la imagen a Cloudinary.');
+  }
+  const subida = await uploadRes.json();
+  return subida.secure_url;
+};
+
 // --- Funciones de Reportes (ahora aceptan fechas opcionales) ---
 export const getGeneralStats = async () => {
   return authenticatedFetch('reports/general-stats');
