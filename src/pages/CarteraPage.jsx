@@ -1,9 +1,9 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { getCartera } from '../services/apiService';
+import { getCartera, getCarteraExport } from '../services/apiService';
 import { formatCOP } from '../utils/formatters';
 import { normalizeText, onlyDigits } from '../utils/normalize';
-import { FaWallet, FaExclamationTriangle, FaChevronDown, FaChevronUp, FaSearch, FaExternalLinkAlt } from 'react-icons/fa';
+import { FaWallet, FaExclamationTriangle, FaChevronDown, FaChevronUp, FaSearch, FaExternalLinkAlt, FaFileCsv } from 'react-icons/fa';
 
 // A partir de qué tan vieja es una deuda la resaltamos como urgente.
 const DIAS_URGENTE = 30;
@@ -15,6 +15,7 @@ function CarteraPage() {
   const [error, setError] = useState(null);
   const [expandedId, setExpandedId] = useState(null);
   const [search, setSearch] = useState('');
+  const [exporting, setExporting] = useState(false);
 
   useEffect(() => {
     const fetchCartera = async () => {
@@ -46,6 +47,25 @@ function CarteraPage() {
     });
   }, [cartera, search]);
 
+  const handleExportCsv = async () => {
+    setExporting(true);
+    try {
+      const blob = await getCarteraExport(search);
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'cartera.csv';
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      window.URL.revokeObjectURL(url);
+    } catch (err) {
+      setError(err.message || 'No se pudo exportar la cartera.');
+    } finally {
+      setExporting(false);
+    }
+  };
+
   const totalGeneral = carteraFiltrada.reduce((sum, c) => sum + c.totalAdeudado, 0);
   const antiguedadMaxima = (cliente) =>
     cliente.ventasPendientes.reduce((max, v) => Math.max(max, v.diasAntiguedad), 0);
@@ -70,15 +90,24 @@ function CarteraPage() {
       </div>
 
       {cartera.length > 0 && (
-        <div className="relative max-w-sm">
-          <FaSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-300" size={12} />
-          <input
-            type="text"
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            placeholder="Buscar por nombre o celular..."
-            className="w-full pl-9 pr-4 py-2.5 bg-white border border-gray-200 rounded-xl text-sm outline-none focus:ring-2 focus:ring-blue-500 shadow-sm"
-          />
+        <div className="flex flex-col sm:flex-row sm:items-center gap-3">
+          <div className="relative max-w-sm flex-1">
+            <FaSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-300" size={12} />
+            <input
+              type="text"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder="Buscar por nombre o celular..."
+              className="w-full pl-9 pr-4 py-2.5 bg-white border border-gray-200 rounded-xl text-sm outline-none focus:ring-2 focus:ring-blue-500 shadow-sm"
+            />
+          </div>
+          <button
+            onClick={handleExportCsv}
+            disabled={exporting}
+            className="flex items-center justify-center gap-2 px-4 py-2.5 bg-white border border-gray-200 hover:border-blue-300 text-gray-600 hover:text-blue-600 text-xs font-black rounded-xl shadow-sm disabled:opacity-50 transition-all active:scale-95 flex-shrink-0"
+          >
+            <FaFileCsv /> {exporting ? 'Exportando...' : 'Exportar CSV'}
+          </button>
         </div>
       )}
 

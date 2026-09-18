@@ -397,6 +397,56 @@ export const getCartera = async () => {
   return authenticatedFetch('clientes/cartera');
 };
 
+// PDF del estado de cuenta de un cliente (igual patrón que getSaleReceiptPdf:
+// no pasa por authenticatedFetch porque la respuesta no es JSON).
+export const getEstadoCuentaPdf = async (clientId) => {
+  const token = localStorage.getItem('token');
+  const headers = {};
+  if (token) headers['Authorization'] = `Bearer ${token}`;
+
+  const response = await fetchWithColdStartNotice(`${BASE_URL}/api/clientes/${clientId}/estado-cuenta/pdf`, { headers });
+
+  if (!response.ok) {
+    if (response.status === 401) {
+      redirectToLoginBySessionExpired();
+      throw new Error('Sesión expirada o no autorizada. Por favor, inicie sesión de nuevo.');
+    }
+    let errorMessage = 'No se pudo generar el estado de cuenta.';
+    try {
+      const errorData = await response.json();
+      errorMessage = errorData.error || errorMessage;
+    } catch (e) {
+      // respuesta sin JSON (ej. error 500 crudo) — se queda con el mensaje genérico
+    }
+    throw new Error(errorMessage);
+  }
+
+  return response.blob();
+};
+
+// Exporta la cartera (todos o filtrados por `search`) a CSV.
+export const getCarteraExport = async (search = '') => {
+  const token = localStorage.getItem('token');
+  const headers = {};
+  if (token) headers['Authorization'] = `Bearer ${token}`;
+
+  const params = new URLSearchParams();
+  if (search) params.set('search', search);
+  const qs = params.toString();
+
+  const response = await fetchWithColdStartNotice(`${BASE_URL}/api/clientes/cartera/export${qs ? `?${qs}` : ''}`, { headers });
+
+  if (!response.ok) {
+    if (response.status === 401) {
+      redirectToLoginBySessionExpired();
+      throw new Error('Sesión expirada o no autorizada. Por favor, inicie sesión de nuevo.');
+    }
+    throw new Error('No se pudo exportar la cartera.');
+  }
+
+  return response.blob();
+};
+
 // --- Pedidos del catálogo público ---
 export const getPedidos = async (estado, page = 1, limit = 20) => {
   const params = new URLSearchParams({ page, limit });

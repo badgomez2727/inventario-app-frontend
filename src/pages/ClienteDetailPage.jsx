@@ -5,10 +5,11 @@
 
 import React, { useState, useEffect, useCallback } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { getEstadoCuentaCliente, getSaleById, getSaleReceiptPdf } from '../services/apiService';
+import { getEstadoCuentaCliente, getSaleById, getSaleReceiptPdf, getEstadoCuentaPdf } from '../services/apiService';
 import { formatCOP } from '../utils/formatters';
+import { onlyDigits } from '../utils/normalize';
 import SaleDetailModal from '../components/SaleDetailModal';
-import { FaArrowLeft, FaPhone, FaMapMarkerAlt, FaWallet, FaHistory, FaCheckCircle, FaClock, FaHourglassHalf, FaBan } from 'react-icons/fa';
+import { FaArrowLeft, FaPhone, FaMapMarkerAlt, FaWallet, FaHistory, FaCheckCircle, FaClock, FaHourglassHalf, FaBan, FaFilePdf, FaWhatsapp } from 'react-icons/fa';
 
 const STATUS_STYLES = {
   PAGADA: { cls: 'bg-green-100 text-green-700', icon: <FaCheckCircle /> },
@@ -33,6 +34,7 @@ const ClienteDetailPage = () => {
   const [selectedSale, setSelectedSale] = useState(null);
   const [loadingSale, setLoadingSale] = useState(false);
   const [message, setMessage] = useState('');
+  const [downloadingEstado, setDownloadingEstado] = useState(false);
 
   const fetchEstadoCuenta = useCallback(async ({ silent = false } = {}) => {
     try {
@@ -75,6 +77,50 @@ const ClienteDetailPage = () => {
     } catch (err) {
       setMessage('❌ Error al descargar el recibo.');
     }
+  };
+
+  const handleDownloadEstadoCuenta = async () => {
+    setDownloadingEstado(true);
+    try {
+      const pdfBlob = await getEstadoCuentaPdf(id);
+      const url = window.URL.createObjectURL(pdfBlob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `estado_cuenta_${cliente.nombre.trim().replace(/\s+/g, '_')}.pdf`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      window.URL.revokeObjectURL(url);
+    } catch (err) {
+      setMessage(err.message || 'No se pudo generar el estado de cuenta.');
+    } finally {
+      setDownloadingEstado(false);
+    }
+  };
+
+  // El mensaje se abre en WhatsApp (wa.me) ya escrito pero sin enviar — el
+  // vendedor lo revisa y lo ajusta ahí antes de mandarlo, no hace falta un
+  // editor propio en el panel.
+  const buildWhatsappMessage = () => {
+    const lineas = ventasPendientes.map(
+      (v) => `• Venta #${v.saleId} (${new Date(v.fecha).toLocaleDateString('es-CO')}): saldo ${formatCOP(v.saldo)}`
+    );
+    return [
+      `Hola ${cliente.nombre}, ¿cómo estás? Te escribimos para recordarte amablemente tu saldo pendiente con nosotros.`,
+      '',
+      `Saldo total: ${formatCOP(saldoTotal)}`,
+      '',
+      ...lineas,
+      '',
+      'Cuéntanos cuándo te queda bien para coordinar el pago. ¡Gracias!',
+    ].join('\n');
+  };
+
+  const handleEnviarWhatsapp = () => {
+    if (!cliente.telefono) return;
+    const digits = onlyDigits(cliente.telefono);
+    const texto = encodeURIComponent(buildWhatsappMessage());
+    window.open(`https://wa.me/${digits}?text=${texto}`, '_blank', 'noopener,noreferrer');
   };
 
   if (loading) return <div className="p-10 text-center text-blue-600 animate-pulse font-bold">Cargando estado de cuenta...</div>;
@@ -123,6 +169,27 @@ const ClienteDetailPage = () => {
             <p className="text-2xl font-black text-blue-600">{formatCOP(totalHistoricoComprado)}</p>
           </div>
         </div>
+
+        <div className="flex flex-wrap gap-2 mt-4">
+          <button
+            onClick={handleDownloadEstadoCuenta}
+            disabled={downloadingEstado}
+            className="flex items-center gap-2 px-4 py-2.5 bg-blue-600 hover:bg-blue-700 text-white text-xs font-black rounded-xl disabled:opacity-50 transition-all active:scale-95"
+          >
+            <FaFilePdf /> {downloadingEstado ? 'Generando...' : 'Estado de cuenta'}
+          </button>
+          <button
+            onClick={handleEnviarWhatsapp}
+            disabled={!cliente.telefono}
+            title={!cliente.telefono ? 'Este cliente no tiene celular registrado.' : 'Abre WhatsApp con el mensaje listo para revisar y enviar.'}
+            className="flex items-center gap-2 px-4 py-2.5 bg-emerald-500 hover:bg-emerald-600 text-white text-xs font-black rounded-xl disabled:opacity-40 disabled:cursor-not-allowed transition-all active:scale-95"
+          >
+            <FaWhatsapp /> Enviar por WhatsApp
+          </button>
+        </div>
+        {!cliente.telefono && (
+          <p className="text-[10px] text-gray-400 mt-2">Agrega un celular a este cliente para poder enviarle el estado de cuenta por WhatsApp.</p>
+        )}
       </div>
 
       {/* Ventas pendientes */}

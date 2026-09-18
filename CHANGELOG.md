@@ -8,6 +8,12 @@
 - Página nueva `/clientes/:id`: datos del cliente, saldo total adeudado, total histórico comprado, sus ventas pendientes o parciales y su historial de ventas pagadas. Se llega haciendo clic en un cliente desde Clientes o Cartera.
 - Desde esa página se abre el detalle de cualquier venta (y se puede registrar un abono) sin ir al historial de ventas.
 
+### Agregado — v1.3, Parte 2: exportar y compartir el estado de cuenta
+
+- Botón "Estado de cuenta" en el detalle del cliente: descarga un PDF con los datos del negocio, del cliente, la fecha de emisión, la tabla de ventas pendientes/parciales y el saldo total.
+- Botón "Enviar por WhatsApp" en el detalle del cliente: abre WhatsApp con un mensaje corto y respetuoso (saludo, saldo total, resumen de las ventas pendientes y una línea para coordinar el pago) ya escrito pero sin enviar, para que lo revises antes. Se deshabilita, con una explicación, si el cliente no tiene celular registrado.
+- Botón "Exportar CSV" en Cartera: descarga todos los clientes con saldo (o solo los que coinciden con el buscador, si hay texto escrito) con su celular, saldo, cantidad de ventas pendientes y la antigüedad de la deuda más vieja.
+
 ## 1.2.0
 
 ### En palabras simples (para contarle a los clientes)
