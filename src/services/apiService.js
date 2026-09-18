@@ -92,6 +92,13 @@ const authenticatedFetch = async (endpoint, options = {}) => {
     throw new Error(errorData.error || 'Error desconocido en la respuesta del servidor.');
   }
 
+  // 204 No Content no trae body — response.json() revienta con "Unexpected
+  // end of JSON input" si se llama igual (ej. DELETE /productos/:id, que ya
+  // respondía 204 desde antes de esto).
+  if (response.status === 204) {
+    return null;
+  }
+
   // Si todo es OK, devuelve el JSON
   return response.json();
 };
@@ -151,6 +158,57 @@ export const updateProduct = async (productId, productData) => {
 export const deleteProduct = async (id) => {
   return authenticatedFetch(`productos/${id}`, {
     method: 'DELETE',
+  });
+};
+
+// --- Fotos de producto (Cloudinary) ---
+// La subida es en dos pasos: 1) el backend firma (nunca ve el binario),
+// 2) el navegador sube el archivo directo a Cloudinary con esa firma, y
+// 3) registramos la URL resultante en nuestra base. uploadProductImage hace
+// los tres pasos de una — es lo único que necesita llamar el componente.
+
+const getProductImageUploadSignature = async (productId) => {
+  return authenticatedFetch(`productos/${productId}/imagenes/firma`, { method: 'POST' });
+};
+
+export const addProductImage = async (productId, { url, publicId }) => {
+  return authenticatedFetch(`productos/${productId}/imagenes`, {
+    method: 'POST',
+    body: JSON.stringify({ url, publicId }),
+  });
+};
+
+export const uploadProductImage = async (productId, file) => {
+  const { signature, timestamp, apiKey, cloudName, folder } = await getProductImageUploadSignature(productId);
+
+  const form = new FormData();
+  form.append('file', file);
+  form.append('api_key', apiKey);
+  form.append('timestamp', timestamp);
+  form.append('signature', signature);
+  form.append('folder', folder);
+
+  const uploadRes = await fetch(`https://api.cloudinary.com/v1_1/${cloudName}/image/upload`, {
+    method: 'POST',
+    body: form,
+  });
+  if (!uploadRes.ok) {
+    const detalle = await uploadRes.json().catch(() => null);
+    throw new Error(detalle?.error?.message || 'No se pudo subir la imagen a Cloudinary.');
+  }
+  const subida = await uploadRes.json();
+
+  return addProductImage(productId, { url: subida.secure_url, publicId: subida.public_id });
+};
+
+export const deleteProductImage = async (productId, imageId) => {
+  return authenticatedFetch(`productos/${productId}/imagenes/${imageId}`, { method: 'DELETE' });
+};
+
+export const reorderProductImages = async (productId, ids) => {
+  return authenticatedFetch(`productos/${productId}/imagenes/orden`, {
+    method: 'PATCH',
+    body: JSON.stringify({ ids }),
   });
 };
 

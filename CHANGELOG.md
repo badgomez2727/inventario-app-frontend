@@ -1,5 +1,12 @@
 # Changelog
 
+## Sin publicar
+
+### Agregado — v1.2 (catálogo público), Bloque 1 parte 1: fotos de producto
+
+- Editor de producto: subir fotos (varias, con soporte de cámara del celular vía `accept="image/*" capture="environment"`), reordenarlas (la primera queda de portada) y eliminarlas — solo disponible al editar un producto ya guardado.
+- Checkbox "Mostrar este producto en el catálogo público" en el editor.
+
 ## 1.1.0
 
 ### En palabras simples (para contarle a los clientes)

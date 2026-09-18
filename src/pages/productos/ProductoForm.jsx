@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { createProduct, updateProduct, getSuppliers } from "../../services/apiService";
-import { FaSave, FaEdit, FaBarcode, FaTag, FaBox } from "react-icons/fa";
+import ProductImageManager from "../../components/ProductImageManager";
+import { FaSave, FaEdit, FaBarcode, FaTag, FaBox, FaStore } from "react-icons/fa";
 
 // Fuera del componente para que tenga una referencia estable entre renders
 // (si viviera dentro, cada render crearía un objeto nuevo y no podríamos
@@ -16,6 +17,7 @@ const initialState = {
   categoria: "",
   imagenUrl: "",
   supplierId: "",
+  visibleEnCatalogo: false,
 };
 
 const ProductoForm = ({ onProductCreated, productToEdit, onEditComplete }) => {
@@ -58,8 +60,8 @@ const ProductoForm = ({ onProductCreated, productToEdit, onEditComplete }) => {
   }, [productToEdit]); // eslint-disable-line react-hooks/exhaustive-deps -- initialState es un objeto constante fuera del componente, no cambia entre renders
 
   const handleChange = (e) => {
-    const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
+    const { name, value, type, checked } = e.target;
+    setFormData((prev) => ({ ...prev, [name]: type === "checkbox" ? checked : value }));
   };
 
   const handleSubmit = async (e) => {
@@ -73,6 +75,7 @@ const ProductoForm = ({ onProductCreated, productToEdit, onEditComplete }) => {
       precioVenta: Number(formData.precioVenta),
       stockActual: Number(formData.stockActual),
       supplierId: formData.supplierId ? Number(formData.supplierId) : null,
+      visibleEnCatalogo: Boolean(formData.visibleEnCatalogo),
     };
 
     try {
@@ -171,6 +174,34 @@ const ProductoForm = ({ onProductCreated, productToEdit, onEditComplete }) => {
             </select>
           </div>
         </div>
+
+        {/* Sección 4: Catálogo público */}
+        <section>
+          <div className="flex items-center gap-2 mb-4 text-purple-700 border-b pb-2">
+            <FaStore /> <h3 className="font-bold uppercase tracking-wider text-sm">Catálogo público</h3>
+          </div>
+          <label className="flex items-center gap-3 bg-white border border-gray-200 rounded-xl p-4 cursor-pointer">
+            <input
+              type="checkbox"
+              name="visibleEnCatalogo"
+              checked={formData.visibleEnCatalogo}
+              onChange={handleChange}
+              className="w-5 h-5 accent-purple-600"
+            />
+            <div>
+              <p className="font-bold text-gray-700 text-sm">Mostrar este producto en el catálogo público</p>
+              <p className="text-xs text-gray-400">Los clientes podrán verlo y pedirlo desde la vitrina en línea de tu negocio.</p>
+            </div>
+          </label>
+
+          {productToEdit ? (
+            <div className="mt-6">
+              <ProductImageManager productId={productToEdit.id} initialImages={productToEdit.images || []} />
+            </div>
+          ) : (
+            <p className="text-xs text-gray-400 mt-3 italic">Guarda el producto primero para poder agregarle fotos.</p>
+          )}
+        </section>
 
         {/* Botón de Acción */}
         <div className="pt-6">
