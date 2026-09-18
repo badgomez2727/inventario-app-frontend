@@ -1,27 +1,36 @@
 # Changelog
 
-## Sin publicar
+## 1.2.0
 
-### Agregado — v1.2 (catálogo público), Bloque 1 parte 1: fotos de producto
+### En palabras simples (para contarle a los clientes)
+
+- **Catálogo público, sin que tu cliente necesite instalar nada ni crear cuenta.** Cada negocio tiene su propia vitrina en línea (`vendita.tyndallcore.com/catalogo/tu-tienda`) con fotos, precios y disponibilidad — la activas y la configuras tú mismo desde "Catálogo Público" en el menú.
+- **Fotos reales de tus productos**, subidas desde el celular (con cámara o galería), varias por producto, reordenables.
+- **Tus clientes arman su pedido solos**: eligen productos, dejan su nombre y celular, dicen si recogen o piden domicilio, y al final se abre WhatsApp con el pedido ya escrito, listo para mandarte.
+- **Tú decides qué se publica**: cada producto tiene un interruptor de "mostrar en catálogo" — nada se hace público solo porque esté en tu inventario.
+- **Los pedidos no son ventas hasta que tú los confirmes.** Te llegan a una bandeja nueva ("Pedidos Catálogo") donde los revisas y decides: confirmar o rechazar.
+- Al compartir el link de tu catálogo por WhatsApp, se ve una vista previa con el nombre, la descripción y la foto de tu negocio.
+
+### Agregado — Bloque 1 parte 1: fotos de producto
 
 - Editor de producto: subir fotos (varias, con soporte de cámara del celular vía `accept="image/*" capture="environment"`), reordenarlas (la primera queda de portada) y eliminarlas — solo disponible al editar un producto ya guardado.
 - Checkbox "Mostrar este producto en el catálogo público" en el editor.
 
-### Agregado — v1.2, Bloque 1 parte 2: configuración de empresa para el catálogo
+### Agregado — Bloque 1 parte 2: configuración de empresa para el catálogo
 
 - Página nueva `Catálogo Público` (`/catalogo-config`, solo admin, link en el menú): identificador del catálogo (slug, con la URL pública en vivo), descripción, foto de portada, números de WhatsApp de ventas (agregar/quitar), si ofrece domicilio y su valor por defecto, y el botón para activar/desactivar la vitrina.
 
-### Agregado — v1.2, Bloque 1 parte 3: catálogo público (lectura) + Open Graph
+### Agregado — Bloque 1 parte 3: catálogo público (lectura) + Open Graph
 
 - Página pública `/catalogo/:slug` (sin login, sin el panel de administración alrededor — funciona igual si hay una sesión iniciada o no): portada, nombre, descripción, y la cuadrícula de productos publicados con foto, precio y "Agotado" cuando no hay stock. Pie de página "Hecho con Vendita" enlazando al inicio.
 - Metadatos Open Graph (para que el link se vea bien al compartirlo por WhatsApp/redes): como Create React App no puede generarlos por ruta (es 100% del lado del cliente y los crawlers no ejecutan JS), se agregó una función serverless de Vercel (`api/og-catalogo.js`) que le sirve un HTML mínimo con `og:title`/`og:description`/`og:image` a los bots conocidos — un rewrite en `vercel.json` (nuevo) solo la activa cuando el User-Agent es de un crawler (WhatsApp, Facebook, Twitter, etc.); los visitantes reales siguen viendo la app normal.
 
-### Agregado — v1.2, Bloque 1 parte 4: carrito y pedido en el catálogo público
+### Agregado — Bloque 1 parte 4: carrito y pedido en el catálogo público
 
 - Carrito en `PublicCatalogPage`: botón "Agregar" por producto disponible, contador +/- una vez agregado, botón flotante con el total que abre el panel del pedido.
 - Checkout: nombre, celular, tipo de entrega (Recoger/Domicilio — Domicilio deshabilitado si la tienda no lo ofrece) y dirección cuando aplica. Al enviar, se crea el pedido y el navegador redirige directo a WhatsApp con el mensaje ya armado por el backend.
 
-### Agregado — v1.2, Bloque 1 parte 5: panel de pedidos
+### Agregado — Bloque 1 parte 5: panel de pedidos
 
 - Página nueva `Pedidos Catálogo` (`/pedidos`, link en el menú, no requiere admin): pestañas Pendientes/Confirmados/Rechazados, y por pedido el cliente, tipo de entrega, ítems y total. "Confirmar" (crea la venta real) o "Rechazar" (con motivo obligatorio) para los pendientes.
 
