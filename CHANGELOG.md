@@ -21,6 +21,12 @@
 - Carrito en `PublicCatalogPage`: botón "Agregar" por producto disponible, contador +/- una vez agregado, botón flotante con el total que abre el panel del pedido.
 - Checkout: nombre, celular, tipo de entrega (Recoger/Domicilio — Domicilio deshabilitado si la tienda no lo ofrece) y dirección cuando aplica. Al enviar, se crea el pedido y el navegador redirige directo a WhatsApp con el mensaje ya armado por el backend.
 
+### Agregado — v1.2, Bloque 1 parte 5: panel de pedidos
+
+- Página nueva `Pedidos Catálogo` (`/pedidos`, link en el menú, no requiere admin): pestañas Pendientes/Confirmados/Rechazados, y por pedido el cliente, tipo de entrega, ítems y total. "Confirmar" (crea la venta real) o "Rechazar" (con motivo obligatorio) para los pendientes.
+
+## 1.1.0
+
 ### En palabras simples (para contarle a los clientes)
 
 - **Fiar ya no es a ciegas.** Toda venta pendiente o parcial ahora te pide un cliente — lo creas ahí mismo con nombre y celular si no lo tenías, sin salir de la venta, y si el celular ya estaba registrado se reutiliza el cliente en vez de duplicarlo.

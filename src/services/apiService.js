@@ -387,6 +387,24 @@ export const getCartera = async () => {
   return authenticatedFetch('clientes/cartera');
 };
 
+// --- Pedidos del catálogo público ---
+export const getPedidos = async (estado, page = 1, limit = 20) => {
+  const params = new URLSearchParams({ page, limit });
+  if (estado) params.set('estado', estado);
+  return authenticatedFetch(`pedidos?${params.toString()}`);
+};
+
+export const confirmarPedido = async (pedidoId) => {
+  return authenticatedFetch(`pedidos/${pedidoId}/confirmar`, { method: 'PATCH' });
+};
+
+export const rechazarPedido = async (pedidoId, motivo) => {
+  return authenticatedFetch(`pedidos/${pedidoId}/rechazar`, {
+    method: 'PATCH',
+    body: JSON.stringify({ motivo }),
+  });
+};
+
 // --- Funciones de Proveedores ---
 export const getSuppliers = async (page = 1, limit = 10) => {
   const p = page || 1;
