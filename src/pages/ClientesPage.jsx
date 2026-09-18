@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { getClients, createClient, updateClient, deleteClient } from '../services/apiService';
-import { FaEdit, FaTrashAlt, FaChevronLeft, FaChevronRight } from 'react-icons/fa';
+import { getClients, createClient, updateClient, deleteClient, setClientActivo } from '../services/apiService';
+import { FaEdit, FaTrashAlt, FaChevronLeft, FaChevronRight, FaBan, FaCheckCircle } from 'react-icons/fa';
 
 const ClientesPage = () => {
   // 1. Definición de todos los estados (Esto corrige los errores de 'no-undef')
@@ -89,9 +89,24 @@ const ClientesPage = () => {
     }
   };
 
-  const handleCancelEdit = () => { 
-    setEditingClient(null); 
-    setFormData({ nombre: '', email: '', telefono: '', direccion: '' }); 
+  const handleCancelEdit = () => {
+    setEditingClient(null);
+    setFormData({ nombre: '', email: '', telefono: '', direccion: '' });
+  };
+
+  const handleToggleActivo = async (client) => {
+    const confirmMsg = client.activo
+      ? `¿Desactivar a "${client.nombre}"? Ya no aparecerá como opción para nuevas ventas.`
+      : `¿Reactivar a "${client.nombre}"?`;
+    if (!window.confirm(confirmMsg)) return;
+
+    try {
+      await setClientActivo(client.id, !client.activo);
+      setMessage(`✅ ${client.nombre} fue ${client.activo ? 'desactivado' : 'reactivado'}.`);
+      fetchClients();
+    } catch (err) {
+      setError(err.message || 'No se pudo cambiar el estado del cliente.');
+    }
   };
 
   if (loading) return <div className="p-10 text-center text-emerald-600 font-bold">Cargando clientes...</div>;
@@ -113,7 +128,7 @@ const ClientesPage = () => {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <input type="text" name="nombre" placeholder="Nombre completo" value={formData.nombre} onChange={handleChange} required className="w-full border border-gray-200 rounded-xl px-4 py-2 focus:ring-2 focus:ring-emerald-500 outline-none" />
             <input type="email" name="email" placeholder="Correo electrónico" value={formData.email} onChange={handleChange} className="w-full border border-gray-200 rounded-xl px-4 py-2 focus:ring-2 focus:ring-emerald-500 outline-none" />
-            <input type="text" name="telefono" placeholder="Teléfono" value={formData.telefono} onChange={handleChange} className="w-full border border-gray-200 rounded-xl px-4 py-2 focus:ring-2 focus:ring-emerald-500 outline-none" />
+            <input type="tel" name="telefono" placeholder="Celular (ej. 3001234567)" value={formData.telefono} onChange={handleChange} className="w-full border border-gray-200 rounded-xl px-4 py-2 focus:ring-2 focus:ring-emerald-500 outline-none" />
             <input type="text" name="direccion" placeholder="Dirección" value={formData.direccion} onChange={handleChange} className="w-full border border-gray-200 rounded-xl px-4 py-2 focus:ring-2 focus:ring-emerald-500 outline-none" />
           </div>
 
@@ -141,18 +156,37 @@ const ClientesPage = () => {
               <tr className="text-left text-xs font-bold text-gray-500 uppercase tracking-widest">
                 <th className="px-6 py-4">Nombre</th>
                 <th className="px-6 py-4">Contacto</th>
+                <th className="px-6 py-4 text-center">Estado</th>
                 <th className="px-6 py-4 text-center">Acciones</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-50">
               {clientes.map(client => (
-                <tr key={client.id} className="hover:bg-gray-50/50 transition-colors">
+                <tr key={client.id} className={`hover:bg-gray-50/50 transition-colors ${!client.activo ? 'opacity-60' : ''}`}>
                   <td className="px-6 py-4 font-medium text-gray-800">{client.nombre}</td>
                   <td className="px-6 py-4 text-sm text-gray-500">{client.email || 'Sin correo'}<br/>{client.telefono}</td>
+                  <td className="px-6 py-4 text-center">
+                    {client.activo ? (
+                      <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-black bg-emerald-100 text-emerald-700">
+                        <FaCheckCircle /> Activo
+                      </span>
+                    ) : (
+                      <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-black bg-red-100 text-red-600">
+                        <FaBan /> Inactivo
+                      </span>
+                    )}
+                  </td>
                   <td className="px-6 py-4">
                     <div className="flex justify-center gap-2">
-                      <button onClick={() => handleEdit(client)} className="p-2 text-blue-500 hover:bg-blue-50 rounded-lg"><FaEdit /></button>
-                      <button onClick={() => handleDelete(client.id)} className="p-2 text-red-500 hover:bg-red-50 rounded-lg"><FaTrashAlt /></button>
+                      <button onClick={() => handleEdit(client)} className="p-2 text-blue-500 hover:bg-blue-50 rounded-lg" title="Editar"><FaEdit /></button>
+                      <button
+                        onClick={() => handleToggleActivo(client)}
+                        title={client.activo ? 'Desactivar' : 'Reactivar'}
+                        className={`p-2 rounded-lg ${client.activo ? 'text-amber-500 hover:bg-amber-50' : 'text-emerald-600 hover:bg-emerald-50'}`}
+                      >
+                        {client.activo ? <FaBan /> : <FaCheckCircle />}
+                      </button>
+                      <button onClick={() => handleDelete(client.id)} className="p-2 text-red-500 hover:bg-red-50 rounded-lg" title="Eliminar"><FaTrashAlt /></button>
                     </div>
                   </td>
                 </tr>

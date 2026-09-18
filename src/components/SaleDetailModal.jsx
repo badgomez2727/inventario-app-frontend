@@ -4,9 +4,11 @@
 
 import React, { useEffect, useState } from 'react';
 import { formatCOP } from '../utils/formatters';
-import { getSalePayments, registerSalePayment, voidSalePayment, voidSale } from '../services/apiService';
+import { getSalePayments, registerSalePayment, voidSalePayment, voidSale, assignClienteToSale, getClients } from '../services/apiService';
 import { useAuth } from '../contexts/AuthContext';
-import { FaTimes, FaDownload, FaReceipt, FaPlus, FaBan, FaExclamationTriangle } from 'react-icons/fa';
+import { FaTimes, FaDownload, FaReceipt, FaPlus, FaBan, FaExclamationTriangle, FaUserPlus, FaUser } from 'react-icons/fa';
+
+const NUEVO_CLIENTE = '__nuevo__';
 
 const METODOS = [
   { value: 'EFECTIVO', label: 'Efectivo' },
@@ -46,11 +48,21 @@ const SaleDetailModal = ({ sale, onClose, onDownloadPdf, renderStatusBadge, onPa
   const [voidSaleError, setVoidSaleError] = useState(null);
   const [voidSaleLoading, setVoidSaleLoading] = useState(false);
 
+  const [cliente, setCliente] = useState(sale?.client || null);
+  const [showAsignarCliente, setShowAsignarCliente] = useState(false);
+  const [clientesDisponibles, setClientesDisponibles] = useState([]);
+  const [clienteSeleccionadoId, setClienteSeleccionadoId] = useState('');
+  const [nuevoClienteNombre, setNuevoClienteNombre] = useState('');
+  const [nuevoClienteTelefono, setNuevoClienteTelefono] = useState('');
+  const [asignarClienteError, setAsignarClienteError] = useState(null);
+  const [asignarClienteLoading, setAsignarClienteLoading] = useState(false);
+
   useEffect(() => {
     if (!sale) return;
     setEstadoPago(sale.estadoPago);
     setEstadoVenta(sale.estado);
     setMotivoAnulacion(sale.motivoAnulacion);
+    setCliente(sale.client || null);
     setShowForm(false);
     setVoidingId(null);
     setFormError(null);
@@ -58,6 +70,11 @@ const SaleDetailModal = ({ sale, onClose, onDownloadPdf, renderStatusBadge, onPa
     setShowVoidSaleForm(false);
     setVoidSaleMotivo('');
     setVoidSaleError(null);
+    setShowAsignarCliente(false);
+    setClienteSeleccionadoId('');
+    setNuevoClienteNombre('');
+    setNuevoClienteTelefono('');
+    setAsignarClienteError(null);
 
     const fetchPayments = async () => {
       try {
@@ -160,6 +177,50 @@ const SaleDetailModal = ({ sale, onClose, onDownloadPdf, renderStatusBadge, onPa
 
   const ventaAnulada = estadoVenta === 'ANULADA';
 
+  const handleAbrirAsignarCliente = async () => {
+    setShowAsignarCliente(true);
+    setAsignarClienteError(null);
+    try {
+      const data = await getClients(1, 1000);
+      setClientesDisponibles((data?.clients || []).filter((c) => c.activo !== false));
+    } catch (err) {
+      setAsignarClienteError('No se pudo cargar la lista de clientes.');
+    }
+  };
+
+  const handleAsignarCliente = async () => {
+    setAsignarClienteError(null);
+
+    const creandoClienteNuevo = clienteSeleccionadoId === NUEVO_CLIENTE;
+    if (creandoClienteNuevo) {
+      if (!nuevoClienteNombre.trim() || !nuevoClienteTelefono.trim()) {
+        setAsignarClienteError('El nombre y el celular son obligatorios para un cliente nuevo.');
+        return;
+      }
+    } else if (!clienteSeleccionadoId) {
+      setAsignarClienteError('Selecciona un cliente o crea uno nuevo.');
+      return;
+    }
+
+    setAsignarClienteLoading(true);
+    try {
+      const payload = creandoClienteNuevo
+        ? { clienteNuevo: { nombre: nuevoClienteNombre.trim(), telefono: nuevoClienteTelefono.trim() } }
+        : { clientId: Number(clienteSeleccionadoId) };
+      const result = await assignClienteToSale(sale.id, payload);
+      setCliente(result.cliente);
+      setShowAsignarCliente(false);
+      setClienteSeleccionadoId('');
+      setNuevoClienteNombre('');
+      setNuevoClienteTelefono('');
+      onPaymentsChanged?.();
+    } catch (err) {
+      setAsignarClienteError(err.message || 'No se pudo asignar el cliente.');
+    } finally {
+      setAsignarClienteLoading(false);
+    }
+  };
+
   return (
     <div className="fixed inset-0 bg-black/40 backdrop-blur-sm z-50 flex items-center justify-center p-4 animate-fadeIn">
       <div className="bg-white rounded-[2rem] shadow-2xl w-full max-w-lg max-h-[85vh] flex flex-col overflow-hidden">
@@ -200,13 +261,77 @@ const SaleDetailModal = ({ sale, onClose, onDownloadPdf, renderStatusBadge, onPa
           <div className="grid grid-cols-2 gap-3">
             <div className="bg-gray-50 rounded-xl px-4 py-3">
               <p className="text-[10px] font-black uppercase tracking-widest text-gray-400 mb-1">Cliente</p>
-              <p className="text-sm font-bold text-gray-800">{sale.client?.nombre || 'Consumidor Final'}</p>
+              <p className="text-sm font-bold text-gray-800">{cliente?.nombre || 'Consumidor Final'}</p>
+              {!cliente && !ventaAnulada && !showAsignarCliente && (
+                <button
+                  onClick={handleAbrirAsignarCliente}
+                  className="mt-1 inline-flex items-center gap-1 text-[10px] font-black text-blue-600 hover:underline uppercase"
+                >
+                  <FaUserPlus size={9} /> Asignar cliente
+                </button>
+              )}
             </div>
             <div className="bg-gray-50 rounded-xl px-4 py-3">
               <p className="text-[10px] font-black uppercase tracking-widest text-gray-400 mb-1">Vendedor</p>
               <p className="text-sm font-bold text-gray-800">{sale.user?.nombreUsuario || 'Sistema'}</p>
             </div>
           </div>
+
+          {showAsignarCliente && (
+            <div className="bg-blue-50 border border-blue-100 rounded-xl p-3 space-y-2">
+              <p className="text-[10px] font-black text-blue-600 uppercase flex items-center gap-1">
+                <FaUser size={10} /> Asignar cliente a esta venta
+              </p>
+              <select
+                value={clienteSeleccionadoId}
+                onChange={(e) => setClienteSeleccionadoId(e.target.value)}
+                className="w-full bg-white border border-gray-200 rounded-lg px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-blue-500"
+              >
+                <option value="">Selecciona un cliente...</option>
+                {clientesDisponibles.map((c) => (
+                  <option key={c.id} value={c.id}>{c.nombre}</option>
+                ))}
+                <option value={NUEVO_CLIENTE}>➕ Nuevo cliente</option>
+              </select>
+
+              {clienteSeleccionadoId === NUEVO_CLIENTE && (
+                <div className="space-y-2">
+                  <input
+                    type="text"
+                    value={nuevoClienteNombre}
+                    onChange={(e) => setNuevoClienteNombre(e.target.value)}
+                    placeholder="Nombre completo"
+                    className="w-full bg-white border border-gray-200 rounded-lg px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-blue-500"
+                  />
+                  <input
+                    type="tel"
+                    value={nuevoClienteTelefono}
+                    onChange={(e) => setNuevoClienteTelefono(e.target.value)}
+                    placeholder="Celular (ej. 3001234567)"
+                    className="w-full bg-white border border-gray-200 rounded-lg px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-blue-500"
+                  />
+                </div>
+              )}
+
+              {asignarClienteError && <p className="text-red-500 text-[10px] font-bold">{asignarClienteError}</p>}
+
+              <div className="flex gap-2">
+                <button
+                  onClick={handleAsignarCliente}
+                  disabled={asignarClienteLoading}
+                  className="flex-1 bg-blue-600 text-white text-xs font-black py-2 rounded-lg hover:bg-blue-700 disabled:opacity-50 transition-all"
+                >
+                  {asignarClienteLoading ? 'Guardando...' : 'Asignar'}
+                </button>
+                <button
+                  onClick={() => setShowAsignarCliente(false)}
+                  className="px-4 bg-white border border-gray-200 text-gray-500 text-xs font-black py-2 rounded-lg hover:bg-gray-50 transition-all"
+                >
+                  Cancelar
+                </button>
+              </div>
+            </div>
+          )}
 
           <div className="flex items-center justify-between px-1">
             <p className="text-[10px] font-black uppercase tracking-widest text-gray-400">Estado de pago</p>

@@ -1,23 +1,26 @@
 import React, { useState, useEffect } from 'react';
 import { getProducts, createSale, getClients, getSaleReceiptPdf } from '../services/apiService';
 import { formatCOP } from '../utils/formatters';
-import { FaDownload, FaShoppingCart, FaUser, FaCheckCircle, FaClock } from 'react-icons/fa';
+import { FaDownload, FaShoppingCart, FaUser, FaCheckCircle, FaClock, FaUserPlus } from 'react-icons/fa';
 
 const LOW_STOCK_THRESHOLD = 5;
+const NUEVO_CLIENTE = '__nuevo__';
 
 function SalesPage() {
   const [products, setProducts] = useState([]);
   const [cart, setCart] = useState([]);
   const [clients, setClients] = useState([]);
   const [selectedClient, setSelectedClient] = useState('');
+  const [nuevoClienteNombre, setNuevoClienteNombre] = useState('');
+  const [nuevoClienteTelefono, setNuevoClienteTelefono] = useState('');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [message, setMessage] = useState('');
   const [lastSaleId, setLastSaleId] = useState(null);
-  
+
   // Estado para el tipo de pago
-  const [paymentStatus, setPaymentStatus] = useState('PAGADA'); 
+  const [paymentStatus, setPaymentStatus] = useState('PAGADA');
 
   // Carga inicial de datos
   useEffect(() => {
@@ -102,27 +105,61 @@ function SalesPage() {
       setMessage('El carrito está vacío.');
       return;
     }
+
+    const esPendiente = paymentStatus === 'PENDIENTE';
+    const creandoClienteNuevo = selectedClient === NUEVO_CLIENTE;
+
+    // El cliente es obligatorio para una venta pendiente — ver saleController.js.
+    if (esPendiente) {
+      if (creandoClienteNuevo) {
+        if (!nuevoClienteNombre.trim() || !nuevoClienteTelefono.trim()) {
+          setMessage('Para un cliente nuevo, el nombre y el celular son obligatorios.');
+          return;
+        }
+      } else if (!selectedClient) {
+        setMessage('Para una venta pendiente, selecciona un cliente o crea uno nuevo.');
+        return;
+      }
+    }
+
     const saleData = {
       items: cart.map(item => ({ productId: item.id, cantidad: Number(item.cantidad) })),
-      clientId: selectedClient ? Number(selectedClient) : null,
       total: calculateTotal(),
       estadoPago: paymentStatus,
     };
+    if (creandoClienteNuevo) {
+      saleData.clienteNuevo = { nombre: nuevoClienteNombre.trim(), telefono: nuevoClienteTelefono.trim() };
+    } else if (selectedClient) {
+      saleData.clientId = Number(selectedClient);
+    }
 
     try {
       setLastSaleId(null);
       const response = await createSale(saleData);
-      setMessage(`✅ Venta ${paymentStatus === 'PAGADA' ? 'Cobrada' : 'Registrada como Pendiente'} con éxito.`);
+      let textoExito = `✅ Venta ${paymentStatus === 'PAGADA' ? 'Cobrada' : 'Registrada como Pendiente'} con éxito.`;
+      if (creandoClienteNuevo && response?.cliente) {
+        textoExito += response.clienteReutilizado
+          ? ` Se reutilizó el cliente existente con ese celular (${response.cliente.nombre}).`
+          : ` Cliente "${response.cliente.nombre}" creado.`;
+      }
+      setMessage(textoExito);
       setCart([]);
       setSearchTerm('');
       setSelectedClient('');
+      setNuevoClienteNombre('');
+      setNuevoClienteTelefono('');
       setPaymentStatus('PAGADA');
-      
+
       if (response?.sale?.id) setLastSaleId(response.sale.id);
 
-      // Actualizar stock local después de la venta
-      const updatedProducts = await getProducts(1, 1000);
+      // Actualizar stock y clientes locales después de la venta (si se creó
+      // un cliente nuevo, que ya aparezca en el selector la próxima vez).
+      const [updatedProducts, updatedClients] = await Promise.all([
+        getProducts(1, 1000),
+        creandoClienteNuevo ? getClients(1, 1000) : Promise.resolve(null),
+      ]);
       setProducts(updatedProducts.products || []);
+      if (updatedClients) setClients(updatedClients.clients || []);
     } catch (err) {
       setMessage(err.message || 'Error al registrar la venta.');
     }
@@ -200,16 +237,44 @@ function SalesPage() {
             {/* Selector de Cliente */}
             <div className="mb-6">
               <label className="text-xs font-black text-gray-400 uppercase mb-2 block flex items-center gap-1">
-                <FaUser size={10} /> Seleccionar Cliente
+                <FaUser size={10} /> {paymentStatus === 'PENDIENTE' ? 'Cliente (obligatorio en ventas pendientes)' : 'Seleccionar Cliente'}
               </label>
               <select
                 value={selectedClient}
                 onChange={(e) => setSelectedClient(e.target.value)}
                 className="w-full bg-gray-50 border-none rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-blue-500 font-medium"
               >
-                <option value="">Consumidor Final (Opcional)</option>
-                {clients.map(client => <option key={client.id} value={client.id}>{client.nombre}</option>)}
+                <option value="">
+                  {paymentStatus === 'PENDIENTE' ? 'Selecciona un cliente...' : 'Consumidor Final (Opcional)'}
+                </option>
+                {clients.filter((c) => c.activo !== false).map(client => <option key={client.id} value={client.id}>{client.nombre}</option>)}
+                <option value={NUEVO_CLIENTE}>➕ Nuevo cliente</option>
               </select>
+
+              {selectedClient === NUEVO_CLIENTE && (
+                <div className="mt-3 p-3 bg-blue-50 border border-blue-100 rounded-xl space-y-2">
+                  <p className="text-[10px] font-black text-blue-600 uppercase flex items-center gap-1">
+                    <FaUserPlus size={10} /> Datos del nuevo cliente
+                  </p>
+                  <input
+                    type="text"
+                    value={nuevoClienteNombre}
+                    onChange={(e) => setNuevoClienteNombre(e.target.value)}
+                    placeholder="Nombre completo"
+                    className="w-full bg-white border border-gray-200 rounded-lg px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-blue-500"
+                  />
+                  <input
+                    type="tel"
+                    value={nuevoClienteTelefono}
+                    onChange={(e) => setNuevoClienteTelefono(e.target.value)}
+                    placeholder="Celular (ej. 3001234567)"
+                    className="w-full bg-white border border-gray-200 rounded-lg px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-blue-500"
+                  />
+                  <p className="text-[10px] text-blue-500">
+                    Si ya existe un cliente con ese celular, se reutiliza en vez de crear uno duplicado.
+                  </p>
+                </div>
+              )}
             </div>
 
             {/* Listado de Items en Carrito */}

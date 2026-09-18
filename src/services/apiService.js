@@ -271,6 +271,15 @@ export const voidSale = async (saleId, motivo) => {
   });
 };
 
+// Asigna/cambia el cliente de una venta existente. `payload` es
+// { clientId } o { clienteNuevo: { nombre, telefono } }.
+export const assignClienteToSale = async (saleId, payload) => {
+  return authenticatedFetch(`sales/${saleId}/cliente`, {
+    method: 'PATCH',
+    body: JSON.stringify(payload),
+  });
+};
+
 
 // --- Pedido por WhatsApp asistido por IA (función PRO) ---
 export const parseWhatsappOrder = async (texto) => {
@@ -305,6 +314,19 @@ export const deleteClient = async (clientId) => {
   return authenticatedFetch(`clientes/${clientId}`, {
     method: 'DELETE',
   });
+};
+
+export const setClientActivo = async (clientId, activo) => {
+  return authenticatedFetch(`clientes/${clientId}/activo`, {
+    method: 'PATCH',
+    body: JSON.stringify({ activo }),
+  });
+};
+
+// Cartera: clientes con al menos una venta PENDIENTE/PARCIAL activa, con su
+// saldo adeudado y la antigüedad de cada una.
+export const getCartera = async () => {
+  return authenticatedFetch('clientes/cartera');
 };
 
 // --- Funciones de Proveedores ---

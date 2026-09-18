@@ -4,7 +4,7 @@ import { useAuth } from '../contexts/AuthContext';
 import {
   FaTachometerAlt, FaBox, FaHistory, FaShoppingCart,
   FaChartBar, FaUsers, FaTruck, FaUserCog,
-  FaFileUpload, FaTimes, FaBars, FaBuilding, FaWhatsapp,
+  FaFileUpload, FaTimes, FaBars, FaBuilding, FaWhatsapp, FaWallet,
 } from 'react-icons/fa';
 
 const LogoVendita = ({ collapsed }) => (
@@ -38,6 +38,7 @@ const Sidebar = ({ isSidebarOpen, toggleSidebar }) => {
 
   const adminLinks = [
     { to: '/dashboard', icon: <FaTachometerAlt />, label: 'Panel Control' },
+    { to: '/cartera', icon: <FaWallet />, label: 'Cartera' },
     { to: '/productos/upload', icon: <FaFileUpload />, label: 'Carga Masiva' },
     { to: '/gestion-usuarios', icon: <FaUserCog />, label: 'Configuración' },
   ];

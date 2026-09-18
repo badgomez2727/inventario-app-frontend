@@ -1,5 +1,14 @@
 # Changelog
 
+## Sin publicar
+
+### Agregado
+
+- POS (`SalesPage`): cuando la venta queda `PENDIENTE`, el cliente pasa a ser obligatorio; el selector ahora incluye "➕ Nuevo cliente", que muestra un mini-formulario (nombre y celular) sin salir de la venta. Si ya existe un cliente con ese celular, se avisa que se reutilizó en vez de crear uno duplicado.
+- `SaleDetailModal`: botón "Asignar cliente" cuando una venta no tiene uno (ej. ventas pendientes de antes de este bloque), con el mismo selector + "nuevo cliente" del POS.
+- `ClientesPage`: columna de estado y botón activar/desactivar por cliente, con confirmación (igual que en compañías y usuarios).
+- Página nueva `Cartera` (`/cartera`, solo `admin_compania`/`super_admin_sistema`, link en el menú): total adeudado, y por cliente su saldo, cantidad de ventas pendientes y antigüedad de la deuda más vieja (con aviso visual si pasa de 30 días); cada fila se expande para ver el detalle de cada venta.
+
 ## 1.0.1
 
 ### En palabras simples (para contarle a los clientes)
