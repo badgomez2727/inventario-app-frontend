@@ -210,6 +210,20 @@ export const createUser = async (userData) => {
   });
 };
 
+export const updateUser = async (userId, userData) => {
+  return authenticatedFetch(`users/${userId}`, {
+    method: 'PUT',
+    body: JSON.stringify(userData),
+  });
+};
+
+export const setUserActivo = async (userId, activo) => {
+  return authenticatedFetch(`users/${userId}/activo`, {
+    method: 'PATCH',
+    body: JSON.stringify({ activo }),
+  });
+};
+
 // --- Funciones de Ventas ---
 export const getSales = async () => {
   return authenticatedFetch('sales');

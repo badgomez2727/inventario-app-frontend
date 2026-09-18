@@ -1,5 +1,11 @@
 # Changelog
 
+## Sin publicar
+
+### Agregado
+
+- CRUD de usuarios completo en `UserManagementPage`: el formulario de "Nuevo Integrante" ahora también edita (nombre, email, rol) al usuario seleccionado, con un botón para cancelar la edición. Nueva columna de estado (Activo/Inactivo) y botón para activar/desactivar cada usuario, con confirmación — oculto sobre el propio usuario logueado y sobre cuentas `super_admin_sistema`.
+
 ## 1.0.0
 
 ### En palabras simples (para contarle a los clientes)
