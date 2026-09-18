@@ -14,6 +14,16 @@ const Logo = () => (
   </div>
 );
 
+// Mensaje fijo del frontend, independiente de lo que devuelva el backend —
+// el backend responde siempre 200 con un mensaje genérico (nunca revela si
+// el correo existe), y acá lo completamos con instrucciones prácticas
+// (revisar spam, confirmar que sea el correo correcto) sin comprometer esa
+// ambigüedad intencional.
+const MENSAJE_EXITO =
+  'Si el correo está registrado, te enviamos un enlace para restablecer tu contraseña. ' +
+  'Revisa tu bandeja de entrada y la carpeta de spam. Si no te llega en unos minutos, ' +
+  'verifica que sea el mismo correo con el que te registraste.';
+
 function ForgotPasswordPage() {
   const [email, setEmail] = useState('');
   const [message, setMessage] = useState('');
@@ -28,10 +38,17 @@ function ForgotPasswordPage() {
 
     try {
       // Ajuste: Enviamos solo el string del email
-      const response = await forgotPassword(email);
-      setMessage(response.message || 'Correo enviado con éxito.');
+      await forgotPassword(email);
+      // Mensaje fijo del frontend (ver MENSAJE_EXITO) — no dependemos del
+      // texto que devuelva el backend, así el copy se puede mejorar acá sin
+      // tocar el backend, y viceversa.
+      setMessage(MENSAJE_EXITO);
     } catch (err) {
-      setError(err.message || 'Error al procesar la solicitud.');
+      // El backend nunca responde con un error distinto según si el correo
+      // existe o no (siempre 200) — lo único que puede caer acá es un error
+      // real (correo vacío, falla de red, error interno), no una pista sobre
+      // si la cuenta existe.
+      setError(err.message || 'Error al procesar la solicitud. Intenta de nuevo en unos minutos.');
     } finally {
       setLoading(false);
     }

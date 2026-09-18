@@ -6,6 +6,10 @@
 
 - CRUD de usuarios completo en `UserManagementPage`: el formulario de "Nuevo Integrante" ahora también edita (nombre, email, rol) al usuario seleccionado, con un botón para cancelar la edición. Nueva columna de estado (Activo/Inactivo) y botón para activar/desactivar cada usuario, con confirmación — oculto sobre el propio usuario logueado y sobre cuentas `super_admin_sistema`.
 
+### Cambiado
+
+- Mensaje de éxito de "Olvidé mi contraseña" ahora es fijo en el frontend (no depende del texto que mande el backend) y da instrucciones prácticas: revisar spam y confirmar que sea el correo con el que te registraste. Sigue sin revelar si el correo existe o no.
+
 ## 1.0.0
 
 ### En palabras simples (para contarle a los clientes)
