@@ -11,7 +11,10 @@
 
 - Página nueva `Catálogo Público` (`/catalogo-config`, solo admin, link en el menú): identificador del catálogo (slug, con la URL pública en vivo), descripción, foto de portada, números de WhatsApp de ventas (agregar/quitar), si ofrece domicilio y su valor por defecto, y el botón para activar/desactivar la vitrina.
 
-## 1.1.0
+### Agregado — v1.2, Bloque 1 parte 3: catálogo público (lectura) + Open Graph
+
+- Página pública `/catalogo/:slug` (sin login, sin el panel de administración alrededor — funciona igual si hay una sesión iniciada o no): portada, nombre, descripción, y la cuadrícula de productos publicados con foto, precio y "Agotado" cuando no hay stock. Pie de página "Hecho con Vendita" enlazando al inicio.
+- Metadatos Open Graph (para que el link se vea bien al compartirlo por WhatsApp/redes): como Create React App no puede generarlos por ruta (es 100% del lado del cliente y los crawlers no ejecutan JS), se agregó una función serverless de Vercel (`api/og-catalogo.js`) que le sirve un HTML mínimo con `og:title`/`og:description`/`og:image` a los bots conocidos — un rewrite en `vercel.json` (nuevo) solo la activa cuando el User-Agent es de un crawler (WhatsApp, Facebook, Twitter, etc.); los visitantes reales siguen viendo la app normal.
 
 ### En palabras simples (para contarle a los clientes)
 

@@ -571,3 +571,17 @@ export const forgotPassword = async (email) => {
 
   return response.json();
 };
+
+// --- Catálogo público (sin autenticación) ---
+export const getCatalogoPublico = async (slug) => {
+  const response = await fetchWithColdStartNotice(`${BASE_URL}/public/catalogo/${slug}`);
+
+  if (!response.ok) {
+    const errorData = await response.json().catch(() => ({}));
+    const error = new Error(errorData.error || 'No se pudo cargar el catálogo.');
+    error.status = response.status;
+    throw error;
+  }
+
+  return response.json();
+};

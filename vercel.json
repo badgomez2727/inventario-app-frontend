@@ -1,0 +1,15 @@
+{
+  "rewrites": [
+    {
+      "source": "/catalogo/:slug",
+      "has": [
+        {
+          "type": "header",
+          "key": "user-agent",
+          "value": ".*(facebookexternalhit|Facebot|Twitterbot|WhatsApp|Slackbot|TelegramBot|LinkedInBot|Discordbot|Pinterest|redditbot|Googlebot).*"
+        }
+      ],
+      "destination": "/api/og-catalogo?slug=:slug"
+    }
+  ]
+}

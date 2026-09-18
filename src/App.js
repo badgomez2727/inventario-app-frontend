@@ -22,6 +22,7 @@ import DashboardPage from './pages/DashboardPage';
 import ClientesPage from './pages/ClientesPage';
 import CarteraPage from './pages/CarteraPage';
 import CatalogoConfigPage from './pages/CatalogoConfigPage';
+import PublicCatalogPage from './pages/PublicCatalogPage';
 import ProveedoresPage from './pages/ProveedoresPage';
 import UserManagementPage from './pages/UserManagementPage';
 import AdminCompaniesPage from './pages/AdminCompaniesPage';
@@ -150,7 +151,14 @@ function App() {
       <AuthProvider>
         <StagingBanner />
         <ColdStartOverlay />
-        <AppContent />
+        <Routes>
+          {/* Catálogo público: fuera de todo lo demás a propósito — no debe
+              llevar el Layout/Sidebar del panel ni depender de si hay una
+              sesión iniciada (un admin viendo su propio link tampoco debe
+              ver su panel alrededor). */}
+          <Route path="/catalogo/:slug" element={<PublicCatalogPage />} />
+          <Route path="/*" element={<AppContent />} />
+        </Routes>
       </AuthProvider>
     </Router>
   );
