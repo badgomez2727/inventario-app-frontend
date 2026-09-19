@@ -1,9 +1,9 @@
 import React, { useEffect, useState } from "react";
-import { getProducts, deleteProduct } from "../../services/apiService";
+import { getProducts, deleteProduct, setProductActivo } from "../../services/apiService";
 import StockFormModal from "../../components/StockFormModal";
 import ProductHistoryModal from "../../components/ProductHistoryModal";
 import { formatCOP } from "../../utils/formatters";
-import { FaEdit, FaTrashAlt, FaBoxes, FaSearch, FaTag, FaChevronLeft, FaChevronRight, FaHistory } from "react-icons/fa";
+import { FaEdit, FaTrashAlt, FaBoxes, FaSearch, FaTag, FaChevronLeft, FaChevronRight, FaHistory, FaBan, FaCheckCircle } from "react-icons/fa";
 
 function ProductosList({ onEditClick }) {
   const [productos, setProductos] = useState([]);
@@ -13,6 +13,7 @@ function ProductosList({ onEditClick }) {
   const [historyProduct, setHistoryProduct] = useState(null);
   const [refreshList, setRefreshList] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
+  const [incluirInactivos, setIncluirInactivos] = useState(false);
 
   // NUEVOS ESTADOS PARA PAGINACIÓN
   const [currentPage, setCurrentPage] = useState(1);
@@ -26,7 +27,7 @@ function ProductosList({ onEditClick }) {
         setError(null);
         
         // 1. Llamamos a la API con la página actual
-        const data = await getProducts(currentPage, 10);
+        const data = await getProducts(currentPage, 10, { incluirInactivos });
         
         // 2. IMPORTANTE: 'data' ahora es un objeto, no un array.
         // Extraemos la lista de productos de data.products
@@ -46,7 +47,7 @@ function ProductosList({ onEditClick }) {
       }
     };
     fetchProductos();
-  }, [refreshList, currentPage]);
+  }, [refreshList, currentPage, incluirInactivos]);
 
   const handleOpenStockModal = (product) => setSelectedProduct(product);
 
@@ -61,9 +62,34 @@ function ProductosList({ onEditClick }) {
         await deleteProduct(id);
         setRefreshList((prev) => !prev);
       } catch (err) {
-        alert("No se pudo eliminar el producto.");
+        // El backend explica el motivo (ej. tiene ventas/movimientos): se
+        // muestra tal cual y se sugiere la salida, que es desactivarlo.
+        const motivo = err.message || "No se pudo eliminar el producto.";
+        const conHistorial = motivo.includes("No puedes eliminar");
+        alert(conHistorial
+          ? `${motivo}\n\nPuedes desactivarlo con el botón de "Desactivar": deja de aparecer en el inventario, las ventas y el catálogo, y conserva su historial.`
+          : motivo);
       }
     }
+  };
+
+  const handleToggleActivo = async (product) => {
+    const mensaje = product.activo
+      ? `¿Desactivar "${product.nombre}"? Dejará de aparecer en el inventario, las ventas y el catálogo. Conserva su historial y puedes reactivarlo cuando quieras.`
+      : `¿Reactivar "${product.nombre}"?`;
+    if (!window.confirm(mensaje)) return;
+
+    try {
+      await setProductActivo(product.id, !product.activo);
+      setRefreshList((prev) => !prev);
+    } catch (err) {
+      alert(err.message || "No se pudo cambiar el estado del producto.");
+    }
+  };
+
+  const handleToggleIncluirInactivos = (e) => {
+    setIncluirInactivos(e.target.checked);
+    setCurrentPage(1);
   };
 
   const getStockBadge = (stock) => {
@@ -94,9 +120,20 @@ function ProductosList({ onEditClick }) {
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
         <div>
           <h2 className="text-2xl font-black text-gray-800">Catálogo de <span className="text-emerald-500">Productos</span></h2>
-          <p className="text-gray-400 text-xs font-bold uppercase tracking-tighter">Total en sistema: {totalCount} artículos</p>
+          <p className="text-gray-400 text-xs font-bold uppercase tracking-tighter">
+            {incluirInactivos ? "Total con inactivos" : "Artículos activos"}: {totalCount}
+          </p>
+          <label className="mt-2 inline-flex items-center gap-2 text-xs font-bold text-gray-500 cursor-pointer select-none">
+            <input
+              type="checkbox"
+              checked={incluirInactivos}
+              onChange={handleToggleIncluirInactivos}
+              className="w-4 h-4 accent-emerald-500"
+            />
+            Mostrar inactivos
+          </label>
         </div>
-        
+
         <div className="relative w-full md:w-96">
           <FaSearch className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" />
           <input
@@ -124,14 +161,21 @@ function ProductosList({ onEditClick }) {
             </thead>
             <tbody className="divide-y divide-gray-50 text-sm">
               {filteredProducts.map((p) => (
-                <tr key={p.id} className="hover:bg-gray-50/50 transition-colors group">
+                <tr key={p.id} className={`hover:bg-gray-50/50 transition-colors group ${!p.activo ? "opacity-60" : ""}`}>
                   <td className="px-6 py-4">
                     <div className="flex items-center gap-3">
                       <div className="w-10 h-10 bg-gray-50 rounded-lg flex items-center justify-center text-gray-300 group-hover:text-emerald-500 transition-colors">
                         <FaTag />
                       </div>
                       <div>
-                        <p className="font-bold text-gray-800">{p.nombre}</p>
+                        <p className="font-bold text-gray-800">
+                          {p.nombre}
+                          {!p.activo && (
+                            <span className="ml-2 inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[9px] font-black uppercase bg-red-100 text-red-600 align-middle">
+                              <FaBan size={8} /> Inactivo
+                            </span>
+                          )}
+                        </p>
                         <p className="text-[10px] font-mono text-gray-400">SKU: {p.sku}</p>
                       </div>
                     </div>
@@ -157,7 +201,14 @@ function ProductosList({ onEditClick }) {
                       <button onClick={() => setHistoryProduct(p)} title="Ver historial de cambios" className="p-2.5 bg-gray-100 text-gray-600 rounded-xl hover:bg-gray-200 transition">
                         <FaHistory />
                       </button>
-                      <button onClick={() => handleDelete(p.id)} className="p-2.5 bg-white text-red-400 border border-red-50 rounded-xl hover:bg-red-50 transition">
+                      <button
+                        onClick={() => handleToggleActivo(p)}
+                        title={p.activo ? "Desactivar (retirar del inventario, ventas y catálogo)" : "Reactivar"}
+                        className={`p-2.5 rounded-xl transition border ${p.activo ? "bg-white text-amber-500 border-amber-100 hover:bg-amber-50" : "bg-white text-emerald-600 border-emerald-100 hover:bg-emerald-50"}`}
+                      >
+                        {p.activo ? <FaBan /> : <FaCheckCircle />}
+                      </button>
+                      <button onClick={() => handleDelete(p.id)} title="Eliminar (solo si nunca se ha usado)" className="p-2.5 bg-white text-red-400 border border-red-50 rounded-xl hover:bg-red-50 transition">
                         <FaTrashAlt />
                       </button>
                     </div>

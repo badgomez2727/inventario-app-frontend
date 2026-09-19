@@ -133,11 +133,23 @@ export const registerCompanyAndAdmin = async (data) => {
 
 
 
-export const getProducts = async (page = 1, limit = 10) => {
+// Por defecto solo trae productos activos (los inactivos están "retirados" y
+// no deben aparecer en ventas, alertas, etc.); el inventario pide los
+// inactivos aparte con { incluirInactivos: true }.
+export const getProducts = async (page = 1, limit = 10, { incluirInactivos = false } = {}) => {
   // Aseguramos que siempre vayan números
   const p = page || 1;
   const l = limit || 10;
-  return authenticatedFetch(`productos?page=${p}&limit=${l}`);
+  const params = new URLSearchParams({ page: p, limit: l });
+  if (incluirInactivos) params.set('incluirInactivos', 'true');
+  return authenticatedFetch(`productos?${params.toString()}`);
+};
+
+export const setProductActivo = async (productId, activo) => {
+  return authenticatedFetch(`productos/${productId}/activo`, {
+    method: 'PATCH',
+    body: JSON.stringify({ activo }),
+  });
 };
 
 

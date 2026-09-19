@@ -19,6 +19,7 @@ const CAMPO_LABELS = {
   categoria: "Categoría",
   unidadMedida: "Unidad de medida",
   supplierId: "Proveedor (ID)",
+  activo: "Estado",
 };
 
 const CAMPOS_MONEDA = new Set(["precioCompra", "precioVenta"]);
@@ -26,6 +27,7 @@ const CAMPOS_MONEDA = new Set(["precioCompra", "precioVenta"]);
 const formatValor = (campo, valor) => {
   if (valor === null || valor === undefined || valor === "null") return "—";
   if (CAMPOS_MONEDA.has(campo)) return formatCOP(valor);
+  if (campo === "activo") return valor === "true" ? "Activo" : "Inactivo";
   return valor;
 };
 

@@ -2,6 +2,11 @@
 
 ## Sin publicar
 
+### Agregado — desactivar / reactivar productos
+
+- Inventario: botón "Desactivar / Reactivar" en cada producto, e interruptor "Mostrar inactivos" (por defecto la lista solo muestra los activos). Un producto inactivo se ve atenuado con la etiqueta "Inactivo", deja de aparecer en ventas, pedidos por WhatsApp, alertas de stock y catálogo público, conserva su historial y se puede reactivar cuando se quiera. El cambio queda anotado en su historial de cambios ("Estado: Activo → Inactivo").
+- Al intentar eliminar un producto que ya tiene historial, ahora se muestra el motivo real (antes solo decía "No se pudo eliminar el producto") y se sugiere desactivarlo.
+
 ### Agregado — catálogo público: detalle del producto y cantidad editable
 
 - Al tocar la foto o el nombre de un producto se abre su detalle: foto grande, galería con todas sus fotos (flechas, deslizar con el dedo y miniaturas), nombre, categoría, precio, disponible/agotado y la descripción (que hasta ahora no se mostraba en ninguna parte), con el control para agregarlo al pedido. Se cierra con la X, tocando fuera o con Escape.
