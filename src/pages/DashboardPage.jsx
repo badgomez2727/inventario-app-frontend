@@ -12,7 +12,11 @@ import { FaBoxes, FaUsers, FaTruckLoading, FaMoneyBillWave, FaExclamationTriangl
 const PlanUsageBanner = ({ planStatus }) => {
   if (!planStatus) return null;
 
-  const { products, plan, planExpiresAt } = planStatus;
+  const { products, plan, storedPlan, label, planExpiresAt } = planStatus;
+  const planNombre = label || plan;
+  // `plan` es el plan EFECTIVO (al vencer ya viene como FREE); `storedPlan` es
+  // el que figura en la cuenta, y dice si lo que venció fue el lanzamiento.
+  const esLanzamiento = (storedPlan || plan) === 'LANZAMIENTO';
   const productsPct = products.limit && products.limit !== Infinity ? (products.used / products.limit) * 100 : 0;
   const nearProductLimit = productsPct >= 80;
   const atProductLimit = productsPct >= 100;
@@ -21,7 +25,8 @@ const PlanUsageBanner = ({ planStatus }) => {
     ? Math.ceil((new Date(planExpiresAt) - new Date()) / (1000 * 60 * 60 * 24))
     : null;
   const expiringSoon = plan !== 'FREE' && daysToExpire !== null && daysToExpire <= 15 && daysToExpire > 0;
-  const expired = plan !== 'FREE' && daysToExpire !== null && daysToExpire <= 0;
+  // El vencimiento se detecta por la fecha, no por `plan`: al vencer, `plan` ya es FREE.
+  const expired = daysToExpire !== null && daysToExpire <= 0;
 
   if (!nearProductLimit && !expiringSoon && !expired) return null;
 
@@ -29,13 +34,17 @@ const PlanUsageBanner = ({ planStatus }) => {
 
   let mensaje;
   if (expired) {
-    mensaje = 'Tu plan pago venció y volviste al plan Gratis.';
+    mensaje = esLanzamiento
+      ? 'Terminó tu periodo de lanzamiento y volviste al plan Gratis. Conservas todo lo que cargaste.'
+      : 'Tu plan pago venció y volviste al plan Gratis.';
   } else if (expiringSoon) {
-    mensaje = `Tu plan ${plan} vence en ${daysToExpire} día${daysToExpire === 1 ? '' : 's'}.`;
+    mensaje = esLanzamiento
+      ? `Tu periodo de lanzamiento gratuito termina en ${daysToExpire} día${daysToExpire === 1 ? '' : 's'}.`
+      : `Tu plan ${planNombre} vence en ${daysToExpire} día${daysToExpire === 1 ? '' : 's'}.`;
   } else if (atProductLimit) {
-    mensaje = `Alcanzaste el límite de productos del plan ${plan}.`;
+    mensaje = `Alcanzaste el límite de productos del plan ${planNombre}.`;
   } else {
-    mensaje = `Te estás acercando al límite de productos del plan ${plan}.`;
+    mensaje = `Te estás acercando al límite de productos del plan ${planNombre}.`;
   }
 
   return (

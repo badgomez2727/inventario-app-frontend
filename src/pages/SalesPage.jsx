@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { getProducts, createSale, getClients, getSaleReceiptPdf } from '../services/apiService';
 import { formatCOP } from '../utils/formatters';
+import { trackCustom } from '../utils/analytics';
 import { FaDownload, FaShoppingCart, FaUser, FaCheckCircle, FaClock, FaUserPlus } from 'react-icons/fa';
 
 const LOW_STOCK_THRESHOLD = 5;
@@ -136,6 +137,7 @@ function SalesPage() {
     try {
       setLastSaleId(null);
       const response = await createSale(saleData);
+      trackCustom('VentaRegistrada');
       let textoExito = `✅ Venta ${paymentStatus === 'PAGADA' ? 'Cobrada' : 'Registrada como Pendiente'} con éxito.`;
       if (creandoClienteNuevo && response?.cliente) {
         textoExito += response.clienteReutilizado

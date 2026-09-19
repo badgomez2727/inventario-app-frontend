@@ -3,6 +3,7 @@ import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { FaBuilding, FaUserShield, FaArrowLeft } from 'react-icons/fa';
 import PasswordInput from '../components/PasswordInput';
+import { trackEvent } from '../utils/analytics';
 
 // Componente de Logo (Consistente con la Landing)
 const Logo = () => (
@@ -56,6 +57,7 @@ function RegisterCompanyPage() {
     const result = await registerCompanyAndAdmin(companyData, userData);
 
     if (result.success) {
+      trackEvent('CompleteRegistration');
       setMessage('¡Bienvenido a Vendita! Registro exitoso. Redirigiendo...');
       setTimeout(() => navigate('/login'), 2500);
     } else {

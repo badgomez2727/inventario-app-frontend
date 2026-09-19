@@ -2,6 +2,25 @@
 
 ## Sin publicar
 
+### Agregado — landing de lanzamiento y medición de la campaña
+
+- **Landing renovada**, pensada para quien hoy lleva su negocio en un cuaderno, en Excel o en WhatsApp: titular y dos llamados a la acción ("Empezar gratis" y "Hablar por WhatsApp"), del cuaderno a Vendita (antes/después), seis funciones (inventario, ventas, fiado y cartera, cobro por WhatsApp, catálogo en línea, carga desde Excel), cómo funciona en 3 pasos, la oferta "Gratis durante el lanzamiento" con lo que incluye, "Próximamente" el asistente con IA para generar productos, y preguntas frecuentes. Se corrigió además el enlace "Nosotros" del menú, que apuntaba a una sección que no existía.
+- Solo promete lo que existe: funciona **desde el navegador** en computador, celular y tablet (no es una app instalable ni de escritorio), y una prueba automática impide que reaparezca esa promesa.
+- **Medición con Meta Pixel** (`utils/analytics.js`), que **no hace nada** hasta configurar `REACT_APP_META_PIXEL_ID` en Vercel. Eventos: página vista (solo landing y registro, solo visitantes sin sesión), `CompleteRegistration` al registrarse, `Contact` al tocar WhatsApp, y los propios `ProductoCreado` y `VentaRegistrada` para saber si quien se registró realmente empezó a usar la app. Privacidad: nunca se inicia en el catálogo público, con la configuración automática de Meta apagada (no lee botones ni formularios) y sin datos personales; el pie de la landing avisa que se usa el píxel.
+- El número de WhatsApp de contacto se comparte entre la landing y la página de planes (`config/contact.js`).
+- Panel de super admin: el plan `LANZAMIENTO` aparece en el selector y con su propio color.
+- Dashboard: el aviso de plan ahora usa el nombre del plan ("Lanzamiento", "Gratis"…) y avisa cuando el periodo de lanzamiento está por terminar o ya terminó ("conservas todo lo que cargaste"). De paso se corrigió que el aviso de plan vencido **nunca aparecía**, porque el backend ya devuelve el plan efectivo (Gratis) al vencer.
+- Pruebas de la landing y de la medición.
+
+## 1.4.0
+
+### En palabras simples (para contarle a los clientes)
+
+- **Retira productos sin perder nada.** Un producto que ya tiene ventas o movimientos no se puede borrar (así el historial siempre cuadra). Ahora puedes **desactivarlo**: deja de aparecer en el inventario, en las ventas y en tu catálogo, conserva su historial, y lo puedes reactivar cuando quieras.
+- **Te explica por qué no se puede borrar un producto**, en vez de un aviso genérico, y te sugiere desactivarlo.
+- **Tu catálogo en línea, más completo:** al tocar la foto de un producto tus clientes ven su detalle, con todas las fotos, el precio, si está disponible y la descripción.
+- **Cantidad escrita a mano** en el catálogo: tus clientes pueden teclear "24" en vez de tocar "+" veinte veces.
+
 ### Agregado — desactivar / reactivar productos
 
 - Inventario: botón "Desactivar / Reactivar" en cada producto, e interruptor "Mostrar inactivos" (por defecto la lista solo muestra los activos). Un producto inactivo se ve atenuado con la etiqueta "Inactivo", deja de aparecer en ventas, pedidos por WhatsApp, alertas de stock y catálogo público, conserva su historial y se puede reactivar cuando se quiera. El cambio queda anotado en su historial de cambios ("Estado: Activo → Inactivo").

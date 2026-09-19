@@ -1,8 +1,9 @@
 // src/App.js
 import React, { useState, useEffect } from 'react';
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import './index.css';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
+import { initPixel, trackPageView } from './utils/analytics';
 
 // Páginas
 import LandingPage from './pages/LandingPage';
@@ -44,6 +45,17 @@ function AppContent() {
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
   const [refreshProducts, setRefreshProducts] = useState(false);
   const [productToEdit, setProductToEdit] = useState(null);
+  const location = useLocation();
+
+  // Medición de anuncios (no hace nada sin REACT_APP_META_PIXEL_ID). Las
+  // páginas vistas se reportan SOLO en la landing y el registro, y solo para
+  // visitantes sin sesión — nunca dentro del panel, cuyas URLs llevan ids de
+  // clientes y ventas. Ver src/utils/analytics.js.
+  useEffect(() => { initPixel(); }, []);
+  useEffect(() => {
+    if (authLoading || isAuthenticated) return;
+    if (location.pathname === '/' || location.pathname === '/register-company') trackPageView();
+  }, [location.pathname, isAuthenticated, authLoading]);
 
   // 🔹 Detectar cambio de tamaño de pantalla
   useEffect(() => {

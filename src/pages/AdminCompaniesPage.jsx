@@ -4,12 +4,13 @@ import { FaCrown, FaChevronLeft, FaChevronRight, FaBuilding, FaBan, FaCheckCircl
 
 const PLAN_BADGE = {
   FREE: 'bg-gray-100 text-gray-600',
+  LANZAMIENTO: 'bg-emerald-100 text-emerald-700',
   BASICO: 'bg-blue-100 text-blue-700',
   PRO: 'bg-amber-100 text-amber-700',
 };
 
 // Orden en que se ofrecen los planes en el selector (de menor a mayor)
-const PLAN_ORDER = ['FREE', 'BASICO', 'PRO'];
+const PLAN_ORDER = ['FREE', 'LANZAMIENTO', 'BASICO', 'PRO'];
 
 const AdminCompaniesPage = () => {
   const [companies, setCompanies] = useState([]);

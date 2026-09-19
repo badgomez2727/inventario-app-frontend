@@ -3,10 +3,10 @@ import { Link } from "react-router-dom";
 import {
   FaWhatsapp, FaMobileAlt, FaQrcode, FaHeart, FaArrowLeft, FaCopy, FaCheck, FaCrown,
 } from "react-icons/fa";
+import { WHATSAPP_NUMBER } from "../config/contact";
 
-// Datos de contacto/pago — cámbialos aquí el día que tengas dominio propio /
-// número de WhatsApp Business dedicado. Un solo lugar, nada más que tocar.
-const WHATSAPP_NUMBER = "573148520270"; // formato internacional, sin '+' ni espacios
+// Datos de pago — cámbialos aquí el día que tengas otro número. El WhatsApp de
+// contacto vive en src/config/contact.js (compartido con la landing).
 const NEQUI_NUMBER = "3148520270";
 const DAVIPLATA_NUMBER = "3148520270";
 const BREB_KEY = "3148520270";

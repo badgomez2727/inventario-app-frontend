@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { createProduct, updateProduct, getSuppliers } from "../../services/apiService";
 import ProductImageManager from "../../components/ProductImageManager";
+import { trackCustom } from "../../utils/analytics";
 import { FaSave, FaEdit, FaBarcode, FaTag, FaBox, FaStore } from "react-icons/fa";
 
 // Fuera del componente para que tenga una referencia estable entre renders
@@ -85,6 +86,7 @@ const ProductoForm = ({ onProductCreated, productToEdit, onEditComplete }) => {
         setTimeout(() => onEditComplete(), 1500);
       } else {
         await createProduct(dataToSend);
+        trackCustom('ProductoCreado');
         setMessage("🚀 Producto creado con éxito");
         setFormData(initialState);
         onProductCreated();

@@ -26,7 +26,7 @@ npm test         # pruebas (Jest + Testing Library)
 npm run build    # build de producción (con CI=true, los warnings de lint rompen el build)
 ```
 
-Variables en `.env.local` (ignorado por git): `REACT_APP_API_URL`.
+Variables en `.env.local` (ignorado por git): `REACT_APP_API_URL`. Opcional: `REACT_APP_META_PIXEL_ID` (medición de anuncios; sin ella no se carga ni se envía nada).
 
 ## Estructura (`src/`)
 
@@ -68,6 +68,13 @@ Variables en `.env.local` (ignorado por git): `REACT_APP_API_URL`.
 - El buscador (por nombre, tolerante a mayúsculas, tildes y plurales) y el filtro por categoría trabajan sobre la lista ya cargada. El backend no pagina: límite conocido documentado en el README del backend.
 - **Vista previa al compartir el enlace:** `api/og-catalogo.js` (función serverless de Vercel) sirve metadatos Open Graph solo a los bots de redes sociales, activada por un `rewrite` por User-Agent en `vercel.json`. Las personas ven la app normal.
 
+## Landing y medición de anuncios
+
+- `/` es la landing de captación: oferta de lanzamiento, funciones, cómo funciona, preguntas frecuentes y dos llamados a la acción (registro y WhatsApp). El número de contacto está en `src/config/contact.js`. Solo debe prometer lo que existe: Vendita funciona **desde el navegador** (no es una app instalable ni de escritorio); una prueba automática lo vigila.
+- **Meta Pixel** (`src/utils/analytics.js`): apagado hasta configurar `REACT_APP_META_PIXEL_ID`. Reporta páginas vistas solo en la landing y el registro (solo sin sesión), y los eventos `CompleteRegistration`, `Contact`, `ProductoCreado` y `VentaRegistrada`. Nunca se inicia en el catálogo público; la configuración automática de Meta está apagada y no se envían datos personales.
+
 ## Pruebas
 
-Hoy hay pruebas de `QuantityInput` (escribir la cantidad, tope, cero, vacío) y de `matchesSearch` (buscador). La lógica de negocio y la API se prueban en el backend (Jest + Supertest).
+Hay pruebas de `QuantityInput` (escribir la cantidad, tope, cero, vacío), de `matchesSearch` (buscador), de la landing y de la medición. La lógica de negocio y la API se prueban en el backend (Jest + Supertest).
+
+> El Jest de Create React App (v27) no resuelve React Router 7: las pruebas de páginas simulan `Link` con `jest.mock('react-router-dom', …, { virtual: true })`.
