@@ -5,6 +5,7 @@ import { FaCrown, FaChevronLeft, FaChevronRight, FaBuilding, FaBan, FaCheckCircl
 const PLAN_BADGE = {
   FREE: 'bg-gray-100 text-gray-600',
   LANZAMIENTO: 'bg-emerald-100 text-emerald-700',
+  VENCIDO: 'bg-red-100 text-red-700', // prueba terminada, en solo lectura
   BASICO: 'bg-blue-100 text-blue-700',
   PRO: 'bg-amber-100 text-amber-700',
 };
@@ -60,7 +61,7 @@ const AdminCompaniesPage = () => {
     if (newPlan !== 'FREE') {
       const respuesta = window.prompt(
         `Plan ${newPlan} para "${company.nombre}".\n¿Por cuántos días?\n30 = un mes · 180 = seis meses · 0 = sin vencimiento`,
-        newPlan === 'LANZAMIENTO' ? '180' : '30'
+        newPlan === 'LANZAMIENTO' ? '7' : '30'
       );
       if (respuesta === null) return;
       durationDays = Number(respuesta.trim());

@@ -46,12 +46,13 @@ const ANTES_DESPUES = [
 ];
 
 const PASOS = [
-  { n: 1, title: "Crea tu cuenta gratis", text: "Toma un minuto y no necesitas tarjeta." },
+  { n: 1, title: "Crea tu cuenta", text: "Toma un minuto, no necesitas tarjeta y pruebas 7 días gratis." },
   { n: 2, title: "Carga tus productos", text: "Desde Excel o uno a uno. Si quieres, te acompañamos en el arranque." },
   { n: 3, title: "Vende, cobra y recibe pedidos", text: "Desde el computador, el celular o la tablet." },
 ];
 
 const INCLUYE = [
+  "Todo Vendita durante 7 días, sin tarjeta",
   "Hasta 500 productos",
   "Ventas, inventario y recibos en PDF",
   "Fiado, cartera y estados de cuenta",
@@ -62,7 +63,8 @@ const INCLUYE = [
 
 const PREGUNTAS = [
   { q: "¿Tengo que instalar algo?", a: "No. Vendita funciona desde el navegador de tu computador, celular o tablet (Windows, Mac, Android o iPhone). Solo necesitas internet." },
-  { q: "¿De verdad es gratis?", a: "Sí, durante el lanzamiento. Más adelante habrá planes según la cantidad de productos y el uso que le des. Te avisaremos con tiempo, y todo lo que hayas cargado se conserva." },
+  { q: "¿Cuánto cuesta?", a: "Pruebas 7 días gratis con todo, sin tarjeta. Después eliges un plan: Básico a $10.000 al mes (hasta 150 productos) o Pro a $20.000 al mes (hasta 500 productos y asistente con IA). Pagas por Nequi, Daviplata o Bre-B." },
+  { q: "¿Qué pasa cuando termina la prueba?", a: "Si no activas un plan, tu cuenta queda en modo solo lectura: puedes ver toda tu información, pero no modificarla. No perdemos nada de lo que cargaste, y cuando actives tu plan sigues donde quedaste." },
   { q: "¿Me ayudan a cargar mis productos?", a: "Sí. Te acompañamos en el arranque y tienes tutoriales. Escríbenos por WhatsApp y lo hacemos juntos." },
   { q: "Hoy llevo todo en un cuaderno o en Excel, ¿me sirve?", a: "Es justo para eso. Puedes subir tu Excel guardado como CSV o cargar tus productos uno a uno, y empezar a vender el mismo día." },
   { q: "¿Puedo tener empleados?", a: "Sí. Puedes crear usuarios con rol de administrador o de empleado." },
@@ -86,7 +88,7 @@ const BotonRegistro = ({ className = "" }) => (
     to="/register-company"
     className={`inline-flex items-center justify-center font-bold rounded-2xl shadow-xl transition-all active:scale-95 ${className}`}
   >
-    Empezar gratis
+    Probar 7 días gratis
   </Link>
 );
 
@@ -102,7 +104,7 @@ const LandingPage = () => {
         <div className="hidden md:flex gap-8 font-medium text-gray-600">
           <a href="#funciones" className="hover:text-emerald-500 transition-colors">Funciones</a>
           <a href="#como-funciona" className="hover:text-emerald-500 transition-colors">Cómo funciona</a>
-          <a href="#lanzamiento" className="hover:text-emerald-500 transition-colors">Lanzamiento</a>
+          <a href="#lanzamiento" className="hover:text-emerald-500 transition-colors">Precios</a>
           <a href="#preguntas" className="hover:text-emerald-500 transition-colors">Preguntas</a>
         </div>
         <Link
@@ -120,7 +122,7 @@ const LandingPage = () => {
         </div>
 
         <div className="inline-flex items-center gap-2 bg-emerald-50 text-emerald-700 px-4 py-2 rounded-full text-sm font-bold mb-6">
-          <FaRocket size={14} /> Lanzamiento: úsala gratis
+          <FaRocket size={14} /> Lanzamiento: 7 días gratis
         </div>
 
         <h1 className="text-4xl md:text-7xl font-black mb-6 tracking-tighter leading-tight max-w-4xl">
@@ -228,7 +230,7 @@ const LandingPage = () => {
           <div className="inline-flex items-center gap-2 bg-white text-emerald-700 px-4 py-2 rounded-full text-sm font-bold mb-4 shadow-sm">
             <FaRocket size={14} /> Oferta de lanzamiento
           </div>
-          <h2 className="text-3xl md:text-5xl font-black mb-6 tracking-tight">Gratis durante el lanzamiento</h2>
+          <h2 className="text-3xl md:text-5xl font-black mb-6 tracking-tight">Prueba Vendita 7 días gratis</h2>
           <ul className="text-left inline-block mb-6 space-y-3">
             {INCLUYE.map((item) => (
               <li key={item} className="flex items-start gap-3 font-medium text-gray-700">
@@ -236,9 +238,21 @@ const LandingPage = () => {
               </li>
             ))}
           </ul>
+          <div className="grid gap-3 sm:grid-cols-2 text-left mb-6">
+            <div className="bg-white rounded-2xl p-5 border border-gray-100">
+              <p className="text-xs font-black uppercase tracking-widest text-gray-400 mb-1">Plan Básico</p>
+              <p className="text-3xl font-black text-gray-900">$10.000 <span className="text-sm font-bold text-gray-400">al mes</span></p>
+              <p className="text-sm text-gray-500 mt-1">Hasta 150 productos</p>
+            </div>
+            <div className="bg-white rounded-2xl p-5 border border-gray-100">
+              <p className="text-xs font-black uppercase tracking-widest text-gray-400 mb-1">Plan Pro</p>
+              <p className="text-3xl font-black text-gray-900">$20.000 <span className="text-sm font-bold text-gray-400">al mes</span></p>
+              <p className="text-sm text-gray-500 mt-1">Hasta 500 productos y asistente con IA</p>
+            </div>
+          </div>
           <p className="text-gray-500 mb-8">
-            Más adelante habrá planes según la cantidad de productos y el uso que le des.
-            Te avisaremos con tiempo, y todo lo que cargues se conserva.
+            Si no activas un plan al terminar la prueba, tu cuenta queda en solo lectura:
+            puedes ver tu información y no perdemos nada de lo que cargaste.
           </p>
           <BotonRegistro className="bg-gray-900 text-white px-10 py-4 text-xl hover:bg-emerald-500" />
         </div>
@@ -276,7 +290,7 @@ const LandingPage = () => {
 
       {/* --- CIERRE --- */}
       <section className="py-16 px-6 text-center">
-        <h2 className="text-3xl md:text-5xl font-black mb-4 tracking-tight">Empieza hoy, es gratis en el lanzamiento</h2>
+        <h2 className="text-3xl md:text-5xl font-black mb-4 tracking-tight">Empieza hoy: 7 días gratis</h2>
         <p className="text-gray-500 text-lg mb-8">Crea tu cuenta en un minuto o escríbenos y te ayudamos a arrancar.</p>
         <div className="flex flex-col sm:flex-row gap-3 justify-center">
           <BotonRegistro className="bg-gray-900 text-white px-10 py-4 text-xl hover:bg-emerald-500" />

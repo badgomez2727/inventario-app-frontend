@@ -3,6 +3,7 @@ import Header from './Header';
 import Sidebar from './Sidebar';
 import Footer from './Footer';
 import BottomNavbar from './BottomNavbar';
+import ReadOnlyBanner from './ReadOnlyBanner';
 
 export default function Layout({ children, toggleSidebar, isSidebarOpen, isMobile }) {
   return (
@@ -33,6 +34,7 @@ export default function Layout({ children, toggleSidebar, isSidebarOpen, isMobil
             pero le ponemos un fondo que cubra el lateral */}
         <main className="flex-1 pt-24 md:pt-28 pb-20 md:pb-0">
           <div className="p-4 md:p-8 max-w-7xl mx-auto min-h-[calc(100vh-200px)]">
+            <ReadOnlyBanner />
             {children}
           </div>
           <Footer />

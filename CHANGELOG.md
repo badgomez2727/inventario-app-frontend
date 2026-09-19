@@ -2,6 +2,15 @@
 
 ## Sin publicar
 
+### Cambiado — prueba gratis de 7 días y aviso de solo lectura
+
+- **Landing y textos:** "Probar 7 días gratis" en todos los botones, la oferta muestra la prueba y los precios (**Básico $10.000 al mes, Pro $20.000 al mes**), y dos preguntas frecuentes nuevas: "¿Cuánto cuesta?" y "¿Qué pasa cuando termina la prueba?". Ya no dice que es gratis siempre ni "gratis hasta 50 productos" (una prueba automática lo vigila). El menú "Lanzamiento" pasa a llamarse "Precios".
+- **Aviso de solo lectura** (`ReadOnlyBanner`, en todas las pantallas y para todos los usuarios): cuando la prueba termina sin plan, explica que la cuenta puede verse pero no modificarse y ofrece "Activar mi plan". Sin él, cada botón que intentara guardar algo fallaría sin explicación.
+- **Dashboard:** la cuenta regresiva ahora dice "Tu prueba gratis termina en N días. Activa tu plan para seguir vendiendo sin interrupciones".
+- **Panel de super admin:** el estado `VENCIDO` (prueba terminada) aparece en rojo, y al asignar `LANZAMIENTO` a mano sugiere 7 días.
+- La página `/apoyar` ya no dice "gratis hasta 50 productos": ahora invita a elegir plan y a pagar por Nequi, Daviplata o Bre-B.
+- Pruebas del aviso de solo lectura (`ReadOnlyBanner`) y de la landing.
+
 ### Cambiado — planes, carga masiva y activación por días
 
 - **Página de planes (`/apoyar`):** nuevo pago **mensual** (queda como opción inicial) además de 6 meses y de por vida. Básico $10.000 al mes, Pro $20.000 al mes (6 meses: $60.000 y $120.000).

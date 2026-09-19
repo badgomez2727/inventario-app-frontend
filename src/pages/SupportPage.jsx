@@ -105,8 +105,8 @@ const SupportPage = () => {
             Actualiza tu plan en <span className="text-emerald-500">Vendita</span>
           </h1>
           <p className="text-gray-500 max-w-md mx-auto leading-relaxed">
-            Vendita es gratis hasta 50 productos. Si tu catálogo creció, elige uno
-            de estos planes.
+            Elige tu plan para seguir usando Vendita. Pagas por Nequi, Daviplata o
+            Bre-B y te lo activamos al toque.
           </p>
         </div>
 
