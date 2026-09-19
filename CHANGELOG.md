@@ -2,6 +2,22 @@
 
 ## Sin publicar
 
+### Cambiado — planes, carga masiva y activación por días
+
+- **Página de planes (`/apoyar`):** nuevo pago **mensual** (queda como opción inicial) además de 6 meses y de por vida. Básico $10.000 al mes, Pro $20.000 al mes (6 meses: $60.000 y $120.000).
+- **Panel de super admin:** al activar un plan con vencimiento pregunta por cuántos días (30 = un mes, 180 = seis meses, 0 = sin vencimiento); antes siempre eran 180.
+- **Carga masiva de productos:** al elegir el archivo se muestra de inmediato qué trae (cuántos productos, los primeros nombres y las columnas obligatorias que falten), sin tener que subirlo; el botón de subir solo se activa con un archivo válido. Caja de ayuda arriba con un botón de WhatsApp ("Pedir ayuda por WhatsApp") para quien no logra armar su archivo, y textos pensados para celular ("Toca para elegir tu archivo").
+- La columna `supplierName` (proveedor) pasa a ser **opcional**: el backend nunca la exigió y a un negocio sin proveedores le impedía subir su archivo.
+- Pruebas de la validación del archivo de carga (`utils/csvProducts.js`).
+
+## 1.5.0
+
+### En palabras simples (para contarle a los clientes)
+
+- **Empieza gratis, sin tarjeta.** Los negocios nuevos entran al plan de lanzamiento: hasta 500 productos, con ventas, cartera, catálogo en línea y pedidos por WhatsApp. Cuando termina el periodo de lanzamiento no pierdes nada de lo que cargaste.
+- **Una página de inicio renovada** que explica en lenguaje simple qué hace Vendita, cómo se empieza y qué incluye la oferta, con ayuda por WhatsApp para arrancar.
+- **Te avisamos** en tu panel cuando el periodo de lanzamiento está por terminar, y también cuando un plan de pago vence (antes ese aviso no aparecía).
+
 ### Agregado — landing de lanzamiento y medición de la campaña
 
 - **Landing renovada**, pensada para quien hoy lleva su negocio en un cuaderno, en Excel o en WhatsApp: titular y dos llamados a la acción ("Empezar gratis" y "Hablar por WhatsApp"), del cuaderno a Vendita (antes/después), seis funciones (inventario, ventas, fiado y cartera, cobro por WhatsApp, catálogo en línea, carga desde Excel), cómo funciona en 3 pasos, la oferta "Gratis durante el lanzamiento" con lo que incluye, "Próximamente" el asistente con IA para generar productos, y preguntas frecuentes. Se corrigió además el enlace "Nosotros" del menú, que apuntaba a una sección que no existía.

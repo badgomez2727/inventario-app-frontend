@@ -52,14 +52,27 @@ const AdminCompaniesPage = () => {
 
   const handleChangePlan = async (company, newPlan) => {
     if (newPlan === company.plan) return;
+
+    // Los planes con vencimiento se activan por los días que pagó el cliente
+    // (30 = un mes, 180 = seis meses; 0 = sin vencimiento). Cancelar el
+    // cuadro aborta el cambio.
+    let durationDays;
     if (newPlan !== 'FREE') {
-      const confirmMsg = `¿Pasar a "${company.nombre}" al plan ${newPlan}? Vence en 180 días desde hoy (renovable).`;
-      if (!window.confirm(confirmMsg)) return;
+      const respuesta = window.prompt(
+        `Plan ${newPlan} para "${company.nombre}".\n¿Por cuántos días?\n30 = un mes · 180 = seis meses · 0 = sin vencimiento`,
+        newPlan === 'LANZAMIENTO' ? '180' : '30'
+      );
+      if (respuesta === null) return;
+      durationDays = Number(respuesta.trim());
+      if (respuesta.trim() === '' || !Number.isInteger(durationDays) || durationDays < 0) {
+        setError('Escribe un número entero de días (0 = sin vencimiento).');
+        return;
+      }
     }
     setUpdatingId(company.id);
     try {
-      await updateCompanyPlan(company.id, newPlan);
-      setMessage(`✅ ${company.nombre} pasó a plan ${newPlan}.`);
+      await updateCompanyPlan(company.id, newPlan, durationDays);
+      setMessage(`✅ ${company.nombre} pasó a plan ${newPlan}${durationDays === 0 ? ' (sin vencimiento)' : durationDays ? ` por ${durationDays} días` : ''}.`);
       fetchCompanies();
     } catch (err) {
       setError(err.message || 'No se pudo actualizar el plan.');

@@ -556,10 +556,14 @@ export const getAdminCompanies = async (page = 1, limit = 20) => {
   return authenticatedFetch(`admin/companies?page=${page}&limit=${limit}`);
 };
 
-export const updateCompanyPlan = async (companyId, plan) => {
+// durationDays (opcional): días de vigencia. Sin él, la duración estándar del
+// plan; 0 = sin vencimiento (pago único).
+export const updateCompanyPlan = async (companyId, plan, durationDays) => {
+  const body = { plan };
+  if (durationDays !== undefined) body.durationDays = durationDays;
   return authenticatedFetch(`admin/companies/${companyId}/plan`, {
     method: 'PATCH',
-    body: JSON.stringify({ plan }),
+    body: JSON.stringify(body),
   });
 };
 
