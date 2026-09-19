@@ -3,12 +3,14 @@
 // WhatsApp/redes: arma un carrito, deja sus datos, y al enviar el pedido se
 // guarda en el sistema y se abre WhatsApp con el mensaje ya armado.
 
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { getCatalogoPublico, crearPedidoPublico } from '../services/apiService';
 import { formatCOP } from '../utils/formatters';
 import { matchesSearch } from '../utils/normalize';
-import { FaStore, FaBoxOpen, FaExternalLinkAlt, FaShoppingCart, FaPlus, FaMinus, FaTimes, FaWhatsapp, FaSearch, FaTimesCircle } from 'react-icons/fa';
+import QuantityInput from '../components/QuantityInput';
+import ProductDetailModal from '../components/ProductDetailModal';
+import { FaStore, FaBoxOpen, FaExternalLinkAlt, FaShoppingCart, FaTimes, FaWhatsapp, FaSearch, FaTimesCircle, FaExpand } from 'react-icons/fa';
 
 // Bucket para productos sin categoría: nunca deben quedar fuera del
 // filtro, así que en vez de excluirlos caen todos acá.
@@ -27,6 +29,7 @@ const PublicCatalogPage = () => {
   const [selectedCategoria, setSelectedCategoria] = useState(null); // null = "Todas"
 
   const [cart, setCart] = useState([]); // [{ productId, nombre, precioVenta, cantidad, imagen }]
+  const [detalleId, setDetalleId] = useState(null); // producto abierto en el modal de detalle
   const [showCart, setShowCart] = useState(false);
   const [showCheckout, setShowCheckout] = useState(false);
   const [nombre, setNombre] = useState('');
@@ -101,13 +104,15 @@ const PublicCatalogPage = () => {
     });
   };
 
-  const updateCantidad = (productId, delta) => {
-    setCart((prev) =>
-      prev
-        .map((item) => (item.productId === productId ? { ...item, cantidad: item.cantidad + delta } : item))
-        .filter((item) => item.cantidad > 0)
-    );
+  const setCantidad = (productId, cantidad) => {
+    setCart((prev) => prev.map((item) => (item.productId === productId ? { ...item, cantidad } : item)));
   };
+
+  const removeFromCart = (productId) => {
+    setCart((prev) => prev.filter((item) => item.productId !== productId));
+  };
+
+  const closeDetalle = useCallback(() => setDetalleId(null), []);
 
   const cartTotal = cart.reduce((sum, item) => sum + item.precioVenta * item.cantidad, 0);
   const cartCantidad = cart.reduce((sum, item) => sum + item.cantidad, 0);
@@ -166,6 +171,7 @@ const PublicCatalogPage = () => {
   }
 
   const { company, products } = catalogo;
+  const productoDetalle = detalleId !== null ? products.find((p) => p.id === detalleId) : null;
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col pb-20">
@@ -263,7 +269,12 @@ const PublicCatalogPage = () => {
               const enCarrito = cart.find((item) => item.productId === p.id);
               return (
                 <div key={p.id} className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden flex flex-col">
-                  <div className="aspect-square bg-gray-100 relative">
+                  <button
+                    type="button"
+                    onClick={() => setDetalleId(p.id)}
+                    aria-label={`Ver detalle de ${p.nombre}`}
+                    className="aspect-square bg-gray-100 relative block w-full text-left"
+                  >
                     {p.imagenes[0] ? (
                       <img src={p.imagenes[0]} alt={p.nombre} className="w-full h-full object-cover" />
                     ) : (
@@ -276,18 +287,26 @@ const PublicCatalogPage = () => {
                         Agotado
                       </span>
                     )}
-                  </div>
+                    <span className="absolute bottom-2 right-2 p-1.5 bg-white/85 rounded-full text-gray-500 pointer-events-none">
+                      <FaExpand size={10} />
+                    </span>
+                  </button>
                   <div className="p-3 flex-1 flex flex-col">
-                    <p className="font-bold text-gray-800 text-sm leading-tight flex-1">{p.nombre}</p>
+                    <button type="button" onClick={() => setDetalleId(p.id)} className="text-left flex-1">
+                      <span className="block font-bold text-gray-800 text-sm leading-tight">{p.nombre}</span>
+                    </button>
                     {p.categoria && <p className="text-[10px] text-gray-400 uppercase font-bold mt-1">{p.categoria}</p>}
                     <p className="font-black text-purple-600 mt-2">{formatCOP(p.precioVenta)}</p>
 
                     {p.disponible && (
                       enCarrito ? (
-                        <div className="flex items-center justify-between mt-2 bg-purple-50 rounded-xl px-2 py-1.5">
-                          <button onClick={() => updateCantidad(p.id, -1)} className="p-1.5 text-purple-600"><FaMinus size={10} /></button>
-                          <span className="font-black text-purple-700 text-sm">{enCarrito.cantidad}</span>
-                          <button onClick={() => updateCantidad(p.id, 1)} className="p-1.5 text-purple-600"><FaPlus size={10} /></button>
+                        <div className="mt-2">
+                          <QuantityInput
+                            value={enCarrito.cantidad}
+                            onChange={(n) => setCantidad(p.id, n)}
+                            onRemove={() => removeFromCart(p.id)}
+                            variant="card"
+                          />
                         </div>
                       ) : (
                         <button
@@ -339,11 +358,12 @@ const PublicCatalogPage = () => {
                     <p className="font-bold text-sm text-gray-800 truncate">{item.nombre}</p>
                     <p className="text-xs text-gray-400">{formatCOP(item.precioVenta)} c/u</p>
                   </div>
-                  <div className="flex items-center gap-2">
-                    <button onClick={() => updateCantidad(item.productId, -1)} className="p-1.5 bg-white rounded-lg text-purple-600 border border-gray-200"><FaMinus size={9} /></button>
-                    <span className="font-black text-sm w-4 text-center">{item.cantidad}</span>
-                    <button onClick={() => updateCantidad(item.productId, 1)} className="p-1.5 bg-white rounded-lg text-purple-600 border border-gray-200"><FaPlus size={9} /></button>
-                  </div>
+                  <QuantityInput
+                    value={item.cantidad}
+                    onChange={(n) => setCantidad(item.productId, n)}
+                    onRemove={() => removeFromCart(item.productId)}
+                    variant="cart"
+                  />
                 </div>
               ))}
 
@@ -414,6 +434,18 @@ const PublicCatalogPage = () => {
             </div>
           </div>
         </div>
+      )}
+
+      {/* Detalle del producto (foto ampliada, galería, descripción) */}
+      {productoDetalle && (
+        <ProductDetailModal
+          product={productoDetalle}
+          cantidad={cart.find((item) => item.productId === productoDetalle.id)?.cantidad || 0}
+          onClose={closeDetalle}
+          onAdd={() => addToCart(productoDetalle)}
+          onChangeCantidad={(n) => setCantidad(productoDetalle.id, n)}
+          onRemove={() => removeFromCart(productoDetalle.id)}
+        />
       )}
 
       {/* Pie "Hecho con Vendita" */}

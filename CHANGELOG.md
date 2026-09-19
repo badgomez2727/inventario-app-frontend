@@ -1,5 +1,13 @@
 # Changelog
 
+## Sin publicar
+
+### Agregado — catálogo público: detalle del producto y cantidad editable
+
+- Al tocar la foto o el nombre de un producto se abre su detalle: foto grande, galería con todas sus fotos (flechas, deslizar con el dedo y miniaturas), nombre, categoría, precio, disponible/agotado y la descripción (que hasta ahora no se mostraba en ninguna parte), con el control para agregarlo al pedido. Se cierra con la X, tocando fuera o con Escape.
+- La cantidad ya se puede escribir directamente (en la tarjeta, en el detalle y en el carrito), con teclado numérico en el celular; antes solo se podía subir/bajar de a uno. Escribir 0 quita el producto; dejar el campo vacío vuelve al número anterior; el tope es 999 (el stock exacto no se publica: si piden más de lo que hay, se avisa al enviar el pedido).
+- Primeros tests de frontend (`QuantityInput`, `matchesSearch`), con las librerías de testing que el proyecto ya traía.
+
 ## 1.3.0
 
 ### En palabras simples (para contarle a los clientes)
